@@ -354,6 +354,7 @@ main {
   /* Smooth return (0.1s out), smooth box-shadow */
   transition: transform 0.1s ease-out, box-shadow 0.3s;
   will-change: transform;
+  transform-style: preserve-3d;
 }
 
 .card-container:hover {
@@ -382,7 +383,8 @@ main {
   z-index: 1;
   /* Above the background */
   transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  /* Snappy with slight bounce */
   border-radius: 20px;
 }
 
@@ -391,60 +393,60 @@ main {
 }
 
 /* Front styling */
+/* Front styling */
 .card-face {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   border-radius: 19px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Instead of justify-center, use safe layout */
   justify-content: center;
   padding: 20px 16px;
-  /* More vertical padding */
   background: var(--card);
   text-align: center;
   border: 1px solid transparent;
+  /* Fix: remove overflow hidden to prevent clipping glitches during tilt, 
+     unless border-radius requires it. Usually better to clip on parent if needed. */
   overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02);
+  /* subtle border fix */
 }
 
 .card-front {
   font-weight: 800;
   color: var(--text);
-  z-index: 1;
+  z-index: 2;
+  transform: rotateY(0deg);
+  /* Explicit zero */
   background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), transparent);
 }
 
-.card-front .card-title {
-  /* Title on front shouldn't clip easily, but clamp just in case */
-  font-size: 1.25rem;
-  /* Larger title */
-  margin-bottom: 8px;
+.card.flipped .card-front {
+  pointer-events: none;
 }
 
-/* Enhanced Selection State */
-.card.selected .card-front {
-  border: 2px solid var(--primary);
-  background: linear-gradient(135deg, var(--card) 0%, rgba(115, 155, 163, 0.15) 100%);
-}
-
-/* Dark Mode Contrast Fix */
-body.dark-theme .card-front {
-  color: #FFFFFF;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-/* Back styling (Fix clipping) */
+/* Back styling */
 .card-back {
   transform: rotateY(180deg);
+  z-index: 1;
+  /* Default lower than front */
   font-size: 0.9rem;
-  /* Use flex-start or space-between but with care */
   justify-content: space-between;
   color: var(--text);
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.02), transparent);
   padding: 20px 16px 16px 16px;
+  background: var(--card);
+  /* Ensure solid background */
+}
+
+.card.flipped .card-back {
+  z-index: 3;
+  /* On top when flipped */
 }
 
 body.dark-theme .card-back {
@@ -687,6 +689,12 @@ select:focus {
   height: 100%;
   z-index: -1;
   pointer-events: none;
+  opacity: 0.6;
+  /* Increased from default/implicit */
+}
+
+body.dark-theme #galaxy-canvas {
+  opacity: 0.8;
 }
 
 /* --- Intro Modal & Carousel --- */
@@ -768,6 +776,211 @@ select:focus {
   opacity: 1;
   transform: scale(1.4);
   background: var(--primary);
+}
+
+/* --- Delete Modal --- */
+.delete-modal-content {
+  text-align: center;
+  max-width: 320px;
+}
+
+.delete-timer {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 16px 0;
+  color: var(--danger);
+}
+
+/* --- Suggest Button --- */
+.btn-suggest {
+  background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%);
+  color: #fff;
+  border: none;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(125, 211, 252, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px rgba(125, 211, 252, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(125, 211, 252, 0);
+  }
+}
+
+/* --- Avatar (Brújula) --- */
+.avatar-float {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2500;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none;
+  /* let clicks pass through mainly */
+}
+
+.avatar-float>* {
+  pointer-events: auto;
+}
+
+.avatar-container {
+  width: 140px;
+  height: 140px;
+  position: relative;
+  /* El avatar flota solo */
+  animation: floaty 3.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes floaty {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.avatar-bubble {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--ring);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow2);
+  max-width: 220px;
+  font-size: 0.85rem;
+  position: relative;
+  opacity: 0;
+  transform: translateY(10px) scale(0.95);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.avatar-bubble.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Triangle */
+.avatar-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  right: 40px;
+  width: 12px;
+  height: 12px;
+  background: var(--card);
+  border-right: 1px solid var(--ring);
+  border-bottom: 1px solid var(--ring);
+  transform: rotate(45deg);
+}
+
+/* Internal Avatar SVG Styles */
+.blink .eyeLid {
+  animation: blink 4.6s infinite;
+}
+
+@keyframes blink {
+
+  0%,
+  6%,
+  100% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+
+  2% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+
+  4% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+
+  6% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+
+.pupil {
+  transition: transform .08s linear;
+}
+
+.mouth {
+  opacity: 0;
+  transition: opacity .2s;
+}
+
+.brow {
+  opacity: 0;
+  transition: opacity .2s;
+}
+
+.cheek {
+  opacity: 0;
+  transition: opacity .2s;
+}
+
+/* States */
+.state-neutral .mouth.neutral,
+.state-neutral .brow.neutral {
+  opacity: 1;
+}
+
+.state-happy .mouth.happy,
+.state-happy .brow.happy,
+.state-happy .cheek {
+  opacity: 1;
+}
+
+.state-worried .mouth.worried,
+.state-worried .brow.worried,
+.state-worried .cheek {
+  opacity: .35;
+}
+
+.state-tired .mouth.tired,
+.state-tired .brow.tired {
+  opacity: 1;
+}
+
+.state-surprised .mouth.surprised,
+.state-surprised .brow.surprised,
+.state-surprised .cheek {
+  opacity: .25;
+}
+
+.talking .needle {
+  animation: wiggle .28s ease-in-out infinite alternate;
+  transform-origin: 50% 56%;
+}
+
+@keyframes wiggle {
+  from {
+    transform: rotate(-2deg);
+  }
+
+  to {
+    transform: rotate(2.4deg);
+  }
 }
 
 /* --- Sendero Layout --- */

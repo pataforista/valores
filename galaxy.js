@@ -8,8 +8,8 @@ let stars = [];
 
 // Config
 // Config - Tuned to user spec
-const STAR_COUNT = 600; // Density ~2.3 equivalent relative to screen
-const SPEED = 0.2; // Speed 0.9 scaled down for canvas
+const STAR_COUNT = 1000; // Density increased for better visibility
+const SPEED = 0.5; // Faster for more activity
 const MOUSE_REPULSION = 150;
 const HUE_SHIFT = 40; // Cycle colors
 

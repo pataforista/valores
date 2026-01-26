@@ -198,6 +198,7 @@
             </div>
             <div class="inline-actions">
               <button class="btn primary" type="button" id="addInternalBarrier">Agregar barrera</button>
+              <button type="button" class="btn-suggest" id="suggestSkillBtn">✨ Sugerir</button>
               <span class="hint" id="mindfulnessHint">Sugeriremos una habilidad según la barrera.</span>
             </div>
             <ul class="list-clean" id="internalList"></ul>
@@ -281,6 +282,113 @@
 
   <script src="galaxy.js"></script>
   <script src="app.js"></script>
+  <div id="deleteModal" class="carousel-modal">
+    <div class="carousel-wrap delete-modal-content">
+      <div style="font-size:3rem;">🗑️</div>
+      <h3>¿Borrar todo?</h3>
+      <p>Esto eliminará tus valores, diana y compromisos. No se puede deshacer.</p>
+      <div class="delete-timer" id="deleteTimer">3</div>
+      <div class="inline-actions" style="justify-content:center; gap:8px;">
+        <button class="btn" id="cancelDeleteBtn">Cancelar</button>
+        <button class="btn danger" id="confirmDeleteBtn" disabled>Sí, borrar todo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Avatar Container (Hidden until loaded) -->
+  <div id="avatarRoot" class="avatar-float" hidden>
+    <div class="avatar-bubble" id="avatarBubble">
+      <strong style="display:block; margin-bottom:4px;">Brújula</strong>
+      <span id="avatarText">Hola, estoy aquí para guiarte.</span>
+    </div>
+    <div class="avatar-container" id="avatarBox" aria-label="Avatar Brújula">
+      <!-- SVG Injected by JS or here directly -->
+      <svg viewBox="0 0 220 220" role="img" style="width:100%; height:100%;">
+        <defs>
+          <radialGradient id="faceGlow" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="rgba(255,255,255,.24)" />
+            <stop offset="55%" stop-color="rgba(255,255,255,.10)" />
+            <stop offset="100%" stop-color="rgba(255,255,255,.04)" />
+          </radialGradient>
+          <radialGradient id="ringGrad" cx="45%" cy="35%" r="80%">
+            <stop offset="0%" stop-color="rgba(125,211,252,.55)" />
+            <stop offset="60%" stop-color="rgba(167,139,250,.35)" />
+            <stop offset="100%" stop-color="rgba(255,255,255,.18)" />
+          </radialGradient>
+          <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="rgba(0,0,0,.35)" />
+          </filter>
+        </defs>
+        <g id="compass" class="blink state-neutral">
+          <circle cx="110" cy="110" r="92" fill="rgba(0,0,0,.18)" filter="url(#softShadow)" />
+          <circle cx="110" cy="110" r="86" fill="none" stroke="url(#ringGrad)" stroke-width="10" opacity=".95" />
+          <circle cx="110" cy="110" r="77" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.14)"
+            stroke-width="2" />
+          <g opacity=".55">
+            <rect x="108.6" y="25" width="2.8" height="14" rx="1.4" fill="rgba(255,255,255,.65)" />
+            <rect x="108.6" y="181" width="2.8" height="14" rx="1.4" fill="rgba(255,255,255,.45)" />
+            <rect x="25" y="108.6" width="14" height="2.8" rx="1.4" fill="rgba(255,255,255,.45)" />
+            <rect x="181" y="108.6" width="14" height="2.8" rx="1.4" fill="rgba(255,255,255,.45)" />
+          </g>
+          <circle cx="110" cy="110" r="68" fill="url(#faceGlow)" stroke="rgba(255,255,255,.16)" stroke-width="2" />
+          <g opacity=".95">
+            <path d="M38 86 C25 98, 25 122, 38 134 C48 122, 48 98, 38 86 Z" fill="rgba(255,255,255,.07)"
+              stroke="rgba(255,255,255,.16)" stroke-width="2" />
+            <path d="M182 86 C195 98, 195 122, 182 134 C172 122, 172 98, 182 86 Z" fill="rgba(255,255,255,.07)"
+              stroke="rgba(255,255,255,.16)" stroke-width="2" />
+          </g>
+          <g id="eyes">
+            <g>
+              <ellipse cx="86" cy="102" rx="16" ry="14" fill="rgba(255,255,255,.92)" opacity=".92" />
+              <circle class="pupil" id="pupilL" cx="86" cy="104" r="6.6" fill="rgba(15,18,32,.92)" />
+              <circle class="pupil" id="shineL" cx="83.6" cy="101.4" r="2.1" fill="rgba(255,255,255,.86)" />
+              <rect class="eyeLid" x="70" y="92" width="32" height="20" rx="10" fill="var(--card)" opacity="0"
+                transform-origin="86px 102px" />
+            </g>
+            <g>
+              <ellipse cx="134" cy="102" rx="16" ry="14" fill="rgba(255,255,255,.92)" opacity=".92" />
+              <circle class="pupil" id="pupilR" cx="134" cy="104" r="6.6" fill="rgba(15,18,32,.92)" />
+              <circle class="pupil" id="shineR" cx="131.6" cy="101.4" r="2.1" fill="rgba(255,255,255,.86)" />
+              <rect class="eyeLid" x="118" y="92" width="32" height="20" rx="10" fill="var(--card)" opacity="0"
+                transform-origin="134px 102px" />
+            </g>
+          </g>
+          <g id="brows" stroke="rgba(255,255,255,.70)" stroke-width="4" stroke-linecap="round" opacity=".95">
+            <path class="brow neutral" d="M72 84 Q86 78 100 84" fill="none" />
+            <path class="brow neutral" d="M120 84 Q134 78 148 84" fill="none" />
+            <path class="brow happy" d="M72 86 Q86 72 100 86" fill="none" />
+            <path class="brow happy" d="M120 86 Q134 72 148 86" fill="none" />
+            <path class="brow worried" d="M72 78 Q86 92 100 78" fill="none" />
+            <path class="brow worried" d="M120 78 Q134 92 148 78" fill="none" />
+            <path class="brow tired" d="M72 86 Q86 86 100 86" fill="none" opacity=".85" />
+            <path class="brow tired" d="M120 86 Q134 86 148 86" fill="none" opacity=".85" />
+            <path class="brow surprised" d="M72 74 Q86 66 100 74" fill="none" />
+            <path class="brow surprised" d="M120 74 Q134 66 148 74" fill="none" />
+          </g>
+          <g class="cheek">
+            <ellipse cx="62" cy="122" rx="12" ry="8" fill="rgba(251,113,133,.25)" />
+            <ellipse cx="158" cy="122" rx="12" ry="8" fill="rgba(251,113,133,.25)" />
+          </g>
+          <g id="mouths" stroke="rgba(255,255,255,.72)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"
+            fill="none">
+            <path class="mouth neutral" d="M96 136 Q110 142 124 136" />
+            <path class="mouth happy" d="M94 134 Q110 150 126 134" />
+            <path class="mouth worried" d="M96 144 Q110 132 124 144" />
+            <path class="mouth tired" d="M98 140 Q110 140 122 140" opacity=".85" />
+            <path class="mouth surprised" d="M110 138 m -8,0 a 8,8 0 1,0 16,0 a 8,8 0 1,0 -16,0" />
+          </g>
+          <g class="needle" id="needle">
+            <circle cx="110" cy="112" r="6.5" fill="rgba(255,255,255,.20)" stroke="rgba(255,255,255,.18)"
+              stroke-width="2" />
+            <path d="M110 112 L110 56" stroke="rgba(125,211,252,.92)" stroke-width="5" stroke-linecap="round" />
+            <path d="M110 112 L140 142" stroke="rgba(251,113,133,.82)" stroke-width="5" stroke-linecap="round" />
+          </g>
+          <text x="110" y="48" text-anchor="middle" font-size="16" fill="rgba(255,255,255,.70)"
+            font-weight="700">N</text>
+        </g>
+      </svg>
+    </div>
+  </div>
 </body>
 
 </html>

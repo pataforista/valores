@@ -193,7 +193,19 @@ document.addEventListener("DOMContentLoaded", () => {
   wireBullseye();
   updateBullseyeVisual();
 
+  updateBullseyeVisual();
+
   checkIntro();
+  initAvatar(); // Start the Compass
+
+  // Global focus reactions
+  const inputs = document.querySelectorAll("input[type='text'], textarea");
+  inputs.forEach(inp => {
+    inp.addEventListener("focus", () => {
+      // Only sometimes
+      if (Math.random() > 0.7) CompassAvatar.speak("Te escucho... escríbelo.", "neutral");
+    });
+  });
 });
 
 // =====================
@@ -450,14 +462,33 @@ function wirePathModule() {
   if (!el.actionForm) return;
 
   el.internalBarrier.addEventListener("input", () => {
-    const suggested = suggestMindfulnessSkill(el.internalBarrier.value);
-    if (suggested) {
-      el.mindfulnessSkill.value = suggested;
-      el.mindfulnessHint.textContent = `Sugerencia: ${suggested}.`;
-    } else {
-      el.mindfulnessHint.textContent = "Sugeriremos una habilidad según la barrera.";
-    }
+    // Optional: clear hint if user types
+    // el.mindfulnessHint.textContent = "Sugeriremos una habilidad según la barrera.";
   });
+
+  // New "Sugerir" button logic
+  const suggestBtn = document.getElementById("suggestSkillBtn");
+  if (suggestBtn) {
+    suggestBtn.addEventListener("click", () => {
+      const val = el.internalBarrier.value;
+      if (!val.trim()) {
+        toast("Escribe una barrera primero");
+        CompassAvatar.speak("Escribe qué sientes para ayudarte.", "neutral");
+        return;
+      }
+      const suggested = suggestMindfulnessSkill(val);
+      if (suggested) {
+        el.mindfulnessSkill.value = suggested;
+        el.mindfulnessHint.textContent = `💡 Sugerencia: ${suggested}.`;
+        el.mindfulnessHint.style.color = "var(--primary)";
+        // Avatar reaction
+        CompassAvatar.speak(`Creo que "${suggested}" te ayudaría con eso.`, "happy");
+      } else {
+        el.mindfulnessHint.textContent = "No encontré una sugerencia exacta, elige la que mejor te calce.";
+        CompassAvatar.speak("Mmm, elige la habilidad que sientas mejor.", "worried");
+      }
+    });
+  }
 
   el.addInternalBarrier.addEventListener("click", () => {
     const text = (el.internalBarrier.value || "").trim();
@@ -492,6 +523,7 @@ function wirePathModule() {
     }
     pendingAction = buildActionDraft();
     renderCommitmentPanel();
+    CompassAvatar.speak("¡Excelente! Ahora declara tu compromiso.", "happy");
   });
 
   el.declareCommitment.addEventListener("click", () => {
@@ -711,7 +743,10 @@ function markActionDone(actionId) {
   action.status = "Realizada";
   saveActions();
   renderActionsList();
+  saveActions();
+  renderActionsList();
   toast("Bien hecho por actuar según tus valores");
+  CompassAvatar.speak("¡Muy bien! Un paso más en tu camino.", "happy");
 
   if (action.parametrosSMART?.meaningful) {
     updateBullseyeFromAction(action.area);
@@ -834,6 +869,11 @@ function onPointerDown(e, itemId) {
 
   window.addEventListener("pointermove", onPointerMove, { passive: false });
   window.addEventListener("pointerup", onPointerUp, { passive: false, once: true });
+
+  // Avatar React
+  if (Math.random() > 0.5) {
+    CompassAvatar.speak("¡Organiza lo que es vital para ti!", "happy");
+  }
 }
 
 function onPointerMove(e) {
@@ -878,6 +918,10 @@ function wireBullseye() {
 
   [el.inWork, el.inRel, el.inGrowth, el.inLeisure].forEach(x => {
     x.addEventListener("input", onInput);
+    // Interaction on change confirm (change vs input)
+    x.addEventListener("change", () => {
+      CompassAvatar.speak("Buscando el equilibrio...", "neutral");
+    });
   });
 
   el.bullSave.addEventListener("click", () => {
@@ -997,6 +1041,17 @@ function wireTabs() {
     el.tabValues.setAttribute("aria-selected", isValues ? "true" : "false");
     el.tabBull.setAttribute("aria-selected", isBull ? "true" : "false");
     el.tabPath.setAttribute("aria-selected", which === "path" ? "true" : "false");
+
+    // Avatar Guidance
+    if (isValues) {
+      CompassAvatar.speak("Los valores son direcciones de vida, no destinos. ¿Qué es importante para tu corazón?", "neutral");
+    }
+    if (isBull) {
+      CompassAvatar.speak("La Diana te ayuda a ver si estás dando en el blanco en Trabajo, Amor, Juego y Salud.", "neutral");
+    }
+    if (which === "path") {
+      CompassAvatar.speak("Aquí definimos metas SMART: Específicas, Importantes y que puedas cumplir hoy.", "happy");
+    }
   };
 
   el.tabValues.addEventListener("click", () => activate("values"));
@@ -1018,10 +1073,47 @@ function wireTheme() {
 }
 
 function wireResetAll() {
-  el.resetBtn.addEventListener("click", () => {
-    const ok = confirm("¿Borrar datos locales (valores, diana y tema)?");
-    if (!ok) return;
+  // Modal elements
+  const modal = document.getElementById("deleteModal");
+  const cancel = document.getElementById("cancelDeleteBtn");
+  const confirmBtn = document.getElementById("confirmDeleteBtn");
+  const timerDisplay = document.getElementById("deleteTimer");
 
+  if (!modal) return;
+
+  let timerInt = null;
+
+  el.resetBtn.addEventListener("click", () => {
+    modal.classList.add("active");
+    // Start timer
+    let timeLeft = 3;
+    confirmBtn.disabled = true;
+    confirmBtn.style.opacity = "0.5";
+    timerDisplay.textContent = timeLeft;
+
+    if (timerInt) clearInterval(timerInt);
+    timerInt = setInterval(() => {
+      timeLeft--;
+      if (timeLeft > 0) {
+        timerDisplay.textContent = timeLeft;
+      } else {
+        timerDisplay.textContent = "⚠️";
+        confirmBtn.disabled = false;
+        confirmBtn.style.opacity = "1";
+        clearInterval(timerInt);
+      }
+    }, 1000);
+    CompassAvatar.speak("Ten cuidado, esto borrará todo.", "worried");
+  });
+
+  cancel.addEventListener("click", () => {
+    modal.classList.remove("active");
+    if (timerInt) clearInterval(timerInt);
+  });
+
+  confirmBtn.addEventListener("click", () => {
+    modal.classList.remove("active");
+    // Perform delete
     localStorage.removeItem(LS.values);
     localStorage.removeItem(LS.bullseye);
     localStorage.removeItem(LS.theme);
@@ -1042,10 +1134,8 @@ function wireResetAll() {
     renderActionsList();
     renderCommitmentPanel();
 
-    renderActionsList();
-    renderCommitmentPanel();
-
     toast("Datos borrados");
+    CompassAvatar.speak("Hecho. Empezamos de nuevo.", "neutral");
   });
 }
 
@@ -1178,4 +1268,165 @@ function wireTilt(card) {
 }
 
 // Global listener removed in favor of per-card wireTilt
+// =====================
+// Avatar (Brújula) Logic
+// =====================
+const CompassAvatar = (function () {
+  let box, compass, bubble, bubbleText, pupilL, pupilR, shineL, shineR;
+  let speakTimer, blinkTimer;
+  const STATES = ["neutral", "happy", "worried", "tired", "surprised"];
 
+  function init() {
+    // Elements
+    box = document.getElementById('avatarBox');
+    const root = document.getElementById('avatarRoot');
+    // If HTML not present, abort
+    if (!box || !root) return;
+
+    // Unhide
+    root.hidden = false;
+
+    compass = document.getElementById('compass');
+    bubble = document.getElementById('avatarBubble');
+    bubbleText = document.getElementById('avatarText');
+    pupilL = document.getElementById('pupilL');
+    pupilR = document.getElementById('pupilR');
+    shineL = document.getElementById('shineL');
+    shineR = document.getElementById('shineR');
+
+    // Init state
+    setState("neutral");
+
+    // Start blink loop
+    scheduleBlink();
+
+    // Sound context init on first interaction (browser policy)
+    document.body.addEventListener("click", initAudio, { once: true });
+
+    // Click reaction
+    box.addEventListener("click", () => {
+      // Random reaction
+      const r = Math.random();
+      if (r < 0.33) speak("¡Aquí estoy! ¿Seguimos al norte?", "happy");
+      else if (r < 0.66) speak("Tú tienes el control del timón.", "neutral");
+      else speak("¡Bip bip! Lista para navegar.", "surprised");
+    });
+
+    // Eye tracking
+    document.addEventListener("mousemove", (e) => {
+      // Calculate relative to avatar center
+      const r = box.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const nx = (e.clientX - cx) / (r.width / 2); // -1 to 1 approx
+      const ny = (e.clientY - cy) / (r.height / 2);
+
+      // Limit range
+      setPupilOffset(nx * 3.8, ny * 3.2);
+    });
+
+    // Say hello initially
+    setTimeout(() => {
+      speak("Hola. Soy tu brújula: te acompaño en el camino.", "happy");
+    }, 1000);
+  }
+
+  function scheduleBlink() {
+    // Simple recurrent blink
+    // The CSS animation 'blink' handles the motion, we just let it run or toggling class for random control.
+    // Actually the user CSS has infinite animation: .blink .eyeLid { animation: blink 4.6s infinite; }
+    // So we just ensure class is there.
+    if (compass) compass.classList.add("blink");
+  }
+
+  function setState(next) {
+    if (!compass) return;
+    STATES.forEach(s => compass.classList.remove("state-" + s));
+    compass.classList.add("state-" + next);
+  }
+
+  function speak(text, nextState) {
+    if (!compass) return;
+    if (nextState) setState(nextState);
+
+    if (bubbleText) bubbleText.textContent = text;
+    if (bubble) {
+      bubble.classList.add("show");
+      // Hide bubble after 5s
+      clearTimeout(speakTimer);
+      speakTimer = setTimeout(() => {
+        bubble.classList.remove("show");
+        // Revert to neutral after finished speaking? Optional.
+        // setState("neutral");
+      }, 5000);
+    }
+
+    compass.classList.add("talking");
+    setTimeout(() => {
+      compass.classList.remove("talking");
+    }, 1500);
+
+    playSound();
+  }
+
+  // --- Audio ---
+  let audioCtx = null;
+  function initAudio() {
+    if (!audioCtx) {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (Ctx) audioCtx = new Ctx();
+    }
+  }
+
+  function playSound() {
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = "sine";
+    // Chirp effect: slide freq
+    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.15);
+  }
+
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+
+  function setPupilOffset(dx, dy) {
+    if (!pupilL) return;
+    const x = clamp(dx, -3.2, 3.2);
+    const y = clamp(dy, -2.6, 2.6);
+    const xs = clamp(dx * 0.7, -2.2, 2.2);
+    const ys = clamp(dy * 0.7, -1.8, 1.8);
+
+    pupilL.style.setProperty("--px", x + "px");
+    pupilL.style.setProperty("--py", y + "px");
+    pupilR.style.setProperty("--px", x + "px");
+    pupilR.style.setProperty("--py", y + "px");
+
+    shineL.style.setProperty("--px", xs + "px");
+    shineL.style.setProperty("--py", ys + "px");
+    shineR.style.setProperty("--px", xs + "px");
+    shineR.style.setProperty("--py", ys + "px");
+  }
+
+  return {
+    init,
+    speak,
+    setState
+  };
+})();
+
+function initAvatar() {
+  CompassAvatar.init();
+}
