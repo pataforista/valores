@@ -1,517 +1,268 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Valores del Valle</title>
 
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#8BC4C2" />
+  <meta name="theme-color" content="#739BA3" />
 
-  <style>
-    :root{
-      --bg:#FFFBF0;
-      --card:#FFFFFF;
-      --text:#2f2f2f;
-      --muted:#5b5b5b;
-
-      --primary:#2e7c7a;
-      --ring:#8BC4C2;
-      --danger:#F08080;
-      --highlight:#F7D358;
-
-      --shadow: 0 6px 18px rgba(0,0,0,0.08);
-      --shadow2: 0 12px 26px rgba(0,0,0,0.10);
-      --radius: 18px;
-    }
-
-    body.dark-theme{
-      --bg:#1f2a33;
-      --card:#253240;
-      --text:#edf2f7;
-      --muted:#cbd5e1;
-      --primary:#b6f2ef;
-      --ring:#5D6D7E;
-      --danger:#E74C3C;
-      --highlight:#F1C40F;
-      --shadow: 0 8px 22px rgba(0,0,0,0.28);
-      --shadow2: 0 14px 34px rgba(0,0,0,0.33);
-    }
-
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    header{
-      position: sticky;
-      top:0;
-      z-index:100;
-      background: var(--card);
-      box-shadow: var(--shadow);
-      padding:14px 18px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-
-    .brand{
-      display:flex; flex-direction:column; gap:2px;
-    }
-    .brand h1{ margin:0; font-size:1.05rem; }
-    .brand small{ color:var(--muted); }
-
-    .top-actions{
-      display:flex; align-items:center; gap:10px;
-    }
-
-    .icon-btn{
-      border:0;
-      background: transparent;
-      cursor:pointer;
-      font-size:1.35rem;
-      line-height:1;
-      padding:8px;
-      border-radius: 12px;
-    }
-    .icon-btn:hover{ background: color-mix(in srgb, var(--bg) 65%, transparent); }
-
-    .tabs{
-      display:flex;
-      justify-content:center;
-      gap:10px;
-      padding:14px 12px 0 12px;
-      max-width: 980px;
-      margin:0 auto;
-    }
-
-    .tab-btn{
-      border:1.5px solid var(--ring);
-      background: transparent;
-      color: var(--text);
-      padding:10px 14px;
-      border-radius: 999px;
-      cursor:pointer;
-      font-weight: 800;
-    }
-    .tab-btn.active{
-      background: var(--ring);
-      color: #ffffff;
-      border-color: transparent;
-    }
-
-    main{ padding: 14px 14px 88px 14px; max-width: 980px; margin:0 auto; }
-
-    .view{ display:none; }
-    .view.active{ display:block; }
-
-    .card-panel{
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 14px;
-      border: 1px solid color-mix(in srgb, var(--ring) 55%, transparent);
-    }
-
-    .panel-title{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px; margin-bottom:8px;
-      font-weight: 950;
-    }
-
-    .hint{
-      margin: 8px 0 0 0;
-      color: var(--muted);
-      font-size: 0.92rem;
-      line-height:1.35;
-    }
-
-    /* Ranking list */
-    #active-list{ list-style:none; padding:0; margin: 10px 0 0 0; display:flex; flex-direction:column; gap:10px; }
-
-    /* CORRECCIÓN CSS: Permitir scroll en items, bloquear solo en grab */
-    .ranking-item{
-      display:flex; align-items:center; gap:10px;
-      padding:12px;
-      border-radius: 16px;
-      background: color-mix(in srgb, var(--bg) 18%, var(--card));
-      border:1px solid color-mix(in srgb, var(--ring) 75%, transparent);
-      user-select:none;
-      touch-action: pan-y; /* Permite scroll vertical */
-    }
-    .ranking-item.dragging{ opacity:0.65; transform: scale(0.98); }
-
-    .rank-badge{
-      width:34px; height:34px;
-      border-radius: 12px;
-      display:grid; place-items:center;
-      font-weight: 1000;
-      background: var(--ring);
-      color: var(--text);
-      flex:0 0 auto;
-    }
-
-    .ranking-item.is-first{
-      border-color: color-mix(in srgb, var(--highlight) 70%, var(--ring));
-      box-shadow: 0 12px 26px rgba(247,211,88,0.22);
-    }
-    .ranking-item.is-first .rank-badge{
-      background: var(--highlight);
-      color: #1b1b1b;
-    }
-
-    .grab{
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      display:grid;
-      place-items:center;
-      cursor: grab;
-      user-select:none;
-      touch-action: none; /* Solo aquí bloqueamos para drag */
-      background: color-mix(in srgb, var(--bg) 30%, transparent);
-      border: 1px solid color-mix(in srgb, var(--ring) 65%, transparent);
-      flex:0 0 auto;
-    }
-    .grab:active{ cursor: grabbing; }
-
-    .rank-name{
-      display:flex; flex-direction:column; gap:4px;
-      min-width: 0;
-      flex: 1 1 auto;
-    }
-    .rank-name span{ color: var(--muted); font-size: 0.85rem; }
-
-    .mini-btn{
-      border: 0;
-      background: transparent;
-      cursor:pointer;
-      font-size: 1.1rem;
-      padding: 6px 10px;
-      border-radius: 12px;
-      color: var(--danger);
-      flex:0 0 auto;
-    }
-    .mini-btn:hover{ background: color-mix(in srgb, var(--bg) 60%, transparent); }
-
-    /* Values grid */
-    .values-grid{
-      margin-top: 14px;
-      display:grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 14px;
-    }
-    .card-container{
-      perspective: 1100px;
-      height: 180px;
-    }
-
-    .btn{
-      border:0;
-      border-radius: 14px;
-      padding:10px 12px;
-      cursor:pointer;
-      font-weight: 900;
-    }
-    .btn.primary{ background: var(--ring); color:#ffffff; }
-    .btn.danger{ background: var(--danger); color:#ffffff; }
-
-    .card-actions{
-      margin-top: 10px;
-      display:flex;
-      justify-content:flex-end;
-      gap:10px;
-    }
-
-    .def{
-      margin-top: 6px;
-      color: var(--text);
-      font-size: 0.92rem;
-      line-height: 1.35;
-      overflow-y: auto;
-      flex: 1 1 auto;
-      padding-right: 4px;
-    }
-
-    /* --- Flip card (FIX: caras no se espejean) --- */
-    .card{
-      width:100%;
-      height:100%;
-      position:relative;
-      transform-style:preserve-3d;
-      transition:transform 0.55s ease;
-      border-radius:16px;
-      box-shadow: var(--shadow);
-      background: transparent;
-      display:block;
-    }
-    .card.flipped{ transform: rotateY(180deg); }
-    .card.selected{ outline: 3px solid var(--danger); outline-offset: 2px; }
-
-    .card-face{
-      position:absolute;
-      inset:0;
-      backface-visibility:hidden;
-      -webkit-backface-visibility:hidden;
-      border-radius:16px;
-      background: var(--card);
-      padding: 12px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-      text-align:center;
-      overflow:hidden;
-    }
-
-    .card-front .card-title{ font-weight: 950; font-size: 1rem; color: var(--primary); }
-    .card-front .star{ font-size: 1.4rem; margin-top: 6px; }
-
-    .card-back{
-      transform: rotateY(180deg);
-      background: color-mix(in srgb, var(--bg) 55%, var(--card));
-      align-items: stretch;
-      text-align:left;
-    }
-    .card-back .def{
-      text-align:left;
-      -webkit-overflow-scrolling: touch;
-    }
-    .card-back .card-actions{ width:100%; }
-    /* --- /Flip card --- */
-
-    /* Custom add */
-    .inline-form{
-      margin-top: 12px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
-    }
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    input, textarea{
-      width:100%;
-      border-radius: 14px;
-      border: 1px solid color-mix(in srgb, var(--ring) 70%, transparent);
-      background: color-mix(in srgb, var(--bg) 55%, var(--card));
-      color: var(--text);
-      padding: 10px 12px;
-      outline: none;
-      font-size: 0.95rem;
-    }
-    textarea{ min-height: 84px; resize: vertical; }
-
-    /* Bullseye */
-    .bullseye-wrap{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-    .bullseye-visual{
-      width: 320px;
-      height: 320px;
-      margin: 0 auto;
-      border-radius: 50%;
-      position: relative;
-      border: 2px solid var(--ring);
-      background:
-        radial-gradient(circle,
-          var(--highlight) 0 10%,
-          color-mix(in srgb, var(--bg) 30%, var(--card)) 10% 30%,
-          color-mix(in srgb, var(--ring) 55%, var(--bg)) 30% 31%,
-          color-mix(in srgb, var(--bg) 30%, var(--card)) 31% 60%,
-          color-mix(in srgb, var(--ring) 55%, var(--bg)) 60% 61%,
-          color-mix(in srgb, var(--bg) 30%, var(--card)) 61% 100%
-        );
-      box-shadow: var(--shadow2);
-    }
-    .axis-x{ position:absolute; top:50%; left:0; right:0; height:2px; background: color-mix(in srgb, var(--text) 35%, transparent); }
-    .axis-y{ position:absolute; left:50%; top:0; bottom:0; width:2px; background: color-mix(in srgb, var(--text) 35%, transparent); }
-
-    .marker{
-  position:absolute;
-  width: 14px;
-  height: 14px;
-  transform: translate(-50%, -50%);
-  border: 2px solid #fff;
-  background: var(--danger);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
-}
-
-/* Formas */
-.marker-circle{ border-radius: 50%; }
-
-.marker-square{ border-radius: 4px; }
-
-.marker-diamond{
-  border-radius: 3px;
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-/* Triángulo: usa pseudo-elemento y dejamos el "contenedor" sin fondo/borde */
-.marker-triangle{
-  width: 0;
-  height: 0;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-.marker-triangle::before{
-  content:"";
-  position:absolute;
-  left: 0;
-  top: 0;
-  transform: translate(-50%, -58%);
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-bottom: 14px solid var(--danger);
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.18));
-}
-.marker-triangle::after{
-  /* borde blanco alrededor del triángulo */
-  content:"";
-  position:absolute;
-  left: 0;
-  top: 0;
-  transform: translate(-50%, -58%);
-  width: 0;
-  height: 0;
-  border-left: 9.5px solid transparent;
-  border-right: 9.5px solid transparent;
-  border-bottom: 16px solid rgba(255,255,255,0.95);
-  z-index: -1;
-}
-
-
-    .slider-row{ display:grid; gap:8px; }
-    .slider-row label{ font-weight: 900; display:flex; justify-content:space-between; align-items:center; gap:10px; }
-    input[type="range"]{ width:100%; accent-color: var(--danger); }
-
-    .row-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top: 10px; flex-wrap:wrap; }
-
-    /* Toast */
-    #toast{
-      position: fixed;
-      left: 50%;
-      bottom: 22px;
-      transform: translateX(-50%);
-      background: color-mix(in srgb, var(--card) 78%, #000);
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 999px;
-      box-shadow: var(--shadow2);
-      opacity: 0;
-      pointer-events:none;
-      transition: opacity .18s ease, transform .18s ease;
-    }
-    #toast.show{
-      opacity: 1;
-      transform: translateX(-50%) translateY(-2px);
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-<header>
-  <div class="brand">
-    <h1>Valores del Valle 🌲</h1>
-    <small>ACT · Valores + Diana</small>
-  </div>
-  <div class="top-actions">
-    <button class="icon-btn" id="themeBtn" title="Tema">🌙</button>
-    <button class="icon-btn" id="resetBtn" title="Borrar datos">🧹</button>
-  </div>
-</header>
+  <canvas id="galaxy-canvas"></canvas>
 
-<div class="tabs">
-  <button class="tab-btn active" id="tab-values" aria-selected="true">Valores</button>
-  <button class="tab-btn" id="tab-bullseye" aria-selected="false">Diana</button>
-</div>
+  <header>
+    <div class="brand">
+      <h1>Valores del Valle 🌲</h1>
+      <small>ACT · Valores + Diana</small>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="helpBtn" title="Ayuda / Intro">❓</button>
+      <button class="icon-btn" id="themeBtn" title="Tema">🌙</button>
+      <button class="icon-btn" id="resetBtn" title="Borrar datos">🧹</button>
+    </div>
+  </header>
 
-<main>
-  <div id="view-values" class="view active">
-    <section class="card-panel">
-      <div class="panel-title">
-        <span>Mis Top 10</span>
-        <span id="counter" style="font-size:0.9rem;color:var(--muted)">0/10</span>
-      </div>
-      <p class="hint">Arrastra usando el botón ≡ para reordenar. Toca una carta para ver definición y agrega/quita en la parte de atrás.</p>
-      <ul id="active-list"></ul>
-
-      <div class="inline-form">
-        <div class="field">
-          <label for="customName" style="font-weight:900;">Agregar valor personal</label>
-          <input id="customName" type="text" placeholder="Nombre del valor (p. ej., 'Curiosidad científica')" />
-        </div>
-        <div class="field">
-          <textarea id="customDef" placeholder="Definición breve (¿cómo se ve en acciones concretas?)"></textarea>
-        </div>
-        <div style="display:flex;justify-content:flex-end;">
-          <button class="btn primary" id="addCustomBtn" type="button">Agregar</button>
-        </div>
-      </div>
-    </section>
-
-    <div class="values-grid" id="cards-container"></div>
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-values" aria-selected="true">Valores</button>
+    <button class="tab-btn" id="tab-bullseye" aria-selected="false">Diana</button>
+    <button class="tab-btn" id="tab-path" aria-selected="false">Sendero</button>
   </div>
 
-  <div id="view-bullseye" class="view">
-    <div class="bullseye-wrap">
+  <main>
+    <div id="view-values" class="view active">
       <section class="card-panel">
-        <div class="panel-title"><span>La Diana</span></div>
-        <p class="hint">
-          100 = más cerca del centro (más en línea con tus valores). 0 = más lejos. Ajusta cada área según tu última semana.
-        </p>
-
-        <div class="bullseye-visual" id="targetBoard" aria-label="Diana de valores">
-          <div class="axis-x"></div>
-          <div class="axis-y"></div>
-          <div id="mark-work" class="marker marker-circle" title="Trabajo/Educación"></div>
-	     <div id="mark-leisure" class="marker marker-square" title="Ocio"></div>
-	  <div id="mark-growth" class="marker marker-triangle" title="Crecimiento/Salud"></div>
-	     <div id="mark-rel" class="marker marker-diamond" title="Relaciones"></div>
+        <div class="panel-title">
+          <span>Mis Top 10</span>
+          <span id="counter" style="font-size:0.9rem;color:var(--muted)">0/10</span>
         </div>
+        <p class="hint">Arrastra usando el botón ≡ para reordenar. Toca una carta para ver definición y agrega/quita en
+          la parte de atrás.</p>
+        <ul id="active-list"></ul>
 
-        <div style="margin-top:14px; display:grid; gap:12px;">
-          <div class="slider-row">
-            <label>Trabajo / Educación <span id="num-work">50</span></label>
-            <input id="input-work" type="range" min="0" max="100" value="50" />
+        <div class="inline-form">
+          <div class="field">
+            <label for="customName" style="font-weight:900;">Agregar valor personal</label>
+            <input id="customName" type="text" placeholder="Nombre del valor (p. ej., 'Curiosidad científica')" />
           </div>
-          <div class="slider-row">
-            <label>Relaciones <span id="num-rel">50</span></label>
-            <input id="input-rel" type="range" min="0" max="100" value="50" />
+          <div class="field">
+            <textarea id="customDef" placeholder="Definición breve (¿cómo se ve en acciones concretas?)"></textarea>
           </div>
-          <div class="slider-row">
-            <label>Crecimiento / Salud <span id="num-growth">50</span></label>
-            <input id="input-growth" type="range" min="0" max="100" value="50" />
-          </div>
-          <div class="slider-row">
-            <label>Ocio / Tiempo libre <span id="num-leisure">50</span></label>
-            <input id="input-leisure" type="range" min="0" max="100" value="50" />
-          </div>
-
-          <div class="row-actions">
-            <button class="btn primary" id="bullseyeSaveBtn" type="button">Guardar</button>
-            <button class="btn danger" id="bullseyeResetBtn" type="button">Reiniciar</button>
+          <div style="display:flex;justify-content:flex-end;">
+            <button class="btn primary" id="addCustomBtn" type="button">Agregar</button>
           </div>
         </div>
       </section>
+
+      <div class="values-grid" id="cards-container"></div>
+    </div>
+
+    <div id="view-bullseye" class="view">
+      <div class="bullseye-wrap">
+        <section class="card-panel">
+          <div class="panel-title"><span>La Diana</span></div>
+          <p class="hint">
+            100 = más cerca del centro (más en línea con tus valores). 0 = más lejos. Ajusta cada área según tu última
+            semana.
+          </p>
+
+          <div class="bullseye-visual" id="targetBoard" aria-label="Diana de valores">
+            <div class="axis-x"></div>
+            <div class="axis-y"></div>
+            <div id="mark-work" class="marker marker-circle" title="Trabajo/Educación"></div>
+            <div id="mark-leisure" class="marker marker-square" title="Ocio"></div>
+            <div id="mark-growth" class="marker marker-triangle" title="Crecimiento/Salud"></div>
+            <div id="mark-rel" class="marker marker-diamond" title="Relaciones"></div>
+          </div>
+
+          <div style="margin-top:14px; display:grid; gap:12px;">
+            <div class="slider-row">
+              <label>Trabajo / Educación <span id="num-work">50</span></label>
+              <input id="input-work" type="range" min="0" max="100" value="50" />
+            </div>
+            <div class="slider-row">
+              <label>Relaciones <span id="num-rel">50</span></label>
+              <input id="input-rel" type="range" min="0" max="100" value="50" />
+            </div>
+            <div class="slider-row">
+              <label>Crecimiento / Salud <span id="num-growth">50</span></label>
+              <input id="input-growth" type="range" min="0" max="100" value="50" />
+            </div>
+            <div class="slider-row">
+              <label>Ocio / Tiempo libre <span id="num-leisure">50</span></label>
+              <input id="input-leisure" type="range" min="0" max="100" value="50" />
+            </div>
+
+            <div class="row-actions">
+              <button class="btn primary" id="bullseyeSaveBtn" type="button">Guardar</button>
+              <button class="btn danger" id="bullseyeResetBtn" type="button">Reiniciar</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div id="view-path" class="view">
+      <section class="card-panel">
+        <div class="panel-title">
+          <span>El Sendero de los Pasos Pequeños</span>
+        </div>
+        <p class="hint">Conecta tus valores con acciones concretas. Define la acción, anticipa barreras y declara tu
+          compromiso.</p>
+
+        <form id="actionForm" class="form-grid" autocomplete="off">
+          <div class="field-group">
+            <label for="actionValue">Valor priorizado (Top 10)</label>
+            <select id="actionValue"></select>
+            <p class="hint" id="valueHint">Selecciona un valor para anclar tu acción.</p>
+          </div>
+
+          <div class="field-group">
+            <label for="actionDesc">¿Qué acción específica tomarás?</label>
+            <textarea id="actionDesc" rows="3" placeholder="Ej: Llamar a mi hermana el martes por la tarde."></textarea>
+          </div>
+
+          <div class="form-row two">
+            <div class="field-group">
+              <label for="actionArea">Área de la diana</label>
+              <select id="actionArea">
+                <option value="work">Trabajo / Educación</option>
+                <option value="leisure">Tiempo libre</option>
+                <option value="rel">Relaciones</option>
+                <option value="growth">Salud</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="actionDate">Fecha y hora exactas</label>
+              <input id="actionDate" type="datetime-local" />
+            </div>
+          </div>
+
+          <div class="callout">
+            <strong>Parámetros SMART</strong>
+            <span class="callout-desc">Marca los criterios que cumple tu acción para asegurar que es efectiva.</span>
+            <div class="smart-grid">
+              <label class="smart-card">
+                <input type="checkbox" id="smartMeaningful" />
+                <span class="smart-label">M — Significativo</span>
+                <span class="smart-desc">Está alineada con mis valores</span>
+              </label>
+              <label class="smart-card">
+                <input type="checkbox" id="smartAdaptive" />
+                <span class="smart-label">A — Adaptativo</span>
+                <span class="smart-desc">Mejora mi calidad de vida</span>
+              </label>
+            </div>
+            <div class="section-divider"></div>
+            <div class="field-group">
+              <strong>R — Recursos disponibles</strong>
+              <span class="callout-desc" style="font-size:0.85rem;">¿Tienes lo necesario para realizarla?</span>
+              <div class="smart-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <label class="smart-card">
+                  <input type="checkbox" id="resTime" />
+                  <span class="smart-label">⏱️</span>
+                  <span class="smart-desc">Tiempo</span>
+                </label>
+                <label class="smart-card">
+                  <input type="checkbox" id="resMoney" />
+                  <span class="smart-label">💰</span>
+                  <span class="smart-desc">Dinero</span>
+                </label>
+                <label class="smart-card">
+                  <input type="checkbox" id="resSkills" />
+                  <span class="smart-label">🧠</span>
+                  <span class="smart-desc">Habilidad</span>
+                </label>
+              </div>
+            </div>
+            <p class="error-text" id="smartError" hidden></p>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <div class="field-group">
+            <label>Barreras internas (pensamientos, emociones o impulsos)</label>
+            <div class="form-row two">
+              <input id="internalBarrier" type="text" placeholder="Ej: autocrítica, ansiedad, pereza" />
+              <select id="mindfulnessSkill">
+                <option value="Defusión">Defusión (desengancharse)</option>
+                <option value="Expansión">Expansión (hacer espacio)</option>
+                <option value="Aceptación">Aceptación (permitir la experiencia)</option>
+                <option value="Contacto con valores">Contacto con valores</option>
+                <option value="Autocompasión">Autocompasión</option>
+              </select>
+            </div>
+            <div class="inline-actions">
+              <button class="btn primary" type="button" id="addInternalBarrier">Agregar barrera</button>
+              <span class="hint" id="mindfulnessHint">Sugeriremos una habilidad según la barrera.</span>
+            </div>
+            <ul class="list-clean" id="internalList"></ul>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <div class="field-group">
+            <label>Barreras externas y plan de contingencia</label>
+            <div class="form-row two">
+              <input id="externalBarrier" type="text" placeholder="Ej: falta de transporte, agenda apretada" />
+              <input id="externalPlan" type="text" placeholder="Plan: pedir ayuda, cambiar horario, etc." />
+            </div>
+            <div class="inline-actions">
+              <button class="btn primary" type="button" id="addExternalBarrier">Agregar barrera</button>
+            </div>
+            <ul class="list-clean" id="externalList"></ul>
+          </div>
+
+          <div class="inline-actions" style="justify-content:flex-end;">
+            <button class="btn primary" type="submit">Preparar compromiso</button>
+          </div>
+        </form>
+
+        <div class="section-divider"></div>
+
+        <div id="commitmentPanel" class="callout" hidden>
+          <div class="panel-title">
+            <span>Declarar compromiso</span>
+            <span class="status-pill" id="commitmentStatus">Pendiente</span>
+          </div>
+          <div id="commitmentSummary" class="hint"></div>
+          <div class="inline-actions">
+            <button class="btn primary" type="button" id="declareCommitment">Declaro mi compromiso</button>
+            <button class="btn" type="button" id="shareCommitment">Compartir</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-panel" style="margin-top:16px;">
+        <div class="panel-title">
+          <span>Acciones comprometidas</span>
+        </div>
+        <ul id="actionsList" class="list-clean"></ul>
+      </section>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p>Basado en textos de Russ Harris y Steven Hayes. No reemplaza el seguimiento terapéutico.</p>
+    <p>Desarrollado por César Celada.</p>
+  </footer>
+
+  <div id="introModal" class="carousel-modal">
+    <div class="carousel-wrap">
+      <div class="carousel-track" id="carouselTrack"></div>
+      <div class="carousel-dots" id="carouselDots"></div>
+      <button class="btn primary" id="closeIntroBtn" style="margin-top:20px; width:100%;">Comenzar</button>
     </div>
   </div>
-</main>
 
-<div id="toast" role="status" aria-live="polite"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="app.js"></script>
+  <script src="galaxy.js"></script>
+  <script src="app.js"></script>
 </body>
+
 </html>
