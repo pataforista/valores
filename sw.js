@@ -6,6 +6,8 @@ const ASSETS = [
   "./",
   "./index.html",
   "./app.js",
+  "./style.css",
+  "./galaxy.js",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
@@ -13,7 +15,7 @@ const ASSETS = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => {})
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => { })
   );
   self.skipWaiting();
 });
@@ -37,7 +39,7 @@ self.addEventListener("fetch", (event) => {
       return fetch(req)
         .then((res) => {
           const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => {});
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => { });
           return res;
         })
         .catch(() => cached);

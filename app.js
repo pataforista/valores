@@ -179,6 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
   wireTabs();
   wireTheme();
   wireResetAll();
+  wireExport(); // New export feature
   wireCustomAdd();
   wirePathModule();
   wireIntro();
@@ -303,6 +304,11 @@ function renderCards() {
 
     const cardWrap = document.createElement("div");
     cardWrap.className = "card-container";
+    // Tooltip
+    const tip = document.createElement("div");
+    tip.className = "card-tooltip";
+    tip.textContent = "Ver Carta"; // "Caption"
+    cardWrap.appendChild(tip);
 
     const flipBtn = document.createElement("button");
     flipBtn.type = "button";
@@ -1036,7 +1042,52 @@ function wireResetAll() {
     renderActionsList();
     renderCommitmentPanel();
 
+    renderActionsList();
+    renderCommitmentPanel();
+
     toast("Datos borrados");
+  });
+}
+
+function wireExport() {
+  const btn = document.getElementById("exportBtn");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    const d = new Date().toLocaleDateString();
+    let text = `--- Resumen de Valores (${d}) ---\n\n`;
+
+    // 1. Valores
+    if (activeValues.length > 0) {
+      text += "🌟 Mis Valores Top:\n";
+      activeValues.forEach((v, i) => {
+        text += `${i + 1}. ${v.name}\n`;
+      });
+    } else {
+      text += "🌟 Sin valores seleccionados aún.\n";
+    }
+
+    // 2. Bull's Eye
+    const bulls = getBullseye();
+    text += "\n🎯 Mi Diana (Satisfacción %):\n";
+    text += `- Trabajo/Educación: ${bulls.work}%\n`;
+    text += `- Relaciones: ${bulls.rel}%\n`;
+    text += `- Crecimiento: ${bulls.growth}%\n`;
+    text += `- Ocio: ${bulls.leisure}%\n`;
+
+    // 3. Compromisos
+    if (committedActions.length > 0) {
+      text += "\n🚀 Mis Compromisos:\n";
+      committedActions.forEach(a => {
+        text += `- [${a.done ? "X" : " "}] ${a.title} (Sendero: ${a.barriers.length} barreras)\n`;
+      });
+    }
+
+    navigator.clipboard.writeText(text).then(() => {
+      toast("📋 ¡Copiado al portapapeles!");
+    }).catch(() => {
+      toast("❌ Error al copiar");
+    });
   });
 }
 

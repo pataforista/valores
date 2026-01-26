@@ -1,37 +1,42 @@
 :root {
-  /* --- Moomin Light Theme --- */
-  --bg: #FDFBF7;
-  --card: #FFFEFB;
-  --text: #2F353B;
-  --muted: #6B7280;
+  /* --- Moomin Light Theme (High Contrast Adjustment) --- */
+  --bg: #F0F2F5;
+  /* Darker off-white to make white cards pop */
+  --card: #FFFFFF;
+  --text: #1F2937;
+  --muted: #4B5563;
 
-  --primary: #739BA3;
-  --primary-hover: #5E828A;
-  --ring: #94A3B8;
+  --primary: #5B8C96;
+  /* Slightly darker for legibility */
+  --primary-hover: #4A727C;
+  --ring: #CBD5E1;
   --danger: #E07A5F;
   --highlight: #F2CC8F;
 
-  --shadow: 0 4px 12px rgba(115, 155, 163, 0.08);
-  --shadow2: 0 8px 24px rgba(115, 155, 163, 0.12);
+  /* Stronger shadows for light mode */
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow2: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --radius: 20px;
   --font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 body.dark-theme {
   /* --- Comforting Dark Theme --- */
-  --bg: #2C333B;
-  --card: #37424D;
-  --text: #EAEAEA;
+  --bg: #1A202C;
+  /* Deeper dark */
+  --card: #2D3748;
+  --text: #F7FAFC;
   --muted: #A0AEC0;
 
   --primary: #81E6D9;
   --primary-hover: #5FD3C4;
-  --ring: #64748B;
+  --ring: #4A5568;
   --danger: #F28C8C;
   --highlight: #F6E05E;
 
-  --shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-  --shadow2: 0 12px 32px rgba(0, 0, 0, 0.30);
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  /* Deep shadows */
+  --shadow2: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
 /* --- Base & Reset --- */
@@ -849,15 +854,19 @@ select:focus {
     0 10px 20px -5px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
+  /* Border for separation, especially in light mode */
+  border: 1px solid rgba(0, 0, 0, 0.08);
+
   background: var(--card);
   background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
       rgba(255, 255, 255, 0.2),
       transparent 80%);
-  padding: 2px;
+  padding: 4px;
   /* Thicker border reveal */
   position: relative;
 
   /* 3D Transform */
+  transform-origin: center center;
   transform:
     rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale3d(var(--scale), var(--scale), 1);
 
@@ -867,8 +876,44 @@ select:focus {
 
 .card-container:hover {
   box-shadow:
-    0 25px 50px -12px rgba(115, 155, 163, 0.3);
+    0 25px 50px -12px rgba(0, 0, 0, 0.2);
+  /* Stronger hover shadow */
   z-index: 20;
+  border-color: rgba(0, 0, 0, 0.0);
+  /* Let spotlight take over */
+}
+
+body.dark-theme .card-container {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Tooltip (Caption) */
+.card-tooltip {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+.card-container:hover .card-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.dark-theme .card-tooltip {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
 }
 
 .card-container::before {
@@ -886,6 +931,8 @@ select:focus {
   position: relative;
   z-index: 1;
   transform-style: preserve-3d;
+  transform-origin: center center;
+  /* Explicit center */
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 20px;
 }
@@ -916,6 +963,9 @@ select:focus {
 /* --- Card Global Layout --- */
 .card-face {
   position: absolute;
+  top: 0;
+  left: 0;
+  /* Critical Fix */
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
@@ -928,6 +978,8 @@ select:focus {
   text-align: center;
   border: 1px solid transparent;
   overflow: hidden;
+  /* Ensure clipping */
+  transform-origin: center center;
 }
 
 /* --- Front Face (Centered) --- */

@@ -21,9 +21,9 @@
       <small>ACT · Valores + Diana</small>
     </div>
     <div class="top-actions">
+      <button class="icon-btn" id="exportBtn" title="Copiar Resumen para Terapeuta">📋</button>
       <button class="icon-btn" id="helpBtn" title="Ayuda / Intro">❓</button>
       <button class="icon-btn" id="themeBtn" title="Tema">🌙</button>
-      <button class="icon-btn" id="resetBtn" title="Borrar datos">🧹</button>
     </div>
   </header>
 
@@ -247,8 +247,26 @@
   </main>
 
   <footer class="app-footer">
-    <p>Basado en textos de Russ Harris y Steven Hayes. No reemplaza el seguimiento terapéutico.</p>
-    <p>Desarrollado por César Celada.</p>
+    <div class="data-actions"
+      style="margin-bottom: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px;">
+      <div
+        style="background: var(--card); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--ring); max-width: 450px;">
+        <p style="font-size: 0.85rem; margin: 0; line-height: 1.4; color: var(--muted);">
+          🔒 <strong>Privacidad:</strong> Tus datos se guardan automáticamente en este dispositivo.
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+        <!-- Export moved to header -->
+        <button id="resetBtn" class="btn danger">
+          🗑️ Borrar Todo
+        </button>
+      </div>
+    </div>
+
+    <p style="font-size:0.8rem; margin:4px 0;">Basado en textos de Russ Harris y Steven Hayes.</p>
+    <p style="font-size:0.8rem; margin:4px 0;">⚠️ No reemplaza el seguimiento terapéutico.</p>
+    <p style="font-size:0.8rem; margin:4px 0;"><small>Desarrollado por César Celada</small></p>
   </footer>
 
   <div id="introModal" class="carousel-modal">
