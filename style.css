@@ -197,6 +197,11 @@ main {
   justify-content: center;
 }
 
+.btn:active,
+button:not(.tab-btn):not(.icon-btn):active {
+  transform: scale(0.95);
+}
+
 .btn.primary {
   background: var(--primary);
   color: #fff;
@@ -313,23 +318,25 @@ main {
 }
 
 /* --- Cards Grid (Spotlight) --- */
+/* --- Cards Grid (Spotlight) --- */
 .values-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 16px;
-  /* slightly more gap */
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  /* Slightly wider */
+  gap: 20px;
 }
 
 .card-container {
-  perspective: 1000px;
-  height: 220px;
+  perspective: 1200px;
+  /* Better perspective */
+  height: 280px;
+  /* Taller to prevent overflow */
 
-  /* Spotlight vars */
+  /* Spotlight & Tilt vars */
   --mouse-x: center;
   --mouse-y: center;
-  --spotlight-color: rgba(115, 155, 163, 0.25);
-
-  /* Tilt vars */
+  --spotlight-color: rgba(115, 155, 163, 0.4);
+  /* Stronger glow */
   --rotate-x: 0deg;
   --rotate-y: 0deg;
   --scale: 1;
@@ -338,41 +345,40 @@ main {
   /* Deep shadow */
   box-shadow:
     0 10px 20px -5px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    0 4px 10px -2px rgba(0, 0, 0, 0.08);
 
   background: var(--card);
   background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-      rgba(255, 255, 255, 0.15),
+      rgba(255, 255, 255, 0.2),
       transparent 80%);
-  padding: 1px;
+  padding: 2px;
+  /* Thicker border reveal */
   position: relative;
+  overflow: hidden;
+  transform-origin: center;
+  border: 1px solid rgba(115, 155, 163, 0.18);
 
-  /* 3D Transform Application */
+  /* 3D Transform */
   transform:
     rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale3d(var(--scale), var(--scale), 1);
 
-  /* Smooth return (0.1s out), smooth box-shadow */
-  transition: transform 0.1s ease-out, box-shadow 0.3s;
+  transition: transform 0.12s ease-out, box-shadow 0.35s, border-color 0.35s;
   will-change: transform;
-  transform-style: preserve-3d;
 }
 
 .card-container:hover {
-  /* Remove translateY since JS handles transform */
   box-shadow:
-    0 25px 50px -12px rgba(115, 155, 163, 0.25);
+    0 25px 50px -12px rgba(115, 155, 163, 0.3);
   z-index: 20;
+  border-color: rgba(115, 155, 163, 0.35);
 }
-
-
 
 .card-container::before {
   content: "";
   position: absolute;
   inset: 0;
   background: var(--card);
-  /* The inner card color */
-  border-radius: 19px;
+  border-radius: 18px;
   z-index: 0;
 }
 
@@ -381,10 +387,9 @@ main {
   height: 100%;
   position: relative;
   z-index: 1;
-  /* Above the background */
   transform-style: preserve-3d;
-  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-  /* Snappy with slight bounce */
+  -webkit-transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 20px;
 }
 
@@ -392,12 +397,30 @@ main {
   transform: rotateY(180deg);
 }
 
-/* Front styling */
-/* Front styling */
+/* Glare Effect Overlay */
+.card-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 19px;
+  background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y),
+      rgba(255, 255, 255, 0.3),
+      transparent 80%);
+  opacity: 0;
+  transition: opacity 0.35s;
+  pointer-events: none;
+  z-index: 2;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.card-container:hover .card-face::after {
+  opacity: 1;
+}
+
+/* --- Card Global Layout --- */
 .card-face {
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
@@ -405,98 +428,113 @@ main {
   border-radius: 19px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px 16px;
+  padding: 24px 20px;
+  /* Generous padding */
   background: var(--card);
   text-align: center;
-  border: 1px solid transparent;
-  /* Fix: remove overflow hidden to prevent clipping glitches during tilt, 
-     unless border-radius requires it. Usually better to clip on parent if needed. */
+  border: 1px solid rgba(115, 155, 163, 0.18);
   overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02);
-  /* subtle border fix */
 }
 
+/* --- Front Face (Centered) --- */
 .card-front {
   font-weight: 800;
   color: var(--text);
-  z-index: 2;
-  transform: rotateY(0deg);
-  /* Explicit zero */
-  background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), transparent);
+  z-index: 1;
+  background: linear-gradient(150deg, rgba(115, 155, 163, 0.08), var(--card) 55%);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  justify-content: center;
+  /* True center for title */
+  align-items: center;
+  gap: 12px;
 }
 
-.card.flipped .card-front {
-  pointer-events: none;
+/* Enhanced Selection State */
+.card.selected .card-front {
+  border: 2px solid var(--primary);
+  background: linear-gradient(135deg, var(--card) 0%, rgba(115, 155, 163, 0.15) 100%);
 }
 
-/* Back styling */
+/* Dark Mode Contrast Fix */
+body.dark-theme .card-front {
+  color: #FFFFFF;
+  /* Pure white for max contrast */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  /* Lift off dark card */
+}
+
+.card-front .card-title {
+  font-size: 1.4rem;
+  margin: 0;
+  letter-spacing: 0.2px;
+  /* Reset margins */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --- Back Face (Structured) --- */
 .card-back {
   transform: rotateY(180deg);
-  z-index: 1;
-  /* Default lower than front */
-  font-size: 0.9rem;
-  justify-content: space-between;
+  font-size: 0.95rem;
   color: var(--text);
-  padding: 20px 16px 16px 16px;
-  background: var(--card);
-  /* Ensure solid background */
-}
-
-.card.flipped .card-back {
-  z-index: 3;
-  /* On top when flipped */
+  background: linear-gradient(180deg, rgba(115, 155, 163, 0.08), transparent 70%);
+  align-items: center;
+  justify-content: flex-start;
+  /* Stack from top */
 }
 
 body.dark-theme .card-back {
   color: #E0E0E0;
 }
 
+.card-back .card-title {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  margin-top: 0;
+  letter-spacing: 0.2px;
+}
+
 .card-back .def {
-  flex: 1;
-  /* Take available space */
+  flex-grow: 1;
+  /* Occupy middle space */
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 8px 0;
-  /* Clamp definition if too long */
-  display: -webkit-box;
-  -webkit-line-clamp: 5;
-  line-clamp: 5;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   font-style: italic;
-  opacity: 0.9;
-  line-height: 1.4;
+  opacity: 0.95;
+  line-height: 1.5;
+  margin-bottom: 8px;
+  padding: 0 4px;
+  overflow-y: auto;
+  /* Allow scroll if needed */
+  scrollbar-width: none;
+  /* Hide scrollbar for aesthetics */
+  width: 100%;
 }
 
-.card-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 0;
-  color: var(--primary);
-  line-height: 1.2;
-}
-
-.star {
-  font-size: 1.5rem;
-  margin: 4px 0;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+.card-back .def::-webkit-scrollbar {
+  display: none;
 }
 
 .card-actions {
   width: 100%;
+  flex-shrink: 0;
   margin-top: auto;
+  /* Push to bottom */
   z-index: 10;
 }
 
 .card-actions .btn {
   width: 100%;
-  font-size: 0.85rem;
-  padding: 8px 12px;
+  font-size: 0.9rem;
+  padding: 10px 0;
   font-weight: 700;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+  letter-spacing: 0.5px;
 }
 
 /* --- Forms (Sendero & Inputs) --- */

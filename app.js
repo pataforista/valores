@@ -184,6 +184,18 @@ document.addEventListener("DOMContentLoaded", () => {
   wirePathModule();
   wireIntro();
 
+  // Manual Save (User Request)
+  const manualSaveBtn = document.getElementById("manualSaveBtn");
+  if (manualSaveBtn) {
+    manualSaveBtn.addEventListener("click", () => {
+      saveData();
+      CompassAvatar.speak("¡Todo guardado en mi bitácora!", "happy");
+      // Visual feedback
+      manualSaveBtn.textContent = "✅";
+      setTimeout(() => manualSaveBtn.textContent = "💾", 1500);
+    });
+  }
+
   renderCards();
   renderActiveList();
   renderActionValueOptions();
@@ -1429,4 +1441,12 @@ const CompassAvatar = (function () {
 
 function initAvatar() {
   CompassAvatar.init();
+
+  // Global button click sound
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("button, .btn, .card-container, a");
+    if (t) {
+      CompassAvatar.playClick();
+    }
+  });
 }
