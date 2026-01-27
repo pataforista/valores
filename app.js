@@ -466,6 +466,13 @@ function saveValues() {
   localStorage.setItem(LS.values, JSON.stringify(activeValues));
 }
 
+function saveData() {
+  saveValues();
+  saveActions();
+  saveBullseye();
+  console.log("Manual save triggered.");
+}
+
 // =====================
 // Sendero de los Pasos Pequeños
 // =====================
@@ -736,17 +743,32 @@ function renderActionsList() {
         Fecha: ${formatDateTime(action.fechaCompromiso)}
       </div>
       <div class="inline-actions">
-        ${action.status === "Pendiente" ? `<button class="btn primary" type="button" data-id="${action.id}">Marcar realizada</button>` : ""}
+        ${action.status === "Pendiente" ? `<button class="btn primary" type="button" data-action="complete" data-id="${action.id}">Marcar realizada</button>` : ""}
+        <button class="btn danger" type="button" data-action="delete" data-id="${action.id}">Borrar</button>
       </div>
     `;
 
-    const btn = li.querySelector("button[data-id]");
-    if (btn) {
-      btn.addEventListener("click", () => markActionDone(action.id));
-    }
+    const completeBtn = li.querySelector("button[data-action='complete']");
+    if (completeBtn) completeBtn.addEventListener("click", () => markActionDone(action.id));
+
+    const deleteBtn = li.querySelector("button[data-action='delete']");
+    if (deleteBtn) deleteBtn.addEventListener("click", () => deleteAction(action.id));
 
     el.actionsList.appendChild(li);
   });
+}
+
+function deleteAction(actionId) {
+  if (confirm("¿Estás seguro de que quieres borrar este compromiso?")) {
+    const idx = committedActions.findIndex(a => a.id === actionId);
+    if (idx >= 0) {
+      committedActions.splice(idx, 1);
+      saveActions();
+      renderActionsList();
+      toast("Compromiso eliminado");
+      CompassAvatar.speak("Entendido, compromiso eliminado.", "neutral");
+    }
+  }
 }
 
 function markActionDone(actionId) {
@@ -1435,7 +1457,8 @@ const CompassAvatar = (function () {
   return {
     init,
     speak,
-    setState
+    setState,
+    playClick: playSound
   };
 })();
 
