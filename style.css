@@ -631,23 +631,41 @@ select:focus {
   height: 100%;
 }
 
-/* Dynamic Shape Markers */
+/* Dynamic Shape Markers (Kawaii Redesign) */
 .marker {
   position: absolute;
-  width: 18px;
-  height: 18px;
+  width: 34px;
+  height: 34px;
   transform: translate(-50%, -50%);
-  z-index: 2;
-  border: 2px solid #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  /* Hover scale */
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: grab;
 }
 
 .marker:hover {
-  transform: translate(-50%, -50%) scale(1.3);
-  z-index: 10;
-  cursor: pointer;
+  transform: translate(-50%, -50%) scale(1.4) rotate(8deg);
+  z-index: 20;
+}
+
+.marker:active {
+  cursor: grabbing;
+}
+
+.marker::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: inherit;
+  opacity: 0.3;
+  z-index: -1;
+  filter: blur(4px);
 }
 
 .marker-circle {
@@ -655,31 +673,36 @@ select:focus {
   background: var(--primary);
 }
 
+.marker-circle::before {
+  content: "🧸";
+}
+
 .marker-square {
-  border-radius: 4px;
+  border-radius: 12px;
   background: var(--danger);
 }
 
+.marker-square::before {
+  content: "👫";
+}
+
 .marker-triangle {
-  width: 0;
-  height: 0;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 18px solid var(--highlight);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  border-radius: 12px;
+  background: var(--highlight);
+  color: #444;
+}
+
+.marker-triangle::before {
+  content: "🧘";
 }
 
 .marker-diamond {
-  background: #9F7AEA;
-  transform: translate(-50%, -50%) rotate(45deg);
-  border-radius: 2px;
+  border-radius: 12px;
+  background: #A78BFA;
 }
 
-.marker-diamond:hover {
-  transform: translate(-50%, -50%) rotate(45deg) scale(1.3);
+.marker-diamond::before {
+  content: "🎨";
 }
 
 .slider-row {
@@ -1399,4 +1422,174 @@ select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* --- Firefox Fixes & Card Styling --- */
+.card-container {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.card-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* Fluid font for small screens */
+  font-size: clamp(0.85rem, 2vw, 1.1rem);
+}
+
+.card-title {
+  /* Fluid typography to prevent clipping */
+  font-size: clamp(1.1rem, 3vw, 1.4rem) !important;
+  line-height: 1.2;
+}
+
+/* --- SOS Module Styles (Steam Out) --- */
+.hero-sos {
+  border: 2px solid var(--danger);
+  background: linear-gradient(135deg, var(--card) 0%, rgba(224, 122, 95, 0.05) 100%);
+}
+
+.badge-danger {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sos-action-btn {
+  text-align: left;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.breath-container {
+  margin: 20px auto;
+  width: 160px;
+  height: 160px;
+  border: 1px solid var(--ring);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.breath-circle {
+  width: 60px;
+  height: 60px;
+  background: var(--primary);
+  opacity: 0.15;
+  border-radius: 50%;
+  transition: transform 3.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.breath-circle-inner {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  transition: transform 3.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.timer {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Overlay / Modal */
+.sos-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  z-index: 5000;
+  display: none;
+  /* Default hidden */
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.sos-overlay-backdrop:not([hidden]) {
+  display: flex;
+}
+
+.sos-modal {
+  width: 100%;
+  max-width: 440px;
+  background: var(--card);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: var(--shadow2);
+  border: 1px solid var(--ring);
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.sos-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sos-modal-header h3 {
+  margin: 0;
+  color: var(--primary);
+}
+
+.sos-step-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.sos-placeholder-icon {
+  font-size: 4rem;
+  margin: 20px 0;
+}
+
+.sos-tap-area {
+  height: 180px;
+  background: var(--bg);
+  border-radius: 20px;
+  border: 2px dashed var(--ring);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s;
+}
+
+.sos-tap-area:active {
+  background: var(--ring);
+}
+
+.sos-tap-count {
+  font-size: 4rem;
+  font-weight: 900;
+  color: var(--primary);
 }

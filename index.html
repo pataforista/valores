@@ -25,6 +25,7 @@
       <button class="icon-btn" id="manualSaveBtn" title="Guardar todo ahora">💾</button>
       <button class="icon-btn" id="exportBtn" title="Copiar Resumen para Terapeuta">📋</button>
       <button class="icon-btn" id="helpBtn" title="Ayuda / Intro">❓</button>
+      <button class="icon-btn" id="soundBtn" title="Activar/Desactivar Sonido">🔊</button>
       <button class="icon-btn" id="themeBtn" title="Tema">🌙</button>
     </div>
   </header>
@@ -33,6 +34,7 @@
     <button class="tab-btn active" id="tab-values" aria-selected="true">Valores</button>
     <button class="tab-btn" id="tab-bullseye" aria-selected="false">Diana</button>
     <button class="tab-btn" id="tab-path" aria-selected="false">Sendero</button>
+    <button class="tab-btn" id="tab-sos" aria-selected="false">SOS</button>
   </div>
 
   <main>
@@ -150,18 +152,18 @@
             <div class="smart-grid">
               <label class="smart-card">
                 <input type="checkbox" id="smartMeaningful" />
-                <span class="smart-label">M — Significativo</span>
+                <span class="smart-label">M — Significativo (Meaningful)</span>
                 <span class="smart-desc">Está alineada con mis valores</span>
               </label>
               <label class="smart-card">
                 <input type="checkbox" id="smartAdaptive" />
-                <span class="smart-label">A — Adaptativo</span>
+                <span class="smart-label">A — Adaptativo (Adaptive)</span>
                 <span class="smart-desc">Mejora mi calidad de vida</span>
               </label>
             </div>
             <div class="section-divider"></div>
             <div class="field-group">
-              <strong>R — Recursos disponibles</strong>
+              <strong>R — Recursos disponibles (Realistic)</strong>
               <span class="callout-desc" style="font-size:0.85rem;">¿Tienes lo necesario para realizarla?</span>
               <div class="smart-grid" style="grid-template-columns: repeat(3, 1fr);">
                 <label class="smart-card">
@@ -247,6 +249,63 @@
         <ul id="actionsList" class="list-clean"></ul>
       </section>
     </div>
+
+    <!-- SOS View (Steam Out) -->
+    <div id="view-sos" class="view">
+      <section class="card-panel hero-sos">
+        <div class="panel-title">
+          <span>SOS · Grounding</span>
+          <span class="badge-danger">Urgente</span>
+        </div>
+        <p class="hint">Para cuando el pensamiento o la emoción te abruma. Técnica 5-4-3-2-1.</p>
+        <button class="btn danger large" id="sosBtn" style="width:100%; padding:20px; font-size:1.1rem;">Necesito
+          calmarme ahora</button>
+      </section>
+
+      <div class="sos-grid" style="display:grid; gap:16px; margin-top:16px;">
+        <section class="card-panel">
+          <div class="panel-title"><span>Respiración Rítmica</span></div>
+          <p class="hint">Reduce la activación fisiológica (Cuadrada 4-4-4-4)</p>
+          <div class="sos-row" style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <button class="btn primary" id="breathToggle">Iniciar</button>
+            <div class="pill" id="breathPhase">Listo</div>
+            <div class="timer" id="breathTimer" style="font-family:monospace; font-weight:700; color:var(--primary)">0s
+            </div>
+          </div>
+          <div class="breath-container">
+            <div class="breath-circle" id="breathCircle"></div>
+            <div class="breath-circle-inner" id="breathCircleInner"></div>
+          </div>
+        </section>
+
+        <section class="card-panel">
+          <div class="panel-title"><span>Ruido Marrón</span></div>
+          <p class="hint">Procedural · No loop (calma mental)</p>
+          <div class="sos-row" style="display:flex; align-items:center; gap:12px;">
+            <button class="btn" id="noiseToggle">Encender</button>
+            <label style="flex:1; display:flex; align-items:center; gap:8px;">
+              <span class="hint" style="margin:0;">Vol</span>
+              <input id="noiseVol" type="range" min="0" max="100" value="25" style="margin:0;" />
+            </label>
+          </div>
+        </section>
+
+        <section class="card-panel">
+          <div class="panel-title"><span>Cierre Cognitivo</span></div>
+          <p class="hint">Intervenciones breves para salir del bucle mental</p>
+          <div style="display:grid; gap:10px;">
+            <button class="btn sos-action-btn" id="actSosBtn">
+              <span style="display:block; font-weight:700;">Tomar Distancia (ACT)</span>
+              <span style="display:block; font-size:0.8rem; opacity:0.8;">Observar el pensamiento · 60s</span>
+            </button>
+            <button class="btn sos-action-btn" id="dbtSosBtn">
+              <span style="display:block; font-weight:700;">Cambio de Estado (DBT)</span>
+              <span style="display:block; font-size:0.8rem; opacity:0.8;">Fisiología y enfoque · 90s</span>
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
   </main>
 
   <footer class="app-footer">
@@ -282,8 +341,6 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
 
-  <script src="galaxy.js"></script>
-  <script src="app.js"></script>
   <div id="deleteModal" class="carousel-modal">
     <div class="carousel-wrap delete-modal-content">
       <div style="font-size:3rem;">🗑️</div>
@@ -391,6 +448,35 @@
       </svg>
     </div>
   </div>
+  <div id="sosOverlay" class="sos-overlay-backdrop" hidden>
+    <div class="sos-modal">
+      <div class="sos-modal-header">
+        <h3 id="sosModalTitle">SOS</h3>
+        <button class="mini-btn" id="closeSosOverlay">✕</button>
+      </div>
+      <div class="sos-modal-content">
+        <div id="sosIllustration" style="display:none; text-align:center; margin-bottom:12px;">
+          <div class="sos-placeholder-icon" id="sosIcon">🧘</div>
+        </div>
+        <div class="sos-step">
+          <div class="sos-step-title" id="sosStepTitle">Paso 1</div>
+          <p class="hint" id="sosStepHint"></p>
+        </div>
+        <div class="sos-tap-area" id="sosTapArea" style="display:none;">
+          <div class="sos-tap-count" id="sosTapCount">0</div>
+          <div class="hint">Toques</div>
+        </div>
+        <div class="progress-bar-wrap" style="margin:20px 0;">
+          <div class="progress-bar" id="sosProgressBar" style="width:0%;"></div>
+        </div>
+        <div style="display:flex; justify-content:flex-end;">
+          <button class="btn primary" id="sosNextBtn" disabled>Siguiente</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="galaxy.js"></script>
+  <script src="app.js"></script>
 </body>
 
 </html>

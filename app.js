@@ -93,6 +93,7 @@ let committedActions = safeJSONParse(localStorage.getItem(LS.actions), []);
 let pendingAction = null;
 let internalBarriers = [];
 let externalBarriers = [];
+let soundEnabled = localStorage.getItem("vv_sound_enabled") !== "false";
 
 // ---- DOM ----
 const el = {
@@ -171,7 +172,35 @@ const el = {
   introModal: document.getElementById("introModal"),
   carouselTrack: document.getElementById("carouselTrack"),
   carouselDots: document.getElementById("carouselDots"),
-  closeIntroBtn: document.getElementById("closeIntroBtn")
+  closeIntroBtn: document.getElementById("closeIntroBtn"),
+
+  // SOS Elements
+  tabSos: document.getElementById("tab-sos"),
+  viewSos: document.getElementById("view-sos"),
+  sosBtn: document.getElementById("sosBtn"),
+  sosOverlay: document.getElementById("sosOverlay"),
+  closeSosOverlay: document.getElementById("closeSosOverlay"),
+  sosModalTitle: document.getElementById("sosModalTitle"),
+  sosStepTitle: document.getElementById("sosStepTitle"),
+  sosStepHint: document.getElementById("sosStepHint"),
+  sosTapArea: document.getElementById("sosTapArea"),
+  sosTapCount: document.getElementById("sosTapCount"),
+  sosProgressBar: document.getElementById("sosProgressBar"),
+  sosNextBtn: document.getElementById("sosNextBtn"),
+  sosIcon: document.getElementById("sosIcon"),
+  sosIllustration: document.getElementById("sosIllustration"),
+
+  breathToggle: document.getElementById("breathToggle"),
+  breathPhase: document.getElementById("breathPhase"),
+  breathTimer: document.getElementById("breathTimer"),
+  breathCircle: document.getElementById("breathCircle"),
+  breathCircleInner: document.getElementById("breathCircleInner"),
+
+  noiseToggle: document.getElementById("noiseToggle"),
+  noiseVol: document.getElementById("noiseVol"),
+  actSosBtn: document.getElementById("actSosBtn"),
+  dbtSosBtn: document.getElementById("dbtSosBtn"),
+  soundBtn: document.getElementById("soundBtn")
 };
 
 // ---- Init ----
@@ -209,6 +238,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   checkIntro();
   initAvatar(); // Start the Compass
+  wireSoundToggle();
+  wireSosModule();
 
   // Global focus reactions
   const inputs = document.querySelectorAll("input[type='text'], textarea");
@@ -1061,36 +1092,36 @@ function movePolar(markerEl, cx, cy, maxR, value0to100, angleRad) {
 
 function wireTabs() {
   const activate = (which) => {
-    const isValues = which === "values";
-    const isBull = which === "bullseye";
+    const views = [el.viewValues, el.viewBull, el.viewPath, el.viewSos];
+    const tabs = [el.tabValues, el.tabBull, el.tabPath, el.tabSos];
+    const keys = ["values", "bullseye", "path", "sos"];
 
-    el.viewValues.classList.toggle("active", isValues);
-    el.viewBull.classList.toggle("active", isBull);
-    el.viewPath.classList.toggle("active", which === "path");
-
-    el.tabValues.classList.toggle("active", isValues);
-    el.tabBull.classList.toggle("active", isBull);
-    el.tabPath.classList.toggle("active", which === "path");
-
-    el.tabValues.setAttribute("aria-selected", isValues ? "true" : "false");
-    el.tabBull.setAttribute("aria-selected", isBull ? "true" : "false");
-    el.tabPath.setAttribute("aria-selected", which === "path" ? "true" : "false");
+    keys.forEach((key, i) => {
+      const active = key === which;
+      if (views[i]) views[i].classList.toggle("active", active);
+      if (tabs[i]) tabs[i].classList.toggle("active", active);
+      if (tabs[i]) tabs[i].setAttribute("aria-selected", active ? "true" : "false");
+    });
 
     // Avatar Guidance
-    if (isValues) {
-      CompassAvatar.speak("Los valores son direcciones de vida, no destinos. ¿Qué es importante para tu corazón?", "neutral");
-    }
-    if (isBull) {
-      CompassAvatar.speak("La Diana te ayuda a ver si estás dando en el blanco en Trabajo, Amor, Juego y Salud.", "neutral");
-    }
-    if (which === "path") {
-      CompassAvatar.speak("Aquí definimos metas SMART: Específicas, Importantes y que puedas cumplir hoy.", "happy");
+    if (which === "values") {
+      CompassAvatar.speak("Los valores son direcciones de vida, no destinos.", "neutral");
+    } else if (which === "bullseye") {
+      CompassAvatar.speak("La Diana te ayuda a ver si estás dando en el blanco.", "neutral");
+    } else if (which === "path") {
+      CompassAvatar.speak("Definamos metas SMART. ¿Sabes qué significa?", "happy");
+      setTimeout(() => {
+        CompassAvatar.speak("S: Specific, M: Meaningful, A: Adaptive, R: Realistic, T: Time-bound.", "neutral");
+      }, 4000);
+    } else if (which === "sos") {
+      CompassAvatar.speak("Herramientas de calma inmediata. Aquí estoy contigo.", "neutral");
     }
   };
 
   el.tabValues.addEventListener("click", () => activate("values"));
   el.tabBull.addEventListener("click", () => activate("bullseye"));
   el.tabPath.addEventListener("click", () => activate("path"));
+  el.tabSos.addEventListener("click", () => activate("sos"));
 }
 
 function wireTheme() {
@@ -1207,10 +1238,13 @@ function wireExport() {
       });
     }
 
-    navigator.clipboard.writeText(text).then(() => {
-      toast("📋 ¡Copiado al portapapeles!");
-    }).catch(() => {
-      toast("❌ Error al copiar");
+    copyToClipboard(text).then(ok => {
+      if (ok) {
+        toast("📋 ¡Copiado al portapapeles!");
+        CompassAvatar.playSuccess();
+      } else {
+        toast("❌ Error al copiar");
+      }
     });
   });
 }
@@ -1458,17 +1492,295 @@ const CompassAvatar = (function () {
     init,
     speak,
     setState,
-    playClick: playSound
+    playClick: () => { if (soundEnabled) playSound(); },
+    playSuccess: () => { if (soundEnabled) SoundFX.success(); },
+    playApproval: () => { if (soundEnabled) SoundFX.approval(); }
   };
 })();
+
+// =====================
+// SoundFX Engine (Procedural)
+// =====================
+const SoundFX = (function () {
+  function getCtx() {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    return Ctx ? new Ctx() : null;
+  }
+
+  function play(freqs, type = "sine", duration = 0.1) {
+    const ctx = getCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+
+    osc.frequency.setValueAtTime(freqs[0], now);
+    if (freqs.length > 1) {
+      osc.frequency.exponentialRampToValueAtTime(freqs[1], now + duration);
+    }
+
+    gain.gain.setValueAtTime(0.1, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(now + duration + 0.05);
+  }
+
+  return {
+    approval: () => {
+      // Rising arpeggio
+      play([440, 880], "triangle", 0.2);
+      setTimeout(() => play([660, 1320], "triangle", 0.2), 100);
+    },
+    success: () => {
+      // High chime
+      play([1000, 1500], "sine", 0.3);
+    },
+    click: () => play([800, 1200], "sine", 0.1)
+  };
+})();
+
+function wireSoundToggle() {
+  const updateIcon = () => el.soundBtn.textContent = soundEnabled ? "🔊" : "🔈";
+  updateIcon();
+  el.soundBtn.addEventListener("click", () => {
+    soundEnabled = !soundEnabled;
+    localStorage.setItem("vv_sound_enabled", soundEnabled);
+    updateIcon();
+    if (soundEnabled) SoundFX.approval();
+  });
+}
+
+// =====================
+// SOS Module (Steam Out)
+// =====================
+function wireSosModule() {
+  if (!el.tabSos) return;
+
+  const SOS_STEPS = [
+    { title: "Mira 5 cosas", count: 5, hint: "Observa tu entorno y busca 5 objetos distintos." },
+    { title: "Siente 4 cosas", count: 4, hint: "Toca texturas o nota el contacto de tu cuerpo." },
+    { title: "Escucha 3 sonidos", count: 3, hint: "Presta atención a ruidos lejanos o cercanos." },
+    { title: "Huele 2 aromas", count: 2, hint: "Busca olores en el ambiente o en tu ropa." },
+    { title: "Saborea 1 cosa", count: 1, hint: "Nota el sabor en tu boca o imagina uno placentero." }
+  ];
+
+  let currentSosIdx = 0;
+  let currentSosCount = 0;
+
+  const openSos = () => {
+    el.sosOverlay.hidden = false;
+    currentSosIdx = 0;
+    loadSosStep();
+    CompassAvatar.speak("Estoy contigo. Vamos a anclarnos al presente.", "neutral");
+  };
+
+  const loadSosStep = () => {
+    const step = SOS_STEPS[currentSosIdx];
+    el.sosStepTitle.textContent = step.title;
+    el.sosStepHint.textContent = step.hint;
+    el.sosTapCount.textContent = "0";
+    currentSosCount = 0;
+    el.sosTapArea.style.display = "flex";
+    el.sosNextBtn.disabled = true;
+    el.sosProgressBar.style.width = `${(currentSosIdx / SOS_STEPS.length) * 100}%`;
+  };
+
+  el.sosBtn.addEventListener("click", openSos);
+  el.closeSosOverlay.addEventListener("click", () => el.sosOverlay.hidden = true);
+
+  el.sosTapArea.addEventListener("click", () => {
+    currentSosCount++;
+    el.sosTapCount.textContent = currentSosCount;
+    if (soundEnabled) SoundFX.click();
+    if (currentSosCount >= SOS_STEPS[currentSosIdx].count) {
+      el.sosNextBtn.disabled = false;
+      if (soundEnabled) SoundFX.approval();
+    }
+  });
+
+  el.sosNextBtn.addEventListener("click", () => {
+    currentSosIdx++;
+    if (currentSosIdx < SOS_STEPS.length) {
+      loadSosStep();
+    } else {
+      el.sosStepTitle.textContent = "Completado";
+      el.sosStepHint.textContent = "Has vuelto al presente. Respira hondo.";
+      el.sosTapArea.style.display = "none";
+      el.sosProgressBar.style.width = "100%";
+      el.sosNextBtn.style.display = "none";
+      if (soundEnabled) SoundFX.success();
+      CompassAvatar.speak("Lo has hecho muy bien. Te noto más en calma.", "happy");
+    }
+  });
+
+  // Breathing
+  let breathing = false;
+  let breathTimer;
+  let breathPhaseIdx = 0;
+  const phases = ["Inhala", "Sostén", "Exhala", "Sostén"];
+
+  el.breathToggle.addEventListener("click", () => {
+    breathing = !breathing;
+    el.breathToggle.textContent = breathing ? "Detener" : "Iniciar";
+    if (breathing) {
+      startBreathing();
+    } else {
+      clearInterval(breathTimer);
+      el.breathPhase.textContent = "Listo";
+      el.breathCircle.style.transform = "scale(1)";
+      el.breathCircleInner.style.transform = "scale(1)";
+    }
+  });
+
+  function startBreathing() {
+    breathPhaseIdx = 0;
+    const run = () => {
+      const phase = phases[breathPhaseIdx % 4];
+      el.breathPhase.textContent = phase;
+      const scale = (breathPhaseIdx % 4 === 0 || breathPhaseIdx % 4 === 1) ? "2.2" : "1";
+      el.breathCircle.style.transform = `scale(${scale})`;
+      el.breathCircleInner.style.transform = `scale(${scale})`;
+
+      let timeLeft = 4;
+      el.breathTimer.textContent = `${timeLeft}s`;
+      const t = setInterval(() => {
+        timeLeft--;
+        if (timeLeft < 0 || !breathing) clearInterval(t);
+        else el.breathTimer.textContent = `${timeLeft}s`;
+      }, 1000);
+
+      breathPhaseIdx++;
+    };
+    run();
+    breathTimer = setInterval(run, 4000);
+  }
+
+  // Noise
+  let noiseCtx, noiseNode, noiseGain, noiseOn = false;
+  el.noiseToggle.addEventListener("click", async () => {
+    if (!noiseOn) {
+      if (!noiseCtx) {
+        noiseCtx = new (window.AudioContext || window.webkitAudioContext)();
+        noiseGain = noiseCtx.createGain();
+        noiseNode = createBrownNoise(noiseCtx);
+        noiseNode.connect(noiseGain);
+        noiseGain.connect(noiseCtx.destination);
+      }
+      noiseGain.gain.setValueAtTime(0, noiseCtx.currentTime);
+      noiseGain.gain.linearRampToValueAtTime((el.noiseVol.value / 100) * 0.1, noiseCtx.currentTime + 1);
+      await noiseCtx.resume();
+      noiseOn = true;
+      el.noiseToggle.textContent = "Apagar";
+    } else {
+      noiseGain.gain.linearRampToValueAtTime(0, noiseCtx.currentTime + 0.5);
+      setTimeout(() => { if (!noiseOn) noiseCtx.suspend(); }, 500);
+      noiseOn = false;
+      el.noiseToggle.textContent = "Encender";
+    }
+  });
+
+  function createBrownNoise(ctx) {
+    const bufferSize = 4096;
+    const node = ctx.createScriptProcessor(bufferSize, 1, 1);
+    let lastOut = 0.0;
+    node.onaudioprocess = e => {
+      const output = e.outputBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        lastOut = (lastOut + 0.02 * white) / 1.02;
+        output[i] = lastOut * 3.5;
+      }
+    };
+    return node;
+  }
+
+  // ACT / DBT
+  const runSteps = (title, steps) => {
+    el.sosOverlay.hidden = false;
+    el.sosModalTitle.textContent = title;
+    el.sosTapArea.style.display = "none";
+    el.sosIllustration.style.display = "block";
+    let stepIdx = 0;
+    const loadStep = () => {
+      el.sosStepTitle.textContent = steps[stepIdx].title;
+      el.sosStepHint.textContent = steps[stepIdx].text;
+      el.sosProgressBar.style.width = `${(stepIdx / steps.length) * 100}%`;
+      el.sosNextBtn.disabled = false;
+      el.sosNextBtn.style.display = "block";
+    };
+    loadStep();
+    el.sosNextBtn.onclick = () => {
+      stepIdx++;
+      if (stepIdx < steps.length) loadStep();
+      else {
+        el.sosStepTitle.textContent = "Listo";
+        el.sosStepHint.textContent = "Has completado el ejercicio.";
+        el.sosProgressBar.style.width = "100%";
+        el.sosNextBtn.style.display = "none";
+        if (soundEnabled) SoundFX.success();
+      }
+    };
+  };
+
+  el.actSosBtn.addEventListener("click", () => {
+    runSteps("ACT (Distancia)", [
+      { title: "Observar", text: "Identifica lo que sientes (ansiedad, enojo, tensión). Ponle nombre." },
+      { title: "Etiquetar", text: "Dite: 'Estoy teniendo el pensamiento de que...'" },
+      { title: "Anclar", text: "Exhala lento 3 veces y siente el peso de tus pies." }
+    ]);
+  });
+
+  el.dbtSosBtn.addEventListener("click", () => {
+    runSteps("DBT (Cambio)", [
+      { title: "Respirar", text: "Inhala 4s, exhala 6s. El cerebro se calma al exhalar largo." },
+      { title: "Frío", text: "Toca algo frío o lávate la cara. Bloquea el estrés." },
+      { title: "Mínimo", text: "Vuelve con la tarea más pequeña posible." }
+    ]);
+  });
+}
+
+// Robust clipboard helper
+async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (err) {
+    console.warn("Clipboard API failed, using fallback", err);
+  }
+
+  // Fallback
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+    return true;
+  } catch (err) {
+    document.body.removeChild(textarea);
+    return false;
+  }
+}
 
 function initAvatar() {
   CompassAvatar.init();
 
   // Global button click sound
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("button, .btn, .card-container, a");
-    if (t) {
+    // Try to init/resume audio on any click to comply with browser policies
+    SoundFX.initContext();
+
+    const t = e.target.closest("button, .btn, .card-container, a, .marker");
+    if (t && soundEnabled) {
       CompassAvatar.playClick();
     }
   });
