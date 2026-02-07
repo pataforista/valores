@@ -189,6 +189,8 @@ const el = {
   sosNextBtn: document.getElementById("sosNextBtn"),
   sosIcon: document.getElementById("sosIcon"),
   sosIllustration: document.getElementById("sosIllustration"),
+  sosCountdown: document.getElementById("sosCountdown"),
+  sosCountdownValue: document.getElementById("sosCountdownValue"),
 
   breathToggle: document.getElementById("breathToggle"),
   breathPhase: document.getElementById("breathPhase"),
@@ -200,6 +202,10 @@ const el = {
   noiseVol: document.getElementById("noiseVol"),
   actSosBtn: document.getElementById("actSosBtn"),
   dbtSosBtn: document.getElementById("dbtSosBtn"),
+  tipTempBtn: document.getElementById("tipTempBtn"),
+  tipExerciseBtn: document.getElementById("tipExerciseBtn"),
+  tipBreathBtn: document.getElementById("tipBreathBtn"),
+  tipRelaxBtn: document.getElementById("tipRelaxBtn"),
   soundBtn: document.getElementById("soundBtn")
 };
 
@@ -1570,6 +1576,25 @@ function wireSosModule() {
 
   let currentSosIdx = 0;
   let currentSosCount = 0;
+  let tipTimer = null;
+  let tipPhaseTimer = null;
+
+  const clearTipTimers = () => {
+    if (tipTimer) clearInterval(tipTimer);
+    if (tipPhaseTimer) clearInterval(tipPhaseTimer);
+    tipTimer = null;
+    tipPhaseTimer = null;
+  };
+
+  const resetOverlayState = () => {
+    clearTipTimers();
+    el.sosTapArea.style.display = "none";
+    el.sosIllustration.style.display = "block";
+    el.sosCountdown.style.display = "none";
+    el.sosNextBtn.style.display = "block";
+    el.sosNextBtn.disabled = false;
+    el.sosNextBtn.textContent = "Siguiente";
+  };
 
   const openSos = () => {
     el.sosOverlay.hidden = false;
@@ -1585,24 +1610,13 @@ function wireSosModule() {
     el.sosTapCount.textContent = "0";
     currentSosCount = 0;
     el.sosTapArea.style.display = "flex";
+    el.sosCountdown.style.display = "none";
+    el.sosNextBtn.textContent = "Siguiente";
     el.sosNextBtn.disabled = true;
     el.sosProgressBar.style.width = `${(currentSosIdx / SOS_STEPS.length) * 100}%`;
   };
 
-  el.sosBtn.addEventListener("click", openSos);
-  el.closeSosOverlay.addEventListener("click", () => el.sosOverlay.hidden = true);
-
-  el.sosTapArea.addEventListener("click", () => {
-    currentSosCount++;
-    el.sosTapCount.textContent = currentSosCount;
-    if (soundEnabled) SoundFX.click();
-    if (currentSosCount >= SOS_STEPS[currentSosIdx].count) {
-      el.sosNextBtn.disabled = false;
-      if (soundEnabled) SoundFX.approval();
-    }
-  });
-
-  el.sosNextBtn.addEventListener("click", () => {
+  const handleSosNext = () => {
     currentSosIdx++;
     if (currentSosIdx < SOS_STEPS.length) {
       loadSosStep();
@@ -1615,7 +1629,28 @@ function wireSosModule() {
       if (soundEnabled) SoundFX.success();
       CompassAvatar.speak("Lo has hecho muy bien. Te noto más en calma.", "happy");
     }
+  };
+
+  el.sosBtn.addEventListener("click", () => {
+    el.sosNextBtn.onclick = handleSosNext;
+    openSos();
   });
+  el.closeSosOverlay.addEventListener("click", () => {
+    clearTipTimers();
+    el.sosOverlay.hidden = true;
+  });
+
+  el.sosTapArea.addEventListener("click", () => {
+    currentSosCount++;
+    el.sosTapCount.textContent = currentSosCount;
+    if (soundEnabled) SoundFX.click();
+    if (currentSosCount >= SOS_STEPS[currentSosIdx].count) {
+      el.sosNextBtn.disabled = false;
+      if (soundEnabled) SoundFX.approval();
+    }
+  });
+
+  el.sosNextBtn.onclick = handleSosNext;
 
   // Breathing
   let breathing = false;
@@ -1699,11 +1734,11 @@ function wireSosModule() {
   }
 
   // ACT / DBT
-  const runSteps = (title, steps) => {
+  const runSteps = (title, steps, icon = "🧘") => {
     el.sosOverlay.hidden = false;
     el.sosModalTitle.textContent = title;
-    el.sosTapArea.style.display = "none";
-    el.sosIllustration.style.display = "block";
+    el.sosIcon.textContent = icon;
+    resetOverlayState();
     let stepIdx = 0;
     const loadStep = () => {
       el.sosStepTitle.textContent = steps[stepIdx].title;
@@ -1726,12 +1761,96 @@ function wireSosModule() {
     };
   };
 
+  const runTipTimer = ({ title, icon, hint, seconds }) => {
+    el.sosOverlay.hidden = false;
+    el.sosModalTitle.textContent = title;
+    el.sosIcon.textContent = icon;
+    resetOverlayState();
+    el.sosCountdown.style.display = "flex";
+    el.sosStepTitle.textContent = "Cuenta regresiva";
+    el.sosStepHint.textContent = hint;
+    el.sosProgressBar.style.width = "0%";
+    let remaining = seconds;
+    el.sosCountdownValue.textContent = `${remaining}s`;
+    tipTimer = setInterval(() => {
+      remaining--;
+      el.sosCountdownValue.textContent = `${Math.max(remaining, 0)}s`;
+      const progress = ((seconds - remaining) / seconds) * 100;
+      el.sosProgressBar.style.width = `${Math.min(progress, 100)}%`;
+      if (remaining <= 0) {
+        clearTipTimers();
+        el.sosStepTitle.textContent = "Listo";
+        el.sosStepHint.textContent = "Buen trabajo. Nota cómo baja la intensidad.";
+        el.sosNextBtn.style.display = "none";
+        if (soundEnabled) SoundFX.success();
+      }
+    }, 1000);
+    el.sosNextBtn.textContent = "Cerrar";
+    el.sosNextBtn.onclick = () => {
+      clearTipTimers();
+      el.sosOverlay.hidden = true;
+    };
+  };
+
+  const runTipBreathing = () => {
+    el.sosOverlay.hidden = false;
+    el.sosModalTitle.textContent = "Respiración pausada";
+    el.sosIcon.textContent = "🌬️";
+    resetOverlayState();
+    el.sosCountdown.style.display = "flex";
+    el.sosProgressBar.style.width = "0%";
+    el.sosNextBtn.textContent = "Cerrar";
+    el.sosNextBtn.onclick = () => {
+      clearTipTimers();
+      el.sosOverlay.hidden = true;
+    };
+    const totalSeconds = 60;
+    let elapsed = 0;
+    let phase = "Inhala";
+    let phaseSeconds = 4;
+    el.sosStepTitle.textContent = phase;
+    el.sosStepHint.textContent = "Inhala 4s, exhala 6s. Exhala más largo.";
+    el.sosCountdownValue.textContent = `${totalSeconds}s`;
+    const updatePhase = () => {
+      phase = phase === "Inhala" ? "Exhala" : "Inhala";
+      phaseSeconds = phase === "Inhala" ? 4 : 6;
+      el.sosStepTitle.textContent = phase;
+    };
+    tipPhaseTimer = setInterval(() => {
+      phaseSeconds--;
+      if (phaseSeconds <= 0) updatePhase();
+    }, 1000);
+    tipTimer = setInterval(() => {
+      elapsed++;
+      const remaining = Math.max(totalSeconds - elapsed, 0);
+      el.sosCountdownValue.textContent = `${remaining}s`;
+      const progress = (elapsed / totalSeconds) * 100;
+      el.sosProgressBar.style.width = `${Math.min(progress, 100)}%`;
+      if (elapsed >= totalSeconds) {
+        clearTipTimers();
+        el.sosStepTitle.textContent = "Listo";
+        el.sosStepHint.textContent = "Observa tu cuerpo: debería sentirse más estable.";
+        el.sosNextBtn.style.display = "none";
+        if (soundEnabled) SoundFX.success();
+      }
+    }, 1000);
+  };
+
+  const runTipRelax = () => {
+    runSteps("Relajación muscular", [
+      { title: "Manos y brazos", text: "Aprieta puños 5s al inhalar. Suelta con un suspiro." },
+      { title: "Hombros y cuello", text: "Eleva hombros 5s. Suelta y deja caer." },
+      { title: "Mandíbula", text: "Aprieta suave, luego relaja y separa." },
+      { title: "Piernas", text: "Tensa muslos y pantorrillas 5s. Suelta." }
+    ], "🧘‍♀️");
+  };
+
   el.actSosBtn.addEventListener("click", () => {
     runSteps("ACT (Distancia)", [
       { title: "Observar", text: "Identifica lo que sientes (ansiedad, enojo, tensión). Ponle nombre." },
       { title: "Etiquetar", text: "Dite: 'Estoy teniendo el pensamiento de que...'" },
       { title: "Anclar", text: "Exhala lento 3 veces y siente el peso de tus pies." }
-    ]);
+    ], "🧭");
   });
 
   el.dbtSosBtn.addEventListener("click", () => {
@@ -1739,8 +1858,29 @@ function wireSosModule() {
       { title: "Respirar", text: "Inhala 4s, exhala 6s. El cerebro se calma al exhalar largo." },
       { title: "Frío", text: "Toca algo frío o lávate la cara. Bloquea el estrés." },
       { title: "Mínimo", text: "Vuelve con la tarea más pequeña posible." }
-    ]);
+    ], "🧘");
   });
+
+  el.tipTempBtn.addEventListener("click", () => {
+    runTipTimer({
+      title: "TIP · Temperatura",
+      icon: "🧊",
+      hint: "Aplica hielo en mejillas o sumerge el rostro en agua fría.",
+      seconds: 30
+    });
+  });
+
+  el.tipExerciseBtn.addEventListener("click", () => {
+    runTipTimer({
+      title: "TIP · Intensidad",
+      icon: "🏃‍♂️",
+      hint: "Muévete al máximo: saltos, burpees o subir escaleras.",
+      seconds: 60
+    });
+  });
+
+  el.tipBreathBtn.addEventListener("click", runTipBreathing);
+  el.tipRelaxBtn.addEventListener("click", runTipRelax);
 }
 
 // Robust clipboard helper

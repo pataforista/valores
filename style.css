@@ -1593,3 +1593,72 @@ textarea:focus-visible {
   font-weight: 900;
   color: var(--primary);
 }
+
+.sos-countdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--ring);
+  background: var(--bg);
+  margin: 12px 0 20px;
+}
+
+.sos-countdown-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.sos-countdown-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.tip-panel .panel-title {
+  align-items: center;
+}
+
+.tip-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.tip-card {
+  border: 1px solid var(--ring);
+  border-radius: 16px;
+  padding: 14px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 180px;
+}
+
+.tip-card h4 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.tip-card-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.tip-card .hint {
+  margin: 4px 0 0;
+}
+
+.tip-icon {
+  font-size: 1.6rem;
+}
