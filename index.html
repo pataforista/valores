@@ -305,6 +305,53 @@
           </div>
         </section>
       </div>
+
+      <section class="card-panel tip-panel" style="margin-top:16px;">
+        <div class="panel-title"><span>Habilidades TIP · DBT</span></div>
+        <p class="hint">Un botón de pánico fisiológico: baja la intensidad corporal para recuperar claridad.</p>
+        <div class="tip-grid">
+          <article class="tip-card">
+            <div class="tip-card-header">
+              <span class="tip-icon">🧊</span>
+              <div>
+                <h4>Temperatura</h4>
+                <p class="hint">30 segundos de frío para activar el reflejo de inmersión.</p>
+              </div>
+            </div>
+            <button class="btn primary" id="tipTempBtn">Iniciar frío</button>
+          </article>
+          <article class="tip-card">
+            <div class="tip-card-header">
+              <span class="tip-icon">🏃‍♂️</span>
+              <div>
+                <h4>Intensidad</h4>
+                <p class="hint">60 segundos de movimiento intenso para quemar adrenalina.</p>
+              </div>
+            </div>
+            <button class="btn" id="tipExerciseBtn">Empezar 60s</button>
+          </article>
+          <article class="tip-card">
+            <div class="tip-card-header">
+              <span class="tip-icon">🌬️</span>
+              <div>
+                <h4>Respiración pausada</h4>
+                <p class="hint">Inhala 4s · Exhala 6s (activa el parasimpático).</p>
+              </div>
+            </div>
+            <button class="btn" id="tipBreathBtn">Guiarme ahora</button>
+          </article>
+          <article class="tip-card">
+            <div class="tip-card-header">
+              <span class="tip-icon">🧘‍♀️</span>
+              <div>
+                <h4>Relajación muscular</h4>
+                <p class="hint">Tensa al inhalar y suelta al exhalar por grupos musculares.</p>
+              </div>
+            </div>
+            <button class="btn" id="tipRelaxBtn">Hacer secuencia</button>
+          </article>
+        </div>
+      </section>
     </div>
   </main>
 
@@ -465,6 +512,10 @@
         <div class="sos-tap-area" id="sosTapArea" style="display:none;">
           <div class="sos-tap-count" id="sosTapCount">0</div>
           <div class="hint">Toques</div>
+        </div>
+        <div class="sos-countdown" id="sosCountdown" style="display:none;">
+          <div class="sos-countdown-label">Tiempo restante</div>
+          <div class="sos-countdown-value" id="sosCountdownValue">0s</div>
         </div>
         <div class="progress-bar-wrap" style="margin:20px 0;">
           <div class="progress-bar" id="sosProgressBar" style="width:0%;"></div>
