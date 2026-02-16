@@ -206,7 +206,26 @@ const el = {
   tipExerciseBtn: document.getElementById("tipExerciseBtn"),
   tipBreathBtn: document.getElementById("tipBreathBtn"),
   tipRelaxBtn: document.getElementById("tipRelaxBtn"),
-  soundBtn: document.getElementById("soundBtn")
+  soundBtn: document.getElementById("soundBtn"),
+
+  // SOS Enhanced
+  sos54321Btn: document.getElementById("sos54321Btn"),
+  sosCategoriesBtn: document.getElementById("sosCategoriesBtn"),
+  sosHeelsBtn: document.getElementById("sosHeelsBtn"),
+  sosBackBtn: document.getElementById("sosBackBtn"),
+  sensoryStep: document.getElementById("sensoryStep"),
+  sensoryTitle: document.getElementById("sensoryTitle"),
+  sensoryHint: document.getElementById("sensoryHint"),
+  sensoryActionArea: document.getElementById("sensoryActionArea"),
+  categoriesStep: document.getElementById("categoriesStep"),
+  categoriesTitle: document.getElementById("categoriesTitle"),
+  categoriesHint: document.getElementById("categoriesHint"),
+  bubblesContainer: document.getElementById("bubblesContainer"),
+  heelStep: document.getElementById("heelStep"),
+  metronomeBeat: document.getElementById("metronomeBeat"),
+  metronomeText: document.getElementById("metronomeText"),
+  breathSquare: document.getElementById("breathSquare"),
+  genericStep: document.getElementById("genericStep")
 };
 
 // ---- Init ----
@@ -337,6 +356,7 @@ function goToSlide(index) {
 }
 
 function openIntro() {
+  document.getElementById("avatarRoot").style.zIndex = "1000"; // Lower z-index to avoid overlap
   el.introModal.classList.add("active");
   currentSlide = 0;
   goToSlide(0);
@@ -344,6 +364,7 @@ function openIntro() {
 
 function closeIntro() {
   el.introModal.classList.remove("active");
+  document.getElementById("avatarRoot").style.zIndex = ""; // Restore z-index
   localStorage.setItem(LS.seenIntro, "true");
 }
 
@@ -1589,100 +1610,232 @@ function wireSosModule() {
   const resetOverlayState = () => {
     clearTipTimers();
     el.sosTapArea.style.display = "none";
-    el.sosIllustration.style.display = "block";
+    el.sosIllustration.style.display = "none";
     el.sosCountdown.style.display = "none";
     el.sosNextBtn.style.display = "block";
     el.sosNextBtn.disabled = false;
     el.sosNextBtn.textContent = "Siguiente";
+    el.sosBackBtn.style.display = "none";
+
+    // Hide all enhanced steps
+    el.sensoryStep.style.display = "none";
+    el.categoriesStep.style.display = "none";
+    el.heelStep.style.display = "none";
+    el.genericStep.style.display = "none";
   };
 
-  const openSos = () => {
+  const openOverlay = (title, icon) => {
     el.sosOverlay.hidden = false;
-    currentSosIdx = 0;
-    loadSosStep();
-    CompassAvatar.speak("Estoy contigo. Vamos a anclarnos al presente.", "neutral");
+    el.sosModalTitle.textContent = title;
+    el.sosIcon.textContent = icon;
+    resetOverlayState();
   };
 
-  const loadSosStep = () => {
-    const step = SOS_STEPS[currentSosIdx];
-    el.sosStepTitle.textContent = step.title;
-    el.sosStepHint.textContent = step.hint;
-    el.sosTapCount.textContent = "0";
-    currentSosCount = 0;
-    el.sosTapArea.style.display = "flex";
-    el.sosCountdown.style.display = "none";
-    el.sosNextBtn.textContent = "Siguiente";
-    el.sosNextBtn.disabled = true;
-    el.sosProgressBar.style.width = `${(currentSosIdx / SOS_STEPS.length) * 100}%`;
+  // --- 5-4-3-2-1 Technique ---
+  const run54321 = () => {
+    openOverlay("Técnica 5-4-3-2-1", "🌊");
+    el.sensoryStep.style.display = "block";
+
+    const steps = [
+      { n: 5, type: "see", title: "5 Cosas que veas", hint: "Toca cada círculo al identificar un objeto.", icon: "👁️" },
+      { n: 4, type: "touch", title: "4 Cosas que toques", hint: "Mantén presionado para sentir la vibración.", icon: "🤚" },
+      { n: 3, type: "hear", title: "3 Sonidos", hint: "Presta atención al entorno.", icon: "👂" },
+      { n: 2, type: "smell", title: "2 Olores", hint: "Identifica o imagina aromas.", icon: "👃" },
+      { n: 1, type: "taste", title: "1 Sabor", hint: "Algo que puedas saborear.", icon: "👅" }
+    ];
+
+    let stepIdx = 0;
+    const loadSensoryStep = () => {
+      const step = steps[stepIdx];
+      el.sensoryTitle.textContent = step.title;
+      el.sensoryHint.textContent = step.hint;
+      el.sensoryActionArea.innerHTML = "";
+      el.sosNextBtn.disabled = true;
+      el.sosProgressBar.style.width = `${(stepIdx / steps.length) * 100}%`;
+      el.sosBackBtn.style.display = stepIdx > 0 ? "block" : "none";
+
+      let checkedCount = 0;
+      for (let i = 0; i < step.n; i++) {
+        const item = document.createElement("div");
+        item.className = "sensory-item";
+        item.textContent = step.icon;
+
+        const handleInteraction = () => {
+          if (item.classList.contains("checked")) return;
+          item.classList.add("checked");
+          checkedCount++;
+
+          if (step.type === "touch" && navigator.vibrate) {
+            const patterns = [[50], [150], [50, 50, 50], [200]];
+            navigator.vibrate(patterns[checkedCount - 1] || 100);
+          } else if (soundEnabled) {
+            SoundFX.click();
+          }
+
+          if (checkedCount >= step.n) {
+            el.sosNextBtn.disabled = false;
+            if (soundEnabled) SoundFX.approval();
+          }
+        };
+
+        item.onclick = handleInteraction;
+        el.sensoryActionArea.appendChild(item);
+      }
+
+      if (step.type === "hear") {
+        // Auto-enable next for non-interactive steps if needed, 
+        // but here we keep the 3 circles for "commitment"
+      }
+    };
+
+    loadSensoryStep();
+
+    el.sosNextBtn.onclick = () => {
+      stepIdx++;
+      if (stepIdx < steps.length) loadSensoryStep();
+      else finishSos();
+    };
+    el.sosBackBtn.onclick = () => {
+      stepIdx--;
+      loadSensoryStep();
+    };
   };
 
-  const handleSosNext = () => {
-    currentSosIdx++;
-    if (currentSosIdx < SOS_STEPS.length) {
-      loadSosStep();
-    } else {
-      el.sosStepTitle.textContent = "Completado";
-      el.sosStepHint.textContent = "Has vuelto al presente. Respira hondo.";
-      el.sosTapArea.style.display = "none";
-      el.sosProgressBar.style.width = "100%";
-      el.sosNextBtn.style.display = "none";
-      if (soundEnabled) SoundFX.success();
-      CompassAvatar.speak("Lo has hecho muy bien. Te noto más en calma.", "happy");
-    }
+  // --- Categories Game ---
+  const runCategories = () => {
+    openOverlay("Categorías", "🧩");
+    el.categoriesStep.style.display = "block";
+    el.sosNextBtn.style.display = "none";
+
+    const categories = [
+      { name: "Frutas", items: ["Manzana", "Pera", "Mango", "Fresa"], deco: ["Perro", "Coche", "Azul"] },
+      { name: "Colores", items: ["Rojo", "Verde", "Azul", "Amarillo"], deco: ["Lunes", "Sal", "Gato"] },
+      { name: " Animales", items: ["Gato", "Perro", "León", "Elefante"], deco: ["Mesa", "Lápiz", "Nube"] },
+      { name: "Países de América", items: ["México", "Chile", "Canadá", "Brasil"], deco: ["Japón", "París", "Marte"] }
+    ];
+
+    const cat = categories[Math.floor(Math.random() * categories.length)];
+    el.categoriesTitle.textContent = cat.name;
+    el.categoriesHint.textContent = `Explota las 4 palabras de la categoría: ${cat.name}`;
+    el.bubblesContainer.innerHTML = "";
+
+    const allItems = [...cat.items, ...cat.deco].sort(() => Math.random() - 0.5);
+    let found = 0;
+
+    allItems.forEach((text, i) => {
+      const b = document.createElement("div");
+      b.className = "bubble";
+      b.textContent = text;
+      const isCorrect = cat.items.includes(text);
+
+      // Random position
+      b.style.left = `${Math.random() * 70 + 5}%`;
+      b.style.top = `${Math.random() * 70 + 5}%`;
+
+      b.onclick = () => {
+        if (isCorrect) {
+          b.classList.add("burst", "correct");
+          found++;
+          if (soundEnabled) SoundFX.click();
+          if (found >= cat.items.length) {
+            if (soundEnabled) SoundFX.success();
+            finishSos();
+          }
+        } else {
+          b.style.transform = "translateX(5px)";
+          setTimeout(() => b.style.transform = "translateX(0)", 100);
+        }
+      };
+      el.bubblesContainer.appendChild(b);
+    });
   };
 
-  el.sosBtn.addEventListener("click", () => {
-    el.sosNextBtn.onclick = handleSosNext;
-    openSos();
-  });
+  // --- Heel Grounding ---
+  const runHeels = () => {
+    openOverlay("Anclaje de Talones", "🦶");
+    el.heelStep.style.display = "block";
+    el.sosNextBtn.textContent = "Terminar";
+    el.sosNextBtn.onclick = () => {
+      clearTipTimers();
+      finishSos();
+    };
+
+    let beat = 0;
+    tipTimer = setInterval(() => {
+      beat++;
+      const isLeft = beat % 2 !== 0;
+      el.metronomeBeat.className = `metronome-beat ${isLeft ? "beat-left" : "beat-right"}`;
+      el.metronomeText.textContent = isLeft ? "Uno..." : "Dos...";
+
+      if (navigator.vibrate) navigator.vibrate(50);
+      el.metronomeText.classList.remove("haptic-pulse");
+      void el.metronomeText.offsetWidth; // Trigger reflow
+      el.metronomeText.classList.add("haptic-pulse");
+
+    }, 1000); // 60 BPM
+  };
+
+  const finishSos = () => {
+    resetOverlayState();
+    el.genericStep.style.display = "block";
+    el.sosStepTitle.textContent = "Completado";
+    el.sosStepHint.textContent = "Has vuelto al presente. Respira hondo.";
+    el.sosProgressBar.style.width = "100%";
+    el.sosNextBtn.style.display = "none";
+    if (soundEnabled) SoundFX.success();
+    CompassAvatar.speak("Lo has hecho muy bien. Te noto más en calma.", "happy");
+  };
+
+  // Wire main buttons
+  el.sos54321Btn.addEventListener("click", run54321);
+  el.sosCategoriesBtn.addEventListener("click", runCategories);
+  el.sosHeelsBtn.addEventListener("click", runHeels);
+
   el.closeSosOverlay.addEventListener("click", () => {
     clearTipTimers();
     el.sosOverlay.hidden = true;
   });
 
-  el.sosTapArea.addEventListener("click", () => {
-    currentSosCount++;
-    el.sosTapCount.textContent = currentSosCount;
-    if (soundEnabled) SoundFX.click();
-    if (currentSosCount >= SOS_STEPS[currentSosIdx].count) {
-      el.sosNextBtn.disabled = false;
-      if (soundEnabled) SoundFX.approval();
-    }
-  });
-
-  el.sosNextBtn.onclick = handleSosNext;
-
-  // Breathing
+  // Refactor Breathing to Box Breathing
   let breathing = false;
-  let breathTimer;
+  let boxTimer;
   let breathPhaseIdx = 0;
-  const phases = ["Inhala", "Sostén", "Exhala", "Sostén"];
+  const boxPhases = [
+    { name: "Inhala", class: "expanding" },
+    { name: "Sostén", class: "holding" },
+    { name: "Exhala", class: "contracting" },
+    { name: "Sostén", class: "holding" }
+  ];
 
   el.breathToggle.addEventListener("click", () => {
     breathing = !breathing;
     el.breathToggle.textContent = breathing ? "Detener" : "Iniciar";
     if (breathing) {
-      startBreathing();
+      startBoxBreathing();
     } else {
-      clearInterval(breathTimer);
+      clearInterval(boxTimer);
       el.breathPhase.textContent = "Listo";
-      el.breathCircle.style.transform = "scale(1)";
-      el.breathCircleInner.style.transform = "scale(1)";
+      el.breathSquare.className = "breath-square";
+      el.breathTimer.textContent = "0s";
     }
   });
 
-  function startBreathing() {
+  function startBoxBreathing() {
     breathPhaseIdx = 0;
     const run = () => {
-      const phase = phases[breathPhaseIdx % 4];
-      el.breathPhase.textContent = phase;
-      const scale = (breathPhaseIdx % 4 === 0 || breathPhaseIdx % 4 === 1) ? "2.2" : "1";
-      el.breathCircle.style.transform = `scale(${scale})`;
-      el.breathCircleInner.style.transform = `scale(${scale})`;
+      const phase = boxPhases[breathPhaseIdx % 4];
+      el.breathPhase.textContent = phase.name;
+      el.breathSquare.className = `breath-square ${phase.class}`;
+
+      // Haptics for breathing
+      if (navigator.vibrate) {
+        if (phase.name === "Inhala") navigator.vibrate([100, 100, 200, 100, 300]);
+        if (phase.name === "Exhala") navigator.vibrate([300, 100, 200, 100, 100]);
+      }
 
       let timeLeft = 4;
       el.breathTimer.textContent = `${timeLeft}s`;
-      const t = setInterval(() => {
+      let t = setInterval(() => {
         timeLeft--;
         if (timeLeft < 0 || !breathing) clearInterval(t);
         else el.breathTimer.textContent = `${timeLeft}s`;
@@ -1691,7 +1844,7 @@ function wireSosModule() {
       breathPhaseIdx++;
     };
     run();
-    breathTimer = setInterval(run, 4000);
+    boxTimer = setInterval(run, 4000);
   }
 
   // Noise
@@ -1797,6 +1950,8 @@ function wireSosModule() {
     el.sosModalTitle.textContent = "Respiración pausada";
     el.sosIcon.textContent = "🌬️";
     resetOverlayState();
+    el.genericStep.style.display = "block";
+    el.genericStep.style.display = "block";
     el.sosCountdown.style.display = "flex";
     el.sosProgressBar.style.width = "0%";
     el.sosNextBtn.textContent = "Cerrar";

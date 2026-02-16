@@ -254,27 +254,36 @@
     <div id="view-sos" class="view">
       <section class="card-panel hero-sos">
         <div class="panel-title">
-          <span>SOS · Grounding</span>
+          <span>SOS · Enfoque</span>
           <span class="badge-danger">Urgente</span>
         </div>
-        <p class="hint">Para cuando el pensamiento o la emoción te abruma. Técnica 5-4-3-2-1.</p>
-        <button class="btn danger large" id="sosBtn" style="width:100%; padding:20px; font-size:1.1rem;">Necesito
-          calmarme ahora</button>
+        <p class="hint">Técnicas para recuperar el control cuando la emoción te abruma.</p>
+        <div class="sos-main-actions" style="display:grid; gap:12px;">
+          <button class="btn danger large" id="sos54321Btn" style="width:100%; padding:16px; font-size:1rem;">
+            🌊 Técnica 5-4-3-2-1 (Sensorial)
+          </button>
+          <button class="btn primary large" id="sosCategoriesBtn" style="width:100%; padding:16px; font-size:1rem;">
+            🧩 Categorías (Cognitivo)
+          </button>
+          <button class="btn secondary large" id="sosHeelsBtn" style="width:100%; padding:16px; font-size:1rem;">
+            🦶 Anclaje de Talones (Somático)
+          </button>
+        </div>
       </section>
 
       <div class="sos-grid" style="display:grid; gap:16px; margin-top:16px;">
         <section class="card-panel">
-          <div class="panel-title"><span>Respiración Rítmica</span></div>
-          <p class="hint">Reduce la activación fisiológica (Cuadrada 4-4-4-4)</p>
+          <div class="panel-title"><span>Respiración Cuadrada (Box)</span></div>
+          <p class="hint">Inhalar, Retener, Exhalar, Retener (4s cada uno)</p>
           <div class="sos-row" style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
             <button class="btn primary" id="breathToggle">Iniciar</button>
             <div class="pill" id="breathPhase">Listo</div>
             <div class="timer" id="breathTimer" style="font-family:monospace; font-weight:700; color:var(--primary)">0s
             </div>
           </div>
-          <div class="breath-container">
-            <div class="breath-circle" id="breathCircle"></div>
-            <div class="breath-circle-inner" id="breathCircleInner"></div>
+          <div class="breath-box-container">
+            <div class="breath-square" id="breathSquare"></div>
+            <div class="breath-progress-circle" id="breathCircleProgress"></div>
           </div>
         </section>
 
@@ -328,7 +337,7 @@
                 <p class="hint">60 segundos de movimiento intenso para quemar adrenalina.</p>
               </div>
             </div>
-            <button class="btn" id="tipExerciseBtn">Empezar 60s</button>
+            <button class="btn primary" id="tipExerciseBtn">Empezar 60s</button>
           </article>
           <article class="tip-card">
             <div class="tip-card-header">
@@ -338,7 +347,7 @@
                 <p class="hint">Inhala 4s · Exhala 6s (activa el parasimpático).</p>
               </div>
             </div>
-            <button class="btn" id="tipBreathBtn">Guiarme ahora</button>
+            <button class="btn primary" id="tipBreathBtn">Guiarme ahora</button>
           </article>
           <article class="tip-card">
             <div class="tip-card-header">
@@ -348,7 +357,7 @@
                 <p class="hint">Tensa al inhalar y suelta al exhalar por grupos musculares.</p>
               </div>
             </div>
-            <button class="btn" id="tipRelaxBtn">Hacer secuencia</button>
+            <button class="btn primary" id="tipRelaxBtn">Hacer secuencia</button>
           </article>
         </div>
       </section>
@@ -505,10 +514,37 @@
         <div id="sosIllustration" style="display:none; text-align:center; margin-bottom:12px;">
           <div class="sos-placeholder-icon" id="sosIcon">🧘</div>
         </div>
-        <div class="sos-step">
+
+        <!-- 5-4-3-2-1 Steps -->
+        <div id="sensoryStep" class="sos-step" style="display:none;">
+          <div class="sos-step-title" id="sensoryTitle">Mira a tu alrededor</div>
+          <p class="hint" id="sensoryHint">Toca 5 cosas que puedas ver.</p>
+          <div id="sensoryActionArea" class="sensory-action-grid"></div>
+        </div>
+
+        <!-- Categories Game -->
+        <div id="categoriesStep" class="sos-step" style="display:none;">
+          <div class="sos-step-title" id="categoriesTitle">Categoría</div>
+          <p class="hint" id="categoriesHint">Explota las burbujas correctas.</p>
+          <div id="bubblesContainer" class="bubbles-container"></div>
+        </div>
+
+        <!-- Heel Grounding -->
+        <div id="heelStep" class="sos-step" style="display:none;">
+          <div class="sos-step-title">Ritmo de Tierra</div>
+          <p class="hint">Sigue el ritmo y presiona tus talones contra el piso.</p>
+          <div class="metronome-visual">
+            <div class="metronome-beat" id="metronomeBeat"></div>
+            <div class="metronome-text" id="metronomeText">Uno... Dos...</div>
+          </div>
+        </div>
+
+        <!-- Generic Step (Fallback) -->
+        <div id="genericStep" class="sos-step" style="display:none;">
           <div class="sos-step-title" id="sosStepTitle">Paso 1</div>
           <p class="hint" id="sosStepHint"></p>
         </div>
+
         <div class="sos-tap-area" id="sosTapArea" style="display:none;">
           <div class="sos-tap-count" id="sosTapCount">0</div>
           <div class="hint">Toques</div>
@@ -520,7 +556,8 @@
         <div class="progress-bar-wrap" style="margin:20px 0;">
           <div class="progress-bar" id="sosProgressBar" style="width:0%;"></div>
         </div>
-        <div style="display:flex; justify-content:flex-end;">
+        <div style="display:flex; justify-content:flex-end; gap: 8px;">
+          <button class="btn" id="sosBackBtn" style="display:none;">Anterior</button>
           <button class="btn primary" id="sosNextBtn" disabled>Siguiente</button>
         </div>
       </div>
