@@ -1,9 +1,12 @@
 {
+  "id": "./",
   "name": "Valores del Valle CACB",
   "short_name": "Valores",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
   "background_color": "#FFFBF0",
   "theme_color": "#8BC4C2",
   "icons": [

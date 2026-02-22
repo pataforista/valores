@@ -508,7 +508,7 @@ function renderActiveList() {
     // Drag (pointer) - inicia solo si toca el "≡"
     const grab = li.querySelector(".grab");
     if (grab) {
-      grab.addEventListener("pointerdown", (e) => onPointerDown(e, v.id));
+      grab.addEventListener("pointerdown", (e) => onPointerDown(e, v.id), { passive: false });
     }
 
     el.list.appendChild(li);
@@ -624,16 +624,18 @@ function wirePathModule() {
   el.shareCommitment.addEventListener("click", async () => {
     if (!pendingAction) return;
     const shareText = buildShareText(pendingAction);
+
     if (navigator.share) {
       try {
         await navigator.share({ title: "Mi compromiso", text: shareText });
+        return;
       } catch {
-        toast("No se pudo compartir");
+        // Si el usuario cancela en iOS/Android, evitamos mostrar error innecesario.
       }
-    } else {
-      await navigator.clipboard?.writeText(shareText);
-      toast("Copiado al portapapeles");
     }
+
+    const copied = await copyToClipboard(shareText);
+    toast(copied ? "Copiado al portapapeles" : "No se pudo compartir");
   });
 }
 
@@ -946,7 +948,7 @@ let drag = {
 };
 
 function onPointerDown(e, itemId) {
-  if (e.button !== undefined && e.button !== 0) return; // solo click primario
+  if (e.pointerType === "mouse" && e.button !== 0) return; // solo click primario en mouse
   e.preventDefault();
 
   const li = e.target.closest(".ranking-item");
