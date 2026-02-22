@@ -487,7 +487,9 @@ button:not(.tab-btn):not(.icon-btn):active {
   display: flex;
   flex-direction: column;
   padding: 24px 20px;
-  background: var(--card);
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   text-align: center;
   border: 1px solid rgba(115, 155, 163, 0.4);
   overflow: hidden;
@@ -497,8 +499,9 @@ button:not(.tab-btn):not(.icon-btn):active {
 
 .card-front,
 .card-back {
-  background-color: var(--card) !important;
-  opacity: 1 !important;
+  background: var(--glass) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
 }
 
 /* --- Front Face (Centered) --- */
@@ -1530,7 +1533,7 @@ body.dark-theme .card-front {
   /* Combined with above declaration */
   font-size: 0.95rem;
   color: var(--text);
-  background: #ffffff !important;
+  background: var(--glass) !important;
   align-items: center;
   justify-content: flex-start;
 }
@@ -1595,6 +1598,15 @@ body.dark-theme .card-back {
   font-size: 1.8rem;
   margin: 0;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Eye Pupil Animation */
+#pupilL,
+#pupilR,
+#shineL,
+#shineR {
+  transform: translate(var(--px, 0), var(--py, 0));
+  transition: transform 0.1s ease-out;
 }
 
 /* --- Mobile Tweaks --- */
@@ -2236,7 +2248,8 @@ textarea:focus-visible {
   }
 }
 
-@media (hover: none), (pointer: coarse) {
+@media (hover: none),
+(pointer: coarse) {
   .card-container {
     transform: none !important;
   }
