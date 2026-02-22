@@ -2309,3 +2309,78 @@ textarea:focus-visible {
   width: 92% !important;
   height: 92% !important;
 }
+
+/* --- Overflow + alignment hardening --- */
+.rank-item {
+  min-width: 0;
+}
+
+.rank-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  background: var(--ring);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.rank-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.card-title,
+.card-back .def,
+.hint,
+label,
+button {
+  overflow-wrap: anywhere;
+}
+
+.card-back .def {
+  text-wrap: pretty;
+}
+
+.card-actions .btn {
+  max-width: 100%;
+}
+
+.inline-actions {
+  flex-wrap: wrap;
+}
+
+.smart-grid,
+.tip-grid {
+  align-items: stretch;
+}
+
+@media (max-width: 768px) {
+  header {
+    flex-wrap: wrap;
+  }
+
+  .brand,
+  .top-actions {
+    width: 100%;
+  }
+
+  .top-actions {
+    justify-content: flex-start;
+  }
+
+  .card-container {
+    min-height: 240px;
+    height: auto;
+    aspect-ratio: 3 / 4;
+  }
+
+  .card-front .card-title {
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
+}
