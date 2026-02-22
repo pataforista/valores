@@ -2141,7 +2141,7 @@ textarea:focus-visible {
 
 /* --- Responsive & usability hardening --- */
 .values-grid {
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
 .card-container,
@@ -2153,6 +2153,8 @@ textarea:focus-visible {
 .card-container {
   isolation: isolate;
   overflow: hidden;
+  min-height: 280px;
+  height: auto;
 }
 
 .card {
@@ -2162,6 +2164,25 @@ textarea:focus-visible {
 
 .card-face {
   -webkit-transform: translateZ(0);
+  min-height: 100%;
+}
+
+.card-front .card-title {
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  overflow: visible;
+}
+
+.card-back {
+  gap: 8px;
+}
+
+.card-back .def {
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+  width: 100%;
+  padding-right: 2px;
 }
 
 .bullseye-visual {
@@ -2230,12 +2251,14 @@ textarea:focus-visible {
   }
 
   .values-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 12px;
   }
 
   .card-container {
-    height: 240px;
+    min-height: 240px;
+    height: auto;
+    aspect-ratio: 3 / 4;
   }
 
   .card-face {
@@ -2351,7 +2374,12 @@ textarea:focus-visible {
 }
 
 .card-title,
-.card-back .def,
+.card-back .def {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: auto;
+}
+
 .hint,
 label,
 button {
@@ -2389,14 +2417,4 @@ button {
     justify-content: flex-start;
   }
 
-  .card-container {
-    min-height: 240px;
-    height: auto;
-    aspect-ratio: 3 / 4;
-  }
-
-  .card-front .card-title {
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
-  }
 }

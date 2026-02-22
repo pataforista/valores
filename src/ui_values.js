@@ -53,10 +53,27 @@ export function renderCards() {
   el.cards.innerHTML = "";
   const activeIds = getActiveValues().map(v => v.id);
 
+  const flipCard = (container) => {
+    const cardNode = container.querySelector('.card');
+    if (!cardNode) return;
+    const nextState = !cardNode.classList.contains('flipped');
+
+    el.cards.querySelectorAll('.card.flipped').forEach(openCard => {
+      if (openCard !== cardNode) openCard.classList.remove('flipped');
+    });
+
+    cardNode.classList.toggle('flipped', nextState);
+    container.setAttribute('aria-pressed', String(nextState));
+  };
+
   valuesData.forEach(v => {
     const isSelected = activeIds.includes(v.id);
     const card = document.createElement("div");
     card.className = "card-container";
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-pressed', 'false');
+    card.setAttribute('aria-label', `Mostrar detalle del valor ${v.name}`);
     card.innerHTML = `
       <div class="card ${isSelected ? "selected" : ""}">
         <div class="card-face card-front">
@@ -75,8 +92,13 @@ export function renderCards() {
       </div>
     `;
 
-    card.addEventListener('click', () => {
-      card.querySelector('.card')?.classList.toggle('flipped');
+    card.addEventListener('click', () => flipCard(card));
+
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        flipCard(card);
+      }
     });
 
     card.querySelector('button').addEventListener('click', (e) => {
