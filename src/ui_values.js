@@ -56,20 +56,28 @@ export function renderCards() {
   valuesData.forEach(v => {
     const isSelected = activeIds.includes(v.id);
     const card = document.createElement("div");
-    card.className = `value-card ${isSelected ? "selected" : ""}`;
+    card.className = "card-container";
     card.innerHTML = `
-      <div class="card-inner">
-        <div class="card-front">
-          <strong>${escapeHTML(v.name)}</strong>
+      <div class="card ${isSelected ? "selected" : ""}">
+        <div class="card-face card-front">
+          <p class="star">⭐</p>
+          <h3 class="card-title">${escapeHTML(v.name)}</h3>
         </div>
-        <div class="card-back">
-          <p>${escapeHTML(v.def)}</p>
-          <button class="btn btn-sm ${isSelected ? 'danger' : 'primary'}" data-id="${v.id}">
-            ${isSelected ? 'Quitar' : 'Agregar'}
-          </button>
+        <div class="card-face card-back">
+          <h3 class="card-title">${escapeHTML(v.name)}</h3>
+          <p class="def">${escapeHTML(v.def)}</p>
+          <div class="card-actions">
+            <button class="btn btn-sm ${isSelected ? 'danger' : 'primary'}" data-id="${v.id}">
+              ${isSelected ? 'Quitar' : 'Agregar'}
+            </button>
+          </div>
         </div>
       </div>
     `;
+
+    card.addEventListener('click', () => {
+      card.querySelector('.card')?.classList.toggle('flipped');
+    });
 
     card.querySelector('button').addEventListener('click', (e) => {
       e.stopPropagation();
