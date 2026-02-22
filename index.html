@@ -368,57 +368,37 @@
   </main>
 
   <footer class="app-footer">
-    <div class="data-actions"
-      style="margin-bottom: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px;">
-      <div
-        style="background: var(--card); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--ring); max-width: 450px;">
-        <p style="font-size: 0.85rem; margin: 0; line-height: 1.4; color: var(--muted);">
-          🔒 <strong>Privacidad:</strong> Tus datos se guardan automáticamente en este dispositivo.
-        </p>
-      </div>
+    <section class="footer-card footer-privacy">
+      <p>
+        🔒 <strong>Privacidad:</strong> Tus datos se guardan automáticamente en este dispositivo.
+      </p>
+      <button id="resetBtn" class="btn danger">🗑️ Borrar Todo</button>
+    </section>
 
-      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
-        <!-- Export moved to header -->
-        <button id="resetBtn" class="btn danger">
-          🗑️ Borrar Todo
-        </button>
-      </div>
-    </div>
-
-    <div class="legal-disclaimers"
-      style="margin-top: 20px; padding: 16px; background: var(--card); border-radius: 12px; border: 1px solid var(--ring); font-size: 0.85rem; line-height: 1.5; color: var(--muted); text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
-      <p style="margin-bottom: 12px;"><strong>👨‍💻 Autor:</strong> César Celada</p>
-      <p style="margin-bottom: 12px;">📧 <strong>Contacto:</strong> Para aclaraciones, mejoras o sugerencias, escribe a
-        <a href="mailto:drceladapsiquiatria@gmail.com"
-          style="color: var(--primary); text-decoration: underline;">drceladapsiquiatria@gmail.com</a>.
+    <section class="footer-card footer-legal">
+      <p><strong>👨‍💻 Autor:</strong> César Celada</p>
+      <p>📧 <strong>Contacto:</strong> Para aclaraciones, mejoras o sugerencias, escribe a
+        <a href="mailto:drceladapsiquiatria@gmail.com">drceladapsiquiatria@gmail.com</a>.
       </p>
 
-      <p style="margin-bottom: 12px;"><strong>💎 Proyecto sin fines de lucro:</strong> Esta herramienta es gratuita y de
-        libre acceso. Si deseas apoyar su mantenimiento y desarrollo de nuevas herramientas de salud mental, puedes
-        colaborar aquí:</p>
+      <p><strong>💎 Proyecto sin fines de lucro:</strong> Esta herramienta es gratuita y de libre acceso. Si deseas apoyar su mantenimiento y desarrollo de nuevas herramientas de salud mental, puedes colaborar aquí:</p>
 
-      <div style="text-align: center; margin: 16px 0;">
-        <a href="https://buymeacoffee.com/herramente" target="_blank" class="btn primary"
-          style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px;">
+      <div class="footer-donate-wrap">
+        <a href="https://buymeacoffee.com/herramente" target="_blank" class="btn primary footer-donate-link">
           ☕ Invítame un café (Apoyar Proyecto)
         </a>
       </div>
 
-      <hr style="border: 0; border-top: 1px solid var(--ring); margin: 16px 0;">
+      <hr>
 
-      <p style="font-size: 0.75rem; opacity: 0.8;">
-        ⚠️ <strong>AVISO MÉDICO:</strong> Esta aplicación es una herramienta de autoayuda basada en Terapia de
-        Aceptación y Compromiso (ACT) y Terapia Dialéctica Conductual (DBT). <strong>No sustituye</strong> el
-        diagnóstico, tratamiento o seguimiento de un profesional de la salud mental.
+      <p class="footer-note">
+        ⚠️ <strong>AVISO MÉDICO:</strong> Esta aplicación es una herramienta de autoayuda basada en Terapia de Aceptación y Compromiso (ACT) y Terapia Dialéctica Conductual (DBT). <strong>No sustituye</strong> el diagnóstico, tratamiento o seguimiento de un profesional de la salud mental.
       </p>
-      <p style="font-size: 0.75rem; opacity: 0.8; margin-top: 8px;">
-        🚨 <strong>EMERGENCIAS:</strong> Si te encuentras en una situación de crisis o riesgo inminente, por favor acude
-        al servicio de urgencias más cercano o llama a las líneas de crisis de tu país.
+      <p class="footer-note">
+        🚨 <strong>EMERGENCIAS:</strong> Si te encuentras en una situación de crisis o riesgo inminente, por favor acude al servicio de urgencias más cercano o llama a las líneas de crisis de tu país.
       </p>
-      <p style="font-size: 0.75rem; opacity: 0.8; margin-top: 8px;">
-        <em>Basado en los marcos teóricos de Russ Harris y Steven Hayes.</em>
-      </p>
-    </div>
+      <p class="footer-note"><em>Basado en los marcos teóricos de Russ Harris y Steven Hayes.</em></p>
+    </section>
   </footer>
 
   <div id="introModal" class="carousel-modal">

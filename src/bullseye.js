@@ -15,7 +15,7 @@ let resizeHandler = null;
 
 function getChartPadding() {
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    return isMobile ? 34 : 50;
+    return isMobile ? 22 : 28;
 }
 
 export function initBullseye(el) {
@@ -49,10 +49,10 @@ export function initBullseye(el) {
                     max: 100,
                     beginAtZero: true,
                     ticks: { stepSize: 20, display: false },
-                    grid: { color: 'rgba(148, 163, 184, 0.15)' },
-                    angleLines: { color: 'rgba(148, 163, 184, 0.15)' },
+                    grid: { color: 'rgba(148, 163, 184, 0.22)' },
+                    angleLines: { color: 'rgba(148, 163, 184, 0.22)' },
                     pointLabels: {
-                        color: 'var(--muted)',
+                        color: '#6B7280',
                         font: {
                             size: 13,
                             weight: 'bold',

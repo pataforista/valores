@@ -2282,3 +2282,214 @@ textarea:focus-visible {
     background: rgba(26, 32, 44, 0.92);
   }
 }
+/* --- Fixes: valores cards contrast + diana simplificada --- */
+.card-face,
+.card-front,
+.card-back {
+  background: var(--card) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.card-front {
+  justify-content: center;
+  align-items: center;
+}
+
+.bullseye-visual {
+  display: grid;
+  place-items: center;
+}
+
+.bullseye-visual::before {
+  display: none;
+}
+
+.bullseye-visual canvas {
+  width: 92% !important;
+  height: 92% !important;
+}
+
+/* --- Refinado visual: cards de valores tipo chroma --- */
+.card-container {
+  border: 1px solid color-mix(in srgb, var(--card-border, var(--primary)) 45%, transparent);
+  background: var(--card-gradient, var(--card));
+}
+
+.card-container::before {
+  background: linear-gradient(165deg, color-mix(in srgb, var(--card-border, var(--primary)) 10%, #fff), var(--card));
+}
+
+.card.selected .card-front {
+  border-color: var(--card-border, var(--primary));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--card-border, var(--primary)) 30%, transparent);
+}
+
+.card-subtitle {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.2px;
+  font-weight: 600;
+}
+
+.card-back .def {
+  background: color-mix(in srgb, var(--card-border, var(--primary)) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--card-border, var(--primary)) 18%, transparent);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+/* --- Footer mejorado --- */
+.app-footer {
+  display: grid;
+  gap: 14px;
+  max-width: 760px;
+  margin: 40px auto 0;
+  opacity: 1;
+}
+
+.footer-card {
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--ring);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.footer-privacy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.footer-privacy p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.footer-legal p {
+  margin: 0 0 10px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.footer-legal a {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.footer-donate-wrap {
+  text-align: center;
+  margin: 10px 0 4px;
+}
+
+.footer-donate-link {
+  text-decoration: none;
+}
+
+.footer-legal hr {
+  border: 0;
+  border-top: 1px solid var(--ring);
+  margin: 12px 0;
+}
+
+.footer-note {
+  font-size: 0.78rem;
+  opacity: 0.9;
+}
+
+/* --- Ajuste fino: evitar desborde de texto --- */
+.card-face,
+.card-title,
+.card-subtitle,
+.card-back .def {
+  min-width: 0;
+}
+
+.card-front .card-title {
+  font-size: clamp(1rem, 2.2vw, 1.2rem) !important;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.card-back .card-title {
+  font-size: clamp(0.98rem, 2vw, 1.1rem);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.card-subtitle {
+  text-align: center;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.card-back .def {
+  font-size: 0.92rem;
+  line-height: 1.38;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.footer-legal p,
+.footer-legal a,
+.footer-note {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* --- Ajuste extra solicitado: tipografía más compacta en tarjetas --- */
+.card-front .card-title {
+  font-size: clamp(0.9rem, 1.8vw, 1.05rem) !important;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+.card-back .card-title {
+  font-size: clamp(0.9rem, 1.7vw, 1.02rem);
+}
+
+.card-subtitle {
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.card-back .def {
+  font-size: 0.86rem;
+  line-height: 1.32;
+}
+
+@media (max-width: 768px) {
+  .card-container {
+    height: 260px;
+  }
+
+  .card-face {
+    padding: 14px 12px;
+  }
+
+  .card-front .card-title {
+    font-size: clamp(0.88rem, 4vw, 1rem) !important;
+  }
+
+  .card-back .card-title {
+    font-size: clamp(0.86rem, 3.8vw, 0.96rem);
+  }
+
+  .card-subtitle {
+    font-size: 0.68rem;
+  }
+
+  .card-back .def {
+    font-size: 0.82rem;
+  }
+}

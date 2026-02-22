@@ -6,6 +6,15 @@ import { SoundFX } from './audio.js';
 import { escapeHTML, toast, LS, safeJSONParse } from './utils.js';
 import { renderActionValueOptions } from './ui_path.js';
 
+const CARD_THEMES = [
+  { border: '#3B82F6', gradient: 'linear-gradient(145deg, rgba(59,130,246,0.25), rgba(15,23,42,0.02))', icon: '💙' },
+  { border: '#10B981', gradient: 'linear-gradient(145deg, rgba(16,185,129,0.25), rgba(15,23,42,0.02))', icon: '💚' },
+  { border: '#F59E0B', gradient: 'linear-gradient(145deg, rgba(245,158,11,0.25), rgba(15,23,42,0.02))', icon: '🧡' },
+  { border: '#8B5CF6', gradient: 'linear-gradient(145deg, rgba(139,92,246,0.25), rgba(15,23,42,0.02))', icon: '💜' },
+  { border: '#EF4444', gradient: 'linear-gradient(145deg, rgba(239,68,68,0.25), rgba(15,23,42,0.02))', icon: '❤️' },
+  { border: '#06B6D4', gradient: 'linear-gradient(145deg, rgba(6,182,212,0.24), rgba(15,23,42,0.02))', icon: '🩵' }
+];
+
 export function initValuesModule() {
   initCustomValueForm();
   renderCards();
@@ -53,23 +62,35 @@ export function renderCards() {
   el.cards.innerHTML = "";
   const activeIds = getActiveValues().map(v => v.id);
 
-  valuesData.forEach(v => {
+  valuesData.forEach((v, i) => {
     const isSelected = activeIds.includes(v.id);
+    const theme = CARD_THEMES[i % CARD_THEMES.length];
     const card = document.createElement("div");
-    card.className = `value-card ${isSelected ? "selected" : ""}`;
+    card.className = "card-container";
+    card.style.setProperty('--card-border', theme.border);
+    card.style.setProperty('--card-gradient', theme.gradient);
     card.innerHTML = `
-      <div class="card-inner">
-        <div class="card-front">
-          <strong>${escapeHTML(v.name)}</strong>
+      <div class="card ${isSelected ? "selected" : ""}">
+        <div class="card-face card-front">
+          <p class="star">${theme.icon}</p>
+          <h3 class="card-title">${escapeHTML(v.name)}</h3>
+          <p class="card-subtitle">Toca para ver definición</p>
         </div>
-        <div class="card-back">
-          <p>${escapeHTML(v.def)}</p>
-          <button class="btn btn-sm ${isSelected ? 'danger' : 'primary'}" data-id="${v.id}">
-            ${isSelected ? 'Quitar' : 'Agregar'}
-          </button>
+        <div class="card-face card-back">
+          <h3 class="card-title">${escapeHTML(v.name)}</h3>
+          <p class="def">${escapeHTML(v.def)}</p>
+          <div class="card-actions">
+            <button class="btn btn-sm ${isSelected ? 'danger' : 'primary'}" data-id="${v.id}">
+              ${isSelected ? 'Quitar' : 'Agregar'}
+            </button>
+          </div>
         </div>
       </div>
     `;
+
+    card.addEventListener('click', () => {
+      card.querySelector('.card')?.classList.toggle('flipped');
+    });
 
     card.querySelector('button').addEventListener('click', (e) => {
       e.stopPropagation();
