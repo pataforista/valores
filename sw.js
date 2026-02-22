@@ -42,17 +42,26 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
+  if (!req.url.startsWith("http")) return;
 
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
+
       return fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => { });
+          if (!res || res.status !== 200 || res.type === "error") return res;
+
+          if (new URL(req.url).origin === self.location.origin) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => { });
+          }
           return res;
         })
-        .catch(() => cached);
+        .catch(() => {
+          if (req.mode === "navigate") return caches.match("./index.html");
+          return cached;
+        });
     })
   );
 });
