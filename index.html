@@ -75,12 +75,6 @@
           </p>
 
           <div class="bullseye-visual" id="targetBoard" aria-label="Diana de valores">
-            <div class="axis-x"></div>
-            <div class="axis-y"></div>
-            <div id="mark-work" class="marker marker-circle" title="Trabajo/Educación"></div>
-            <div id="mark-leisure" class="marker marker-square" title="Ocio"></div>
-            <div id="mark-growth" class="marker marker-triangle" title="Crecimiento/Salud"></div>
-            <div id="mark-rel" class="marker marker-diamond" title="Relaciones"></div>
           </div>
 
           <div style="margin-top:14px; display:grid; gap:12px;">
@@ -382,9 +376,40 @@
       </div>
     </div>
 
-    <p style="font-size:0.8rem; margin:4px 0;">Basado en textos de Russ Harris y Steven Hayes.</p>
-    <p style="font-size:0.8rem; margin:4px 0;">⚠️ No reemplaza el seguimiento terapéutico.</p>
-    <p style="font-size:0.8rem; margin:4px 0;"><small>Desarrollado por César Celada</small></p>
+    <div class="legal-disclaimers"
+      style="margin-top: 20px; padding: 16px; background: var(--card); border-radius: 12px; border: 1px solid var(--ring); font-size: 0.85rem; line-height: 1.5; color: var(--muted); text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+      <p style="margin-bottom: 12px;"><strong>👨‍💻 Autor:</strong> César Celada</p>
+      <p style="margin-bottom: 12px;">📧 <strong>Contacto:</strong> Para aclaraciones, mejoras o sugerencias, escribe a
+        <a href="mailto:drceladapsiquiatria@gmail.com"
+          style="color: var(--primary); text-decoration: underline;">drceladapsiquiatria@gmail.com</a>.
+      </p>
+
+      <p style="margin-bottom: 12px;"><strong>💎 Proyecto sin fines de lucro:</strong> Esta herramienta es gratuita y de
+        libre acceso. Si deseas apoyar su mantenimiento y desarrollo de nuevas herramientas de salud mental, puedes
+        colaborar aquí:</p>
+
+      <div style="text-align: center; margin: 16px 0;">
+        <a href="https://buymeacoffee.com/herramente" target="_blank" class="btn primary"
+          style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px;">
+          ☕ Invítame un café (Apoyar Proyecto)
+        </a>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid var(--ring); margin: 16px 0;">
+
+      <p style="font-size: 0.75rem; opacity: 0.8;">
+        ⚠️ <strong>AVISO MÉDICO:</strong> Esta aplicación es una herramienta de autoayuda basada en Terapia de
+        Aceptación y Compromiso (ACT) y Terapia Dialéctica Conductual (DBT). <strong>No sustituye</strong> el
+        diagnóstico, tratamiento o seguimiento de un profesional de la salud mental.
+      </p>
+      <p style="font-size: 0.75rem; opacity: 0.8; margin-top: 8px;">
+        🚨 <strong>EMERGENCIAS:</strong> Si te encuentras en una situación de crisis o riesgo inminente, por favor acude
+        al servicio de urgencias más cercano o llama a las líneas de crisis de tu país.
+      </p>
+      <p style="font-size: 0.75rem; opacity: 0.8; margin-top: 8px;">
+        <em>Basado en los marcos teóricos de Russ Harris y Steven Hayes.</em>
+      </p>
+    </div>
   </footer>
 
   <div id="introModal" class="carousel-modal">
@@ -409,6 +434,9 @@
       </div>
     </div>
   </div>
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+  <canvas id="galaxy-canvas"></canvas>
 
   <!-- Avatar Container (Hidden until loaded) -->
   <div id="avatarRoot" class="avatar-float" hidden>
@@ -417,89 +445,65 @@
       <span id="avatarText">Hola, estoy aquí para guiarte.</span>
     </div>
     <div class="avatar-container" id="avatarBox" aria-label="Avatar Brújula">
-      <!-- SVG Injected by JS or here directly -->
-      <svg viewBox="0 0 220 220" role="img" style="width:100%; height:100%;">
-        <defs>
-          <radialGradient id="faceGlow" cx="35%" cy="30%" r="70%">
-            <stop offset="0%" stop-color="rgba(255,255,255,.24)" />
-            <stop offset="55%" stop-color="rgba(255,255,255,.10)" />
-            <stop offset="100%" stop-color="rgba(255,255,255,.04)" />
-          </radialGradient>
-          <radialGradient id="ringGrad" cx="45%" cy="35%" r="80%">
-            <stop offset="0%" stop-color="rgba(125,211,252,.55)" />
-            <stop offset="60%" stop-color="rgba(167,139,250,.35)" />
-            <stop offset="100%" stop-color="rgba(255,255,255,.18)" />
-          </radialGradient>
-          <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="rgba(0,0,0,.35)" />
-          </filter>
-        </defs>
-        <g id="compass" class="blink state-neutral">
-          <circle cx="110" cy="110" r="92" fill="rgba(0,0,0,.18)" filter="url(#softShadow)" />
-          <circle cx="110" cy="110" r="86" fill="none" stroke="url(#ringGrad)" stroke-width="10" opacity=".95" />
-          <circle cx="110" cy="110" r="77" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.14)"
-            stroke-width="2" />
-          <g opacity=".55">
-            <rect x="108.6" y="25" width="2.8" height="14" rx="1.4" fill="rgba(255,255,255,.65)" />
-            <rect x="108.6" y="181" width="2.8" height="14" rx="1.4" fill="rgba(255,255,255,.45)" />
-            <rect x="25" y="108.6" width="14" height="2.8" rx="1.4" fill="rgba(255,255,255,.45)" />
-            <rect x="181" y="108.6" width="14" height="2.8" rx="1.4" fill="rgba(255,255,255,.45)" />
-          </g>
-          <circle cx="110" cy="110" r="68" fill="url(#faceGlow)" stroke="rgba(255,255,255,.16)" stroke-width="2" />
-          <g opacity=".95">
-            <path d="M38 86 C25 98, 25 122, 38 134 C48 122, 48 98, 38 86 Z" fill="rgba(255,255,255,.07)"
-              stroke="rgba(255,255,255,.16)" stroke-width="2" />
-            <path d="M182 86 C195 98, 195 122, 182 134 C172 122, 172 98, 182 86 Z" fill="rgba(255,255,255,.07)"
-              stroke="rgba(255,255,255,.16)" stroke-width="2" />
-          </g>
+      <svg viewBox="0 0 240 280" role="img" style="width:100%; height:100%;">
+        <g id="compass" class="state-neutral">
+          <!-- Limbs (Background) -->
+          <path class="character-limb" d="M80 220 L60 250" /> <!-- Left Leg -->
+          <path class="character-limb" d="M160 220 L180 250" /> <!-- Right Leg -->
+
+          <!-- Boots -->
+          <path class="character-boot" d="M45 250 Q45 235 75 250 L75 260 Q45 260 45 250 Z" />
+          <path class="character-boot" d="M165 250 Q165 235 195 250 L195 260 Q165 260 165 250 Z" />
+
+          <!-- Arms -->
+          <path class="character-limb" d="M50 140 L20 160" /> <!-- Left Arm -->
+          <path class="character-limb" d="M190 140 L220 160" /> <!-- Right Arm -->
+
+          <!-- Wooden Frame -->
+          <circle class="compass-wood" cx="120" cy="110" r="95" />
+          <circle fill="#F4F1DE" cx="120" cy="110" r="82" /> <!-- Face Background -->
+
+          <!-- Eyes & Face -->
           <g id="eyes">
-            <g>
-              <ellipse cx="86" cy="102" rx="16" ry="14" fill="rgba(255,255,255,.92)" opacity=".92" />
-              <circle class="pupil" id="pupilL" cx="86" cy="104" r="6.6" fill="rgba(15,18,32,.92)" />
-              <circle class="pupil" id="shineL" cx="83.6" cy="101.4" r="2.1" fill="rgba(255,255,255,.86)" />
-              <rect class="eyeLid" x="70" y="92" width="32" height="20" rx="10" fill="var(--card)" opacity="0"
-                transform-origin="86px 102px" />
-            </g>
-            <g>
-              <ellipse cx="134" cy="102" rx="16" ry="14" fill="rgba(255,255,255,.92)" opacity=".92" />
-              <circle class="pupil" id="pupilR" cx="134" cy="104" r="6.6" fill="rgba(15,18,32,.92)" />
-              <circle class="pupil" id="shineR" cx="131.6" cy="101.4" r="2.1" fill="rgba(255,255,255,.86)" />
-              <rect class="eyeLid" x="118" y="92" width="32" height="20" rx="10" fill="var(--card)" opacity="0"
-                transform-origin="134px 102px" />
-            </g>
+            <circle fill="#1E293B" id="pupilL" cx="100" cy="90" r="7" />
+            <circle id="shineL" cx="98" cy="87" r="2" fill="white" opacity="0.8" />
+
+            <circle fill="#1E293B" id="pupilR" cx="140" cy="90" r="7" />
+            <circle id="shineR" cx="138" cy="87" r="2" fill="white" opacity="0.8" />
           </g>
-          <g id="brows" stroke="rgba(255,255,255,.70)" stroke-width="4" stroke-linecap="round" opacity=".95">
-            <path class="brow neutral" d="M72 84 Q86 78 100 84" fill="none" />
-            <path class="brow neutral" d="M120 84 Q134 78 148 84" fill="none" />
-            <path class="brow happy" d="M72 86 Q86 72 100 86" fill="none" />
-            <path class="brow happy" d="M120 86 Q134 72 148 86" fill="none" />
-            <path class="brow worried" d="M72 78 Q86 92 100 78" fill="none" />
-            <path class="brow worried" d="M120 78 Q134 92 148 78" fill="none" />
-            <path class="brow tired" d="M72 86 Q86 86 100 86" fill="none" opacity=".85" />
-            <path class="brow tired" d="M120 86 Q134 86 148 86" fill="none" opacity=".85" />
-            <path class="brow surprised" d="M72 74 Q86 66 100 74" fill="none" />
-            <path class="brow surprised" d="M120 74 Q134 66 148 74" fill="none" />
+
+          <g id="mouths">
+            <path class="mouth neutral" d="M110 105 Q120 110 130 105" fill="none" stroke="#475569" stroke-width="2"
+              stroke-linecap="round" />
+            <path class="mouth happy" d="M110 105 Q120 115 130 105" fill="none" stroke="#475569" stroke-width="2"
+              stroke-linecap="round" style="display:none;" />
           </g>
-          <g class="cheek">
-            <ellipse cx="62" cy="122" rx="12" ry="8" fill="rgba(251,113,133,.25)" />
-            <ellipse cx="158" cy="122" rx="12" ry="8" fill="rgba(251,113,133,.25)" />
+
+          <!-- Wind Rose / Compass Interior -->
+          <g opacity="0.15" transform="translate(120, 110)">
+            <path d="M0 -70 L10 0 L-10 0 Z" fill="#4B5563" />
+            <path d="M0 70 L10 0 L-10 0 Z" fill="#94A3B8" />
+            <path d="M70 0 L0 10 L0 -10 Z" fill="#4B5563" />
+            <path d="M-70 0 L0 10 L0 -10 Z" fill="#94A3B8" />
+            <text x="-60" y="5" font-size="12" font-weight="bold">W</text>
+            <text x="50" y="5" font-size="12" font-weight="bold">E</text>
           </g>
-          <g id="mouths" stroke="rgba(255,255,255,.72)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"
-            fill="none">
-            <path class="mouth neutral" d="M96 136 Q110 142 124 136" />
-            <path class="mouth happy" d="M94 134 Q110 150 126 134" />
-            <path class="mouth worried" d="M96 144 Q110 132 124 144" />
-            <path class="mouth tired" d="M98 140 Q110 140 122 140" opacity=".85" />
-            <path class="mouth surprised" d="M110 138 m -8,0 a 8,8 0 1,0 16,0 a 8,8 0 1,0 -16,0" />
+
+          <!-- The Scarf (Wrapped around the bottom of the frame) -->
+          <path class="scarf-red" d="M40 145 Q120 180 200 145 L205 165 Q120 200 35 165 Z" />
+          <path class="scarf-white" d="M60 153 Q120 180 180 153 L182 163 Q120 190 58 163 Z" opacity="0.4" />
+
+          <!-- Scarf tail -->
+          <path class="scarf-red" d="M50 175 L30 220 L55 220 L75 185 Z" />
+          <path class="scarf-white" d="M55 175 L40 210 L50 210 L65 185 Z" opacity="0.4" />
+
+          <!-- Needle -->
+          <g id="needle" transform="translate(120, 110)">
+            <path d="M0 -60 L0 60" stroke="#E07A5F" stroke-width="4" stroke-linecap="round" />
+            <path d="M0 -60 L5 -40 L-5 -40 Z" fill="#E07A5F" />
+            <path d="M0 60 L5 40 L-5 40 Z" fill="#94A3B8" />
+            <circle r="6" fill="#D4A373" stroke="#8B5E34" />
           </g>
-          <g class="needle" id="needle">
-            <circle cx="110" cy="112" r="6.5" fill="rgba(255,255,255,.20)" stroke="rgba(255,255,255,.18)"
-              stroke-width="2" />
-            <path d="M110 112 L110 56" stroke="rgba(125,211,252,.92)" stroke-width="5" stroke-linecap="round" />
-            <path d="M110 112 L140 142" stroke="rgba(251,113,133,.82)" stroke-width="5" stroke-linecap="round" />
-          </g>
-          <text x="110" y="48" text-anchor="middle" font-size="16" fill="rgba(255,255,255,.70)"
-            font-weight="700">N</text>
         </g>
       </svg>
     </div>
@@ -563,8 +567,12 @@
       </div>
     </div>
   </div>
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script src="galaxy.js"></script>
-  <script src="app.js"></script>
+  <script type="module" src="src/main.js"></script>
 </body>
 
 </html>

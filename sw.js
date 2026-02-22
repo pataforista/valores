@@ -1,14 +1,24 @@
 /* Valores del Valle CACB — SW (cache simple) */
 
 // Cambio versión para forzar actualización
-const CACHE_NAME = "valores-del-valle-v2";
+const CACHE_NAME = "valores-del-valle-v3";
 const ASSETS = [
   "./",
   "./index.html",
-  "./app.js",
   "./style.css",
+  "./outfit.css",
   "./galaxy.js",
   "./manifest.json",
+  "./src/main.js",
+  "./src/utils.js",
+  "./src/values.js",
+  "./src/audio.js",
+  "./src/bullseye.js",
+  "./src/avatar.js",
+  "./src/ui_values.js",
+  "./src/sos.js",
+  "./src/ui_path.js",
+  "./src/export.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
 ];
