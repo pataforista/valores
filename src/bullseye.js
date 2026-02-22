@@ -11,6 +11,12 @@ let bullseyeData = safeJSONParse(localStorage.getItem(LS.bullseye), {
 });
 
 let chart = null;
+let resizeHandler = null;
+
+function getChartPadding() {
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    return isMobile ? 34 : 50;
+}
 
 export function initBullseye(el) {
     const ctx = document.createElement('canvas');
@@ -56,10 +62,21 @@ export function initBullseye(el) {
                 }
             },
             plugins: { legend: { display: false } },
-            layout: { padding: 55 },
-            maintainAspectRatio: false
+            layout: { padding: getChartPadding() },
+            animation: false,
+            maintainAspectRatio: false,
+            responsive: true
         }
     });
+
+    if (resizeHandler) window.removeEventListener('resize', resizeHandler);
+    resizeHandler = () => {
+        if (!chart) return;
+        chart.options.layout.padding = getChartPadding();
+        chart.resize();
+        chart.update('none');
+    };
+    window.addEventListener('resize', resizeHandler, { passive: true });
 
     // Wire sliders
     const inputs = {

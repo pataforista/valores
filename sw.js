@@ -1,7 +1,7 @@
 /* Valores del Valle CACB — SW (cache simple) */
 
 // Cambio versión para forzar actualización
-const CACHE_NAME = "valores-del-valle-v3";
+const CACHE_NAME = "valores-del-valle-v4";
 const ASSETS = [
   "./",
   "./index.html",
