@@ -15,7 +15,11 @@ let resizeHandler = null;
 
 function getChartPadding() {
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    return isMobile ? 22 : 28;
+    return isMobile ? 34 : 42;
+}
+
+function getPointLabelFontSize() {
+    return window.matchMedia("(max-width: 768px)").matches ? 11 : 13;
 }
 
 export function initBullseye(el) {
@@ -29,7 +33,7 @@ export function initBullseye(el) {
     chart = new Chart(ctx, {
         type: 'radar',
         data: {
-            labels: ['💼 TRABAJO / EDUCACIÓN', '👪 RELACIONES', '🌱 CRECIMIENTO PERSONAL', '🎨 OCIO / RECREACIÓN'],
+            labels: ['TRABAJO / EDUCACIÓN', 'RELACIONES', 'CRECIMIENTO PERSONAL', 'OCIO / RECREACIÓN'],
             datasets: [{
                 label: 'Mi Alineación',
                 data: [bullseyeData.work, bullseyeData.rel, bullseyeData.growth, bullseyeData.leisure],
@@ -54,7 +58,7 @@ export function initBullseye(el) {
                     pointLabels: {
                         color: '#6B7280',
                         font: {
-                            size: 13,
+                            size: getPointLabelFontSize(),
                             weight: 'bold',
                             family: "'Segoe UI', system-ui, sans-serif"
                         }
@@ -73,6 +77,7 @@ export function initBullseye(el) {
     resizeHandler = () => {
         if (!chart) return;
         chart.options.layout.padding = getChartPadding();
+        chart.options.scales.r.pointLabels.font.size = getPointLabelFontSize();
         chart.resize();
         chart.update('none');
     };

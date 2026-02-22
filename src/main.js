@@ -128,6 +128,21 @@ function initIntro() {
 
     const track = document.getElementById("carouselTrack");
     const dots = document.getElementById("carouselDots");
+    const nextBtn = document.getElementById("introNextBtn");
+    const prevBtn = document.getElementById("introPrevBtn");
+    let currentSlide = 0;
+
+    const renderSlide = () => {
+        if (!track || !dots) return;
+        track.style.transform = `translateX(-${currentSlide * 100}%)`;
+        Array.from(dots.children).forEach((d, i) => d.classList.toggle("active", i === currentSlide));
+        if (prevBtn) prevBtn.disabled = currentSlide === 0;
+        if (nextBtn) {
+            nextBtn.textContent = currentSlide === slides.length - 1 ? "Comenzar" : "Siguiente";
+            nextBtn.setAttribute("aria-label", nextBtn.textContent);
+        }
+    };
+
     if (track) {
         track.innerHTML = slides.map(s => `
             <div class="intro-slide">
@@ -144,12 +159,28 @@ function initIntro() {
         setTimeout(show, 1000);
     }
 
+    renderSlide();
+
+    nextBtn?.addEventListener("click", () => {
+        if (currentSlide >= slides.length - 1) {
+            hide();
+            return;
+        }
+        currentSlide++;
+        renderSlide();
+    });
+
+    prevBtn?.addEventListener("click", () => {
+        if (currentSlide === 0) return;
+        currentSlide--;
+        renderSlide();
+    });
+
     // Dot navigation
     dots?.addEventListener("click", (e) => {
         if (e.target.classList.contains("dot")) {
-            const idx = Array.from(dots.children).indexOf(e.target);
-            track.style.transform = `translateX(-${idx * 100}%)`;
-            Array.from(dots.children).forEach((d, i) => d.classList.toggle("active", i === idx));
+            currentSlide = Array.from(dots.children).indexOf(e.target);
+            renderSlide();
         }
     });
 }
