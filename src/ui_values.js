@@ -67,14 +67,11 @@ export function renderCards() {
     const theme = CARD_THEMES[i % CARD_THEMES.length];
     const card = document.createElement("div");
     card.className = "card-container";
-    card.style.setProperty('--card-border', theme.border);
-    card.style.setProperty('--card-gradient', theme.gradient);
     card.innerHTML = `
       <div class="card ${isSelected ? "selected" : ""}">
         <div class="card-face card-front">
-          <p class="star">${theme.icon}</p>
+          <p class="star">⭐</p>
           <h3 class="card-title">${escapeHTML(v.name)}</h3>
-          <p class="card-subtitle">Toca para ver definición</p>
         </div>
         <div class="card-face card-back">
           <h3 class="card-title">${escapeHTML(v.name)}</h3>
