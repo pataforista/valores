@@ -65,6 +65,12 @@ export const valuesData = [
 
 valuesData.sort((a, b) => a.name.localeCompare(b.name));
 
+const customValues = safeJSONParse(localStorage.getItem(LS.customValues), []);
+if (Array.isArray(customValues) && customValues.length > 0) {
+    valuesData.push(...customValues.filter(v => v?.id && v?.name && v?.def));
+    valuesData.sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export const MAX_VALUES = 10;
 
 let activeValues = safeJSONParse(localStorage.getItem(LS.values), []);
@@ -76,6 +82,6 @@ export function setActiveValues(v) {
 }
 
 export function computeNextCustomId() {
-    const ids = [58, ...activeValues.map(v => v.id).filter(id => id > 58)];
+    const ids = valuesData.map(v => v.id).filter(id => Number.isFinite(id));
     return Math.max(...ids) + 1;
 }

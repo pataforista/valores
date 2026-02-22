@@ -9,6 +9,7 @@ import { CompassAvatar } from './avatar.js';
 let committedActions = safeJSONParse(localStorage.getItem(LS.actions), []);
 let internalBarriers = [];
 let externalBarriers = [];
+let pendingAction = null;
 
 export function getCommittedActions() { return committedActions; }
 
@@ -52,6 +53,9 @@ export function initPathModule() {
         renderExternalBarriers();
     });
 
+    document.getElementById("declareCommitment")?.addEventListener("click", declareCommitment);
+    document.getElementById("shareCommitment")?.addEventListener("click", shareCommitment);
+
     el.actionForm.addEventListener("submit", (e) => {
         e.preventDefault();
         const action = {
@@ -70,18 +74,27 @@ export function initPathModule() {
             return;
         }
 
-        committedActions.push(action);
-        localStorage.setItem(LS.actions, JSON.stringify(committedActions));
-        renderActionsList();
-        el.actionForm.reset();
-        internalBarriers = [];
-        externalBarriers = [];
-        renderInternalBarriers();
-        renderExternalBarriers();
+        if (!action.value) {
+            toast("Selecciona un valor priorizado");
+            return;
+        }
 
-        toast("👣 Acción comprometida");
-        if (isSoundEnabled()) SoundFX.success();
-        CompassAvatar.speak("¡Un paso más en tu sendero!", "happy");
+        const smartMeaningful = document.getElementById("smartMeaningful")?.checked;
+        const smartAdaptive = document.getElementById("smartAdaptive")?.checked;
+        const hasResource = ["resTime", "resMoney", "resSkills"].some(id => document.getElementById(id)?.checked);
+        const smartError = document.getElementById("smartError");
+        if (!smartMeaningful || !smartAdaptive || !hasResource) {
+            if (smartError) {
+                smartError.hidden = false;
+                smartError.textContent = "Completa M, A y al menos un recurso (R).";
+            }
+            return;
+        }
+        if (smartError) smartError.hidden = true;
+
+        pendingAction = action;
+        showCommitmentPanel(action);
+        toast("Revisa y declara tu compromiso");
     });
 }
 
@@ -89,12 +102,70 @@ export function renderActionValueOptions() {
     const select = el.actionValue;
     if (!select) return;
     select.innerHTML = "";
-    getActiveValues().forEach(v => {
+    const values = getActiveValues();
+    if (values.length === 0) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "Primero elige valores en la pestaña Valores";
+        select.appendChild(opt);
+        return;
+    }
+
+    values.forEach(v => {
         const opt = document.createElement("option");
         opt.value = v.name;
         opt.textContent = v.name;
         select.appendChild(opt);
     });
+}
+
+function showCommitmentPanel(action) {
+    const panel = document.getElementById("commitmentPanel");
+    const summary = document.getElementById("commitmentSummary");
+    const status = document.getElementById("commitmentStatus");
+    if (!panel || !summary || !status) return;
+
+    summary.textContent = `Acción: ${action.title} · Valor: ${action.value} · Área: ${action.area}`;
+    status.textContent = "Pendiente";
+    panel.hidden = false;
+}
+
+function declareCommitment() {
+    if (!pendingAction) {
+        toast("Primero prepara una acción");
+        return;
+    }
+
+    committedActions.push(pendingAction);
+    localStorage.setItem(LS.actions, JSON.stringify(committedActions));
+    renderActionsList();
+
+    el.actionForm.reset();
+    internalBarriers = [];
+    externalBarriers = [];
+    renderInternalBarriers();
+    renderExternalBarriers();
+
+    const status = document.getElementById("commitmentStatus");
+    if (status) status.textContent = "Declarado";
+
+    pendingAction = null;
+    toast("👣 Acción comprometida");
+    if (isSoundEnabled()) SoundFX.success();
+    CompassAvatar.speak("¡Un paso más en tu sendero!", "happy");
+}
+
+function shareCommitment() {
+    const summary = document.getElementById("commitmentSummary")?.textContent;
+    if (!summary) {
+        toast("No hay compromiso para compartir");
+        return;
+    }
+    if (!navigator.clipboard?.writeText) {
+        toast("Portapapeles no disponible");
+        return;
+    }
+    navigator.clipboard.writeText(summary).then(() => toast("Resumen copiado")).catch(() => toast("No se pudo copiar"));
 }
 
 function renderInternalBarriers() {
