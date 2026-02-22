@@ -1,14 +1,51 @@
 "use strict";
 
 import { el } from './main.js';
-import { valuesData, getActiveValues, setActiveValues, MAX_VALUES } from './values.js';
+import { valuesData, getActiveValues, setActiveValues, MAX_VALUES, computeNextCustomId } from './values.js';
 import { SoundFX } from './audio.js';
-import { escapeHTML, toast } from './utils.js';
+import { escapeHTML, toast, LS, safeJSONParse } from './utils.js';
 import { renderActionValueOptions } from './ui_path.js';
 
 export function initValuesModule() {
+  initCustomValueForm();
   renderCards();
   renderActiveList();
+}
+
+function initCustomValueForm() {
+  const addBtn = document.getElementById("addCustomBtn");
+  const nameInput = document.getElementById("customName");
+  const defInput = document.getElementById("customDef");
+  if (!addBtn || !nameInput || !defInput) return;
+
+  addBtn.addEventListener("click", () => {
+    const name = (nameInput.value || "").trim();
+    const def = (defInput.value || "").trim();
+
+    if (!name || !def) {
+      toast("Completa nombre y definición");
+      return;
+    }
+
+    const alreadyExists = valuesData.some(v => v.name.toLowerCase() === name.toLowerCase());
+    if (alreadyExists) {
+      toast("Ese valor ya existe");
+      return;
+    }
+
+    const newValue = { id: computeNextCustomId(), name, def };
+    valuesData.push(newValue);
+    valuesData.sort((a, b) => a.name.localeCompare(b.name));
+
+    const customValues = safeJSONParse(localStorage.getItem(LS.customValues), []);
+    customValues.push(newValue);
+    localStorage.setItem(LS.customValues, JSON.stringify(customValues));
+
+    toggleValue(newValue.id);
+    nameInput.value = "";
+    defInput.value = "";
+    toast("Valor personalizado agregado");
+  });
 }
 
 export function renderCards() {

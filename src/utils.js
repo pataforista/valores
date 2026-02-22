@@ -2,6 +2,7 @@
 
 export const LS = {
     values: "vv_myValues_v1",
+    customValues: "vv_custom_values_v1",
     bullseye: "vv_bullseye_v1",
     theme: "vv_theme_v1",
     actions: "vv_actions_v1",
