@@ -59,6 +59,16 @@ body {
   overflow-x: hidden;
   min-height: 100dvh;
   -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  height: -webkit-fill-available;
+}
+
+body {
+  min-height: -webkit-fill-available;
 }
 
 button {
@@ -181,6 +191,12 @@ main {
   padding: 20px;
   box-shadow: var(--shadow);
   margin-bottom: 16px;
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .card-panel {
+    background: var(--card);
+  }
 }
 
 .panel-title {
@@ -1991,7 +2007,9 @@ textarea:focus-visible {
   width: 100% !important;
   height: 100% !important;
   max-width: 100%;
+  max-height: 100%;
   display: block;
+  margin: 0 auto;
 }
 
 .bubbles-container {
@@ -2104,12 +2122,23 @@ textarea:focus-visible {
   background-clip: padding-box;
 }
 
+.card-container {
+  isolation: isolate;
+  overflow: hidden;
+}
+
 .card {
   isolation: isolate;
+  transform: translateZ(0);
+}
+
+.card-face {
+  -webkit-transform: translateZ(0);
 }
 
 .bullseye-visual {
-  width: min(92vw, 360px);
+  width: min(92vw, 380px);
+  margin-inline: auto;
 }
 
 .slider-row {
