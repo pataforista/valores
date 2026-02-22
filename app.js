@@ -257,8 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadBullseye();
   wireBullseye();
-  updateBullseyeVisual();
-
+  wireViewportHandlers();
   updateBullseyeVisual();
 
   checkIntro();
@@ -389,7 +388,8 @@ function renderCards() {
     // Tooltip
     const tip = document.createElement("div");
     tip.className = "card-tooltip";
-    tip.textContent = "Ver Carta"; // "Caption"
+    tip.id = `card-tip-${v.id}`;
+    tip.textContent = "Ver carta"; // "Caption"
     cardWrap.appendChild(tip);
 
     const flipBtn = document.createElement("button");
@@ -397,6 +397,7 @@ function renderCards() {
     flipBtn.className = "card";
     flipBtn.id = `card-${v.id}`;
     flipBtn.setAttribute("aria-pressed", "false");
+    flipBtn.setAttribute("aria-describedby", `card-tip-${v.id}`);
     flipBtn.setAttribute("aria-label", `${v.name}. Toca para ver definición`);
     flipBtn.style.border = "none";
     flipBtn.style.padding = "0";
@@ -1082,9 +1083,23 @@ function updateBullseyeNumbers() {
   el.numLeisure.textContent = String(d.leisure);
 }
 
+
+
+function wireViewportHandlers() {
+  window.addEventListener("resize", () => {
+    updateBullseyeVisual();
+  });
+
+  window.addEventListener("orientationchange", () => {
+    setTimeout(updateBullseyeVisual, 140);
+  });
+}
+
 function updateBullseyeVisual() {
   const board = document.getElementById("targetBoard");
+  if (!board) return;
   const rect = board.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
   const cx = rect.width / 2;
   const cy = rect.height / 2;
 
