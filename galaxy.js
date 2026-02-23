@@ -4,19 +4,41 @@ const canvas = document.getElementById("galaxy-canvas");
 const ctx = canvas.getContext("2d");
 
 let width, height;
-let stars = [];
+let particles = [];
 
-// Config
-// Config - Tuned to user spec
-const STAR_COUNT = 1000; // Density increased for better visibility
-const SPEED = 0.5; // Faster for more activity
-const MOUSE_REPULSION = 150;
-const HUE_SHIFT = 40; // Cycle colors
+// Config - Antigravity Theme
+const COUNT = 300;
+const MAGNET_RADIUS = 150;
+const RING_RADIUS = 100;
+const WAVE_SPEED = 0.4;
+const WAVE_AMPLITUDE = 10;
+const LERP_SPEED = 0.08;
+const PARTICLE_SIZE = 2;
+const PARTICLE_COLOR = '#FF9FFC'; // Ported from user snippet
+const AUTO_ANIMATE = true;
 
-function initGalaxy() {
+let mouseX = -1000, mouseY = -1000;
+let lastMouseMoveTime = Date.now();
+let virtualMouse = { x: 0, y: 0 };
+
+function initAntigravity() {
     resize();
     window.addEventListener("resize", resize);
-    createStars();
+    window.addEventListener("mousemove", (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        lastMouseMoveTime = Date.now();
+    });
+    // Support touch
+    window.addEventListener("touchmove", (e) => {
+        if (e.touches[0]) {
+            mouseX = e.touches[0].clientX;
+            mouseY = e.touches[0].clientY;
+            lastMouseMoveTime = Date.now();
+        }
+    });
+
+    createParticles();
     animate();
 }
 
@@ -27,66 +49,76 @@ function resize() {
     canvas.height = height;
 }
 
-function createStars() {
-    stars = [];
-    for (let i = 0; i < STAR_COUNT; i++) {
-        stars.push({
-            x: (Math.random() - 0.5) * width * 1.5,
-            y: (Math.random() - 0.5) * height * 1.5,
-            z: Math.random() * 2,
-            size: Math.random() * 1.5,
-            alphaBase: Math.random(),
-            t: Math.random() * Math.PI * 2,
-            hue: Math.random() * HUE_SHIFT
+function createParticles() {
+    particles = [];
+    for (let i = 0; i < COUNT; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        particles.push({
+            t: Math.random() * 100,
+            speed: 0.01 + Math.random() / 50,
+            mx: x,
+            my: y,
+            cx: x,
+            cy: y,
+            randomRadiusOffset: (Math.random() - 0.5) * 15
         });
     }
 }
 
-let mouseX = -1000, mouseY = -1000;
-window.addEventListener("mousemove", (e) => {
-    mouseX = e.clientX - width / 2;
-    mouseY = e.clientY - height / 2;
-});
-
 function animate() {
     ctx.clearRect(0, 0, width, height);
 
-    // Center origin
-    ctx.save();
-    ctx.translate(width / 2, height / 2);
+    let destX = mouseX;
+    let destY = mouseY;
 
-    // Global rotation for "Galaxy" feel
-    const time = Date.now() * 0.0002 * SPEED;
-    ctx.rotate(time);
+    // Auto-animate if idle
+    if (AUTO_ANIMATE && Date.now() - lastMouseMoveTime > 2000) {
+        const time = Date.now() * 0.001;
+        destX = width / 2 + Math.sin(time * 0.5) * (width / 4);
+        destY = height / 2 + Math.cos(time * 0.5 * 2) * (height / 4);
+    }
 
-    stars.forEach(star => {
-        // Individual drift is minimal, the whole galaxy spins
-        // But we add some 'flow' z-axis movement
+    // Smooth virtual mouse
+    virtualMouse.x += (destX - virtualMouse.x) * 0.05;
+    virtualMouse.y += (destY - virtualMouse.y) * 0.05;
 
-        // Mouse repulsion (counter-rotate to apply correctly in world space)
-        // Actually simpler: just draw dots.
+    particles.forEach(p => {
+        p.t += p.speed;
 
-        // star.t += SPEED * 0.01; 
+        const dx = p.mx - virtualMouse.x;
+        const dy = p.my - virtualMouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
-        const x = star.x;
-        const y = star.y;
+        let targetX = p.mx;
+        let targetY = p.my;
 
-        const scale = (star.z + 1) / 2;
-        // Twinkle
-        const alpha = 0.3 + (Math.sin(Date.now() * 0.003 + star.t) + 1) * 0.2 * 0.3;
+        if (dist < MAGNET_RADIUS) {
+            const angle = Math.atan2(dy, dx);
+            const wave = Math.sin(p.t * WAVE_SPEED + angle) * (WAVE_AMPLITUDE);
+            const currentRingRadius = RING_RADIUS + wave + p.randomRadiusOffset;
 
-        // Color with Hue Shift
-        const hue = 200 + star.hue; // Blue-ish base + shift
+            targetX = virtualMouse.x + currentRingRadius * Math.cos(angle);
+            targetY = virtualMouse.y + currentRingRadius * Math.sin(angle);
+        }
+
+        // Lerp to target
+        p.cx += (targetX - p.cx) * LERP_SPEED;
+        p.cy += (targetY - p.cy) * LERP_SPEED;
+
+        // Draw
+        const distToMouse = Math.sqrt(Math.pow(p.cx - virtualMouse.x, 2) + Math.pow(p.cy - virtualMouse.y, 2));
+        const distFromRing = Math.abs(distToMouse - RING_RADIUS);
+        let opacity = 0.1 + (1 - Math.min(distFromRing / 100, 1)) * 0.4;
 
         ctx.beginPath();
-        ctx.arc(x, y, star.size * scale, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${hue}, 80%, 80%, ${alpha})`;
+        ctx.arc(p.cx, p.cy, PARTICLE_SIZE, 0, Math.PI * 2);
+        ctx.fillStyle = PARTICLE_COLOR;
+        ctx.globalAlpha = Math.max(0, opacity);
         ctx.fill();
     });
 
-    ctx.restore();
     requestAnimationFrame(animate);
 }
 
-// Initial call
-if (canvas) initGalaxy();
+if (canvas) initAntigravity();

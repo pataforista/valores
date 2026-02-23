@@ -57,23 +57,46 @@ export function initSosModule() {
         } else {
             clearInterval(boxTimer);
             el.breathPhase.textContent = "Listo";
+            if (el.breathTimer) el.breathTimer.textContent = "0s";
             gsap.to(el.breathSquare, { scale: 1, duration: 0.5 });
+            el.breathSquare.className = "breath-square";
         }
     });
 
     function startBoxBreathing() {
         let phaseIdx = 0;
+        let countdown = 4;
+
         const update = () => {
             const phase = boxPhases[phaseIdx % 4];
             el.breathPhase.textContent = phase.name;
-            const scale = phase.name === "Inhala" ? 1.5 : (phase.name === "Exhala" ? 1 : null);
+
+            // Toggle classes for visual effects (like pulse-glow)
+            el.breathSquare.className = `breath-square ${phase.class}`;
+
+            // Sync square expansion/contraction
+            const scale = phase.name === "Inhala" ? 1.8 : (phase.name === "Exhala" ? 1 : null);
             if (scale !== null) {
                 gsap.to(el.breathSquare, { scale, duration: 4, ease: "sine.inOut" });
             }
+
             phaseIdx++;
+            countdown = 4;
+            if (el.breathTimer) el.breathTimer.textContent = `${countdown}s`;
         };
+
+        const tick = () => {
+            if (!breathing) return;
+            countdown--;
+            if (el.breathTimer) el.breathTimer.textContent = `${countdown}s`;
+
+            if (countdown <= 0) {
+                update();
+            }
+        };
+
         update();
-        boxTimer = setInterval(update, 4000);
+        boxTimer = setInterval(tick, 1000);
     }
 
     // --- Missing SOS Logic Restoration ---

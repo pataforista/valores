@@ -2,6 +2,7 @@
 
 import { LS, safeJSONParse } from './utils.js';
 import { SoundFX } from './audio.js';
+import { DOMAIN_ILLUSTRATIONS } from './illustrations.js';
 
 let bullseyeData = safeJSONParse(localStorage.getItem(LS.bullseye), {
     work: 50,
@@ -12,38 +13,97 @@ let bullseyeData = safeJSONParse(localStorage.getItem(LS.bullseye), {
 
 let chart = null;
 let resizeHandler = null;
+let pointImages = [];
 
 function getChartPadding() {
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    return isMobile ? 34 : 42;
+    return 40; // Symmetric padding for perfect centering
 }
 
 function getPointLabelFontSize() {
     return window.matchMedia("(max-width: 768px)").matches ? 11 : 13;
 }
 
-export function initBullseye(el) {
+/**
+ * Prepares Image objects from PNG assets for Chart.js pointStyle
+ * We resize them to 128x128 for high fidelity on all displays.
+ */
+async function preparePointImages() {
+    const assets = [
+        'assets/trabajo_educación.png',
+        'assets/relaciones.png',
+        'assets/crecimiento.png',
+        'assets/ocio.png'
+    ];
+
+    const loadAndResize = (src) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128; // Higher res
+                canvas.height = 128;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, 128, 128);
+
+                const scaledImg = new Image();
+                scaledImg.onload = () => resolve(scaledImg);
+                scaledImg.src = canvas.toDataURL('image/png', 1.0);
+            };
+            img.onerror = () => {
+                console.error("Error loading asset:", src);
+                resolve(null);
+            };
+            img.src = src;
+        });
+    };
+
+    pointImages = await Promise.all(assets.map(loadAndResize));
+}
+
+function injectIcons() {
+    const labels = {
+        top: document.querySelector('.bullseye-label-top'),
+        right: document.querySelector('.bullseye-label-right'),
+        bottom: document.querySelector('.bullseye-label-bottom'),
+        left: document.querySelector('.bullseye-label-left')
+    };
+
+    if (labels.top) labels.top.innerHTML = `<div class="bullseye-icon"><img src="assets/trabajo_educación.png" alt="Trabajo"></div><span>Trabajo</span>`;
+    if (labels.right) labels.right.innerHTML = `<div class="bullseye-icon"><img src="assets/relaciones.png" alt="Relaciones"></div><span>Relaciones</span>`;
+    if (labels.bottom) labels.bottom.innerHTML = `<div class="bullseye-icon"><img src="assets/crecimiento.png" alt="Crecimiento"></div><span>Crecimiento</span>`;
+    if (labels.left) labels.left.innerHTML = `<div class="bullseye-icon"><img src="assets/ocio.png" alt="Ocio"></div><span>Ocio</span>`;
+}
+
+export async function initBullseye(el) {
+    injectIcons();
+    await preparePointImages();
+
     const ctx = document.createElement('canvas');
     const container = document.querySelector('.bullseye-visual');
-    if (container) {
-        container.innerHTML = '';
-        container.appendChild(ctx);
-    }
+    if (!container) return;
+
+    // Remove existing canvas to avoid duplicates, but preserve labels
+    const oldCanvas = container.querySelector('canvas');
+    if (oldCanvas) oldCanvas.remove();
+
+    container.appendChild(ctx);
 
     chart = new Chart(ctx, {
         type: 'radar',
         data: {
-            labels: ['TRABAJO / EDUCACIÓN', 'RELACIONES', 'CRECIMIENTO PERSONAL', 'OCIO / RECREACIÓN'],
+            labels: ['Trabajo', 'Relaciones', 'Crecimiento', 'Ocio'],
             datasets: [{
                 label: 'Mi Alineación',
                 data: [bullseyeData.work, bullseyeData.rel, bullseyeData.growth, bullseyeData.leisure],
-                backgroundColor: 'rgba(115, 155, 163, 0.2)',
-                borderColor: 'rgba(115, 155, 163, 1)',
+                backgroundColor: 'rgba(91, 140, 150, 0.15)',
+                borderColor: 'rgba(91, 140, 150, 0.4)',
                 borderWidth: 2,
-                pointBackgroundColor: 'rgba(115, 155, 163, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(115, 155, 163, 1)'
+                pointStyle: pointImages,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBorderWidth: 0
             }]
         },
         options: {
@@ -51,34 +111,65 @@ export function initBullseye(el) {
                 r: {
                     min: 0,
                     max: 100,
-                    beginAtZero: true,
-                    ticks: { stepSize: 20, display: false },
-                    grid: { color: 'rgba(148, 163, 184, 0.22)' },
-                    angleLines: { color: 'rgba(148, 163, 184, 0.22)' },
+                    reverse: true, // 100 IS THE CENTER
+                    beginAtZero: false,
+                    ticks: {
+                        display: false,
+                        stepSize: 20
+                    },
+                    grid: {
+                        color: 'rgba(148, 163, 184, 0.25)',
+                        lineWidth: 1
+                    },
+                    angleLines: {
+                        color: 'rgba(148, 163, 184, 0.25)'
+                    },
                     pointLabels: {
-                        color: '#6B7280',
-                        font: {
-                            size: getPointLabelFontSize(),
-                            weight: 'bold',
-                            family: "'Segoe UI', system-ui, sans-serif"
-                        }
+                        display: false
                     }
                 }
             },
-            plugins: { legend: { display: false } },
-            layout: { padding: getChartPadding() },
-            animation: false,
-            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `Cercanía al objetivo: ${ctx.raw}%`
+                    }
+                }
+            },
+            layout: {
+                padding: 15
+            },
+            animation: {
+                duration: 600,
+                easing: 'easeOutQuart'
+            },
+            maintainAspectRatio: true,
             responsive: true
         }
     });
+
+    // Theme change listener for icons
+    const observer = new MutationObserver(async (mutations) => {
+        for (const mutation of mutations) {
+            if (mutation.attributeName === 'class') {
+                await preparePointImages();
+                if (chart) {
+                    chart.data.datasets[0].pointStyle = pointImages;
+                    chart.update('none');
+                }
+                injectIcons();
+                break;
+            }
+        }
+    });
+    observer.observe(document.body, { attributes: true });
 
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
     resizeHandler = () => {
         if (!chart) return;
         chart.options.layout.padding = getChartPadding();
         chart.options.scales.r.pointLabels.font.size = getPointLabelFontSize();
-        chart.resize();
         chart.update('none');
     };
     window.addEventListener('resize', resizeHandler, { passive: true });
@@ -108,6 +199,13 @@ export function initBullseye(el) {
             bullseyeData[key] = val;
             if (nums[key]) nums[key].textContent = val;
             updateChart();
+
+            if (val === 100) {
+                SoundFX.success();
+                const container = document.querySelector('.bullseye-visual');
+                container?.classList.add('bullseye-success');
+                setTimeout(() => container?.classList.remove('bullseye-success'), 1000);
+            }
         });
     });
 
@@ -137,7 +235,14 @@ function updateChart() {
         bullseyeData.growth,
         bullseyeData.leisure
     ];
-    chart.update('none'); // Update without animation for performance while dragging
+    chart.update('none');
+}
+
+export function refreshChart() {
+    if (chart) {
+        chart.resize();
+        chart.update('none');
+    }
 }
 
 export function getBullseye() {

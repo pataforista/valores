@@ -3,7 +3,7 @@
 import { LS, toast, safeJSONParse } from './utils.js';
 import { valuesData, getActiveValues, setActiveValues } from './values.js';
 import { initAudio, SoundFX, toggleSound, isSoundEnabled } from './audio.js';
-import { initBullseye } from './bullseye.js';
+import { initBullseye, refreshChart } from './bullseye.js';
 import { CompassAvatar } from './avatar.js';
 import { initValuesModule } from './ui_values.js';
 import { initSosModule } from './sos.js';
@@ -52,6 +52,7 @@ export const el = {
     sosCountdownValue: document.getElementById("sosCountdownValue"),
     sosTapArea: document.getElementById("sosTapArea"),
     breathToggle: document.getElementById("breathToggle"),
+    breathTimer: document.getElementById("breathTimer"),
     breathPhase: document.getElementById("breathPhase"),
     breathSquare: document.getElementById("breathSquare"),
 
@@ -71,12 +72,12 @@ export const el = {
 };
 
 // Initialize App
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     initTabs();
     initTheme();
     initAudio();
     initSoundToggle();
-    initBullseye();
+    await initBullseye();
     CompassAvatar.init();
     initValuesModule();
     initPathModule();
@@ -204,7 +205,15 @@ function initTabs() {
             views[i].classList.add("active");
 
             // Premium transition using GSAP
-            gsap.fromTo(views[i], { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" });
+            gsap.fromTo(views[i], { opacity: 0, y: 10 }, {
+                opacity: 1,
+                y: 0,
+                duration: 0.4,
+                ease: "power2.out",
+                onComplete: () => {
+                    if (tab.id === 'tab-bullseye') refreshChart();
+                }
+            });
         });
     });
 }

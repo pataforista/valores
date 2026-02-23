@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*; connect-src 'self';">
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*; connect-src 'self' https://cdn.jsdelivr.net;">
   <title>Valores del Valle</title>
 
   <link rel="manifest" href="manifest.json" />
@@ -84,6 +84,11 @@
           </p>
 
           <div class="bullseye-visual" id="targetBoard" aria-label="Diana de valores">
+            <div class="bullseye-label bullseye-label-top"></div>
+            <div class="bullseye-label bullseye-label-right"></div>
+            <div class="bullseye-label bullseye-label-bottom"></div>
+            <div class="bullseye-label bullseye-label-left"></div>
+            <div class="bullseye-center-dot"></div>
           </div>
 
           <div style="margin-top:14px; display:grid; gap:12px;">
@@ -296,7 +301,7 @@
           <div class="sos-row" style="display:flex; align-items:center; gap:12px;">
             <button class="btn" id="noiseToggle">Encender</button>
             <label style="flex:1; display:flex; align-items:center; gap:8px;">
-              <span class="hint" style="margin:0;">Vol</span>
+              <span class="hint" style="margin:0; white-space:nowrap; min-width:fit-content;">Vol.</span>
               <input id="noiseVol" type="range" min="0" max="100" value="25" style="margin:0;" />
             </label>
           </div>
@@ -429,7 +434,8 @@
         <button class="btn" id="introPrevBtn" type="button">Anterior</button>
         <button class="btn primary" id="introNextBtn" type="button">Siguiente</button>
       </div>
-      <button class="btn ghost" id="closeIntroBtn" type="button" style="margin-top:10px; width:100%;">Cerrar intro</button>
+      <button class="btn ghost" id="closeIntroBtn" type="button" style="margin-top:10px; width:100%;">Cerrar
+        intro</button>
     </div>
   </div>
 
