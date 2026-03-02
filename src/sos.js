@@ -196,7 +196,10 @@ export function initSosModule() {
         container.innerHTML = "";
 
         let found = 0;
-        [...cat.items, ...cat.deco].sort(() => Math.random() - 0.5).forEach(text => {
+        const allWords = [...cat.items, ...cat.deco].sort(() => Math.random() - 0.5);
+
+        // Create all bubbles first, then position after DOM paint
+        const bubbles = allWords.map(text => {
             const b = document.createElement("div");
             b.className = "bubble";
             b.textContent = text;
@@ -211,6 +214,35 @@ export function initSosModule() {
                 }
             };
             container.appendChild(b);
+            return b;
+        });
+
+        // Position after paint so offsetWidth/offsetHeight are known
+        requestAnimationFrame(() => {
+            const cW = container.offsetWidth;
+            const cH = container.offsetHeight;
+            const placed = [];
+
+            bubbles.forEach(b => {
+                const bW = b.offsetWidth || 80;
+                const bH = b.offsetHeight || 36;
+                let attempts = 0;
+                let x, y, ok;
+
+                do {
+                    x = Math.random() * Math.max(4, cW - bW - 8) + 4;
+                    y = Math.random() * Math.max(4, cH - bH - 8) + 4;
+                    ok = placed.every(p =>
+                        Math.abs(p.x - x) > (p.w + bW) / 2 + 6 ||
+                        Math.abs(p.y - y) > (p.h + bH) / 2 + 6
+                    );
+                    attempts++;
+                } while (!ok && attempts < 30);
+
+                b.style.left = `${x}px`;
+                b.style.top = `${y}px`;
+                placed.push({ x, y, w: bW, h: bH });
+            });
         });
     });
 

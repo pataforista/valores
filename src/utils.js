@@ -7,6 +7,7 @@ export const LS = {
     theme: "vv_theme_v1",
     actions: "vv_actions_v1",
     seenIntro: "vv_seenIntro_v1",
+    seenInfoCard: "vv_seenInfo_v1",
     sound: "vv_sound_enabled"
 };
 

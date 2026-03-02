@@ -31,8 +31,11 @@
       <small>ACT · Valores + Diana</small>
     </div>
     <div class="top-actions">
+      <button class="icon-btn" id="installPwaBtn" title="Instalar App"
+        style="display:none; color: var(--primary); font-weight: bold;">📲</button>
       <button class="icon-btn" id="manualSaveBtn" title="Guardar todo ahora">💾</button>
       <button class="icon-btn" id="exportBtn" title="Copiar Resumen para Terapeuta">📋</button>
+      <button class="icon-btn" id="showInfoModalBtn" title="Acerca de">ℹ️</button>
       <button class="icon-btn" id="helpBtn" title="Ayuda / Intro">❓</button>
       <button class="icon-btn" id="soundBtn" title="Activar/Desactivar Sonido">🔊</button>
       <button class="icon-btn" id="themeBtn" title="Tema">🌙</button>
@@ -48,6 +51,7 @@
 
   <main>
     <div id="view-values" class="view active">
+
       <section class="card-panel">
         <div class="panel-title">
           <span>Mis Top 10</span>
@@ -453,6 +457,32 @@
       </div>
     </div>
   </div>
+
+  <div id="appInfoModal" class="carousel-modal">
+    <div class="carousel-wrap" style="text-align: left; padding: 24px;">
+      <button class="icon-btn close-card-btn" id="hideInfoModalBtn" aria-label="Cerrar introducción"
+        style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
+      <h3 style="color: var(--primary); font-size: 1.2rem; margin-top: 0; margin-bottom: 12px;">🧭 Sobre esta brújula
+      </h3>
+      <div style="overflow-y: auto; max-height: 60vh; padding-right: 8px;">
+        <p style="margin-top: 0;"><strong>Objetivo:</strong> Valores del Valle es una herramienta para ayudarte a
+          clarificar qué te importa en la vida y comprometerte con acciones alineadas a esos principios.</p>
+        <p><strong>¿Qué es ACT?</strong> La Terapia de Aceptación y Compromiso (ACT) nos enseña a aceptar lo que no
+          podemos controlar y a comprometernos a actuar de una manera que mejore y enriquezca nuestras vidas.</p>
+        <p><strong>¿Cómo usarla?</strong>
+          <br>1️⃣ <strong style="color:var(--primary)">Valores:</strong> Selecciona de la baraja qué principios son
+          innegociables para ti y ordénalos en tu <em>Top 10</em>.
+          <br>2️⃣ <strong style="color:var(--primary)">Diana:</strong> Evalúa constantemente qué tan cerca o lejos vives
+          de esos valores en 4 áreas de tu vida.
+          <br>3️⃣ <strong style="color:var(--primary)">Sendero:</strong> Crea planes de acción específicos e identifica
+          barreras internas y externas.
+          <br>4️⃣ <strong style="color:var(--primary)">SOS:</strong> Si la emoción te desborda, usa las herramientas de
+          emergencia para regular tu cuerpo.
+        </p>
+      </div>
+    </div>
+  </div>
+
   <div class="bg-glow glow-1"></div>
   <div class="bg-glow glow-2"></div>
 

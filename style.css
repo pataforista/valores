@@ -164,11 +164,11 @@ main {
 
 .view {
   display: none;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .view.active {
   display: block;
-  animation: fadeIn 0.3s ease;
 }
 
 @keyframes fadeIn {
@@ -361,21 +361,17 @@ button:not(.tab-btn):not(.icon-btn):active {
 
 .card-container {
   perspective: 1200px;
-  /* Better perspective */
-  height: 280px;
-  /* Taller to prevent overflow */
+  height: 200px;
 
   /* Spotlight & Tilt vars */
   --mouse-x: center;
   --mouse-y: center;
   --spotlight-color: rgba(115, 155, 163, 0.4);
-  /* Stronger glow */
   --rotate-x: 0deg;
   --rotate-y: 0deg;
   --scale: 1;
 
   border-radius: 20px;
-  /* Deep shadow */
   box-shadow:
     0 10px 20px -5px rgba(0, 0, 0, 0.1),
     0 4px 10px -2px rgba(0, 0, 0, 0.08);
@@ -385,9 +381,7 @@ button:not(.tab-btn):not(.icon-btn):active {
       rgba(255, 255, 255, 0.2),
       transparent 80%);
   padding: 2px;
-  /* Thicker border reveal */
   position: relative;
-  /* 3D Transform */
   transform:
     rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale3d(var(--scale), var(--scale), 1);
 
@@ -438,6 +432,35 @@ button:not(.tab-btn):not(.icon-btn):active {
 .rank-item.drop-target {
   border: 2px dashed var(--primary);
   background: rgba(91, 140, 150, 0.05);
+}
+
+.rank-arrows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.arrow-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.65rem;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.arrow-btn:hover {
+  background: var(--ring);
+  color: var(--text);
+}
+
+.arrow-placeholder {
+  display: inline-block;
+  width: 1em;
 }
 
 .card {
@@ -1343,26 +1366,21 @@ body.dark-theme #galaxy-canvas {
 
 .card-container {
   perspective: 1200px;
-  /* Better perspective */
-  height: 280px;
-  /* Taller to prevent overflow */
+  height: 200px;
 
   /* Spotlight & Tilt vars */
   --mouse-x: center;
   --mouse-y: center;
   --spotlight-color: rgba(115, 155, 163, 0.4);
-  /* Stronger glow */
   --rotate-x: 0deg;
   --rotate-y: 0deg;
   --scale: 1;
 
   border-radius: 20px;
-  /* Deep shadow */
   box-shadow:
     0 10px 20px -5px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
-  /* Border for separation, especially in light mode */
   border: 1px solid rgba(0, 0, 0, 0.08);
 
   background: var(--card);
@@ -1370,10 +1388,8 @@ body.dark-theme #galaxy-canvas {
       rgba(255, 255, 255, 0.2),
       transparent 80%);
   padding: 4px;
-  /* Thicker border reveal */
   position: relative;
 
-  /* 3D Transform */
   transform-origin: center center;
   transform:
     rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale3d(var(--scale), var(--scale), 1);
@@ -2170,7 +2186,7 @@ textarea:focus-visible {
 .card-container {
   isolation: isolate;
   overflow: hidden;
-  min-height: 280px;
+  min-height: 180px;
   height: auto;
 }
 

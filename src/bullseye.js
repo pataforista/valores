@@ -40,12 +40,12 @@ async function preparePointImages() {
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                canvas.width = 128; // Higher res
-                canvas.height = 128;
+                canvas.width = 28; // Small icon size for chart points
+                canvas.height = 28;
                 const ctx = canvas.getContext('2d');
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(img, 0, 0, 128, 128);
+                ctx.drawImage(img, 0, 0, 28, 28);
 
                 const scaledImg = new Image();
                 scaledImg.onload = () => resolve(scaledImg);
@@ -169,7 +169,11 @@ export async function initBullseye(el) {
     resizeHandler = () => {
         if (!chart) return;
         chart.options.layout.padding = getChartPadding();
-        chart.options.scales.r.pointLabels.font.size = getPointLabelFontSize();
+        // Only update font size if pointLabels are visible
+        if (chart.options.scales.r.pointLabels?.display) {
+            chart.options.scales.r.pointLabels.font = chart.options.scales.r.pointLabels.font || {};
+            chart.options.scales.r.pointLabels.font.size = getPointLabelFontSize();
+        }
         chart.update('none');
     };
     window.addEventListener('resize', resizeHandler, { passive: true });
