@@ -6,14 +6,23 @@ const STATES = ["neutral", "happy", "worried", "tired", "surprised"];
 
 function initBlinkEffect() {
     const eyes = document.getElementById('eyes');
+    if (!eyes) return;
+
     const blink = () => {
-        gsap.to(eyes, {
-            scaleY: 0.1, duration: 0.1, yoyo: true, repeat: 1, transformOrigin: "center center", onComplete: () => {
-                setTimeout(blink, 2000 + Math.random() * 4000);
+        gsap.killTweensOf(eyes);
+        gsap.timeline({
+            onComplete: () => {
+                const next = 1700 + Math.random() * 3200;
+                setTimeout(blink, next);
             }
-        });
+        })
+            .to(eyes, { scaleY: 0.08, duration: 0.09, transformOrigin: "center center", ease: "power1.in" })
+            .to(eyes, { scaleY: 1, duration: 0.1, ease: "power1.out" })
+            .to(eyes, { scaleY: 0.18, duration: 0.06, ease: "power1.in", delay: 0.12 })
+            .to(eyes, { scaleY: 1, duration: 0.08, ease: "power1.out" });
     };
-    setTimeout(blink, 3000);
+
+    setTimeout(blink, 1400);
 }
 
 export const CompassAvatar = (function () {

@@ -3,7 +3,7 @@
 import { LS, toast, safeJSONParse } from './utils.js';
 import { valuesData, getActiveValues, setActiveValues } from './values.js';
 import { initAudio, SoundFX, toggleSound, isSoundEnabled } from './audio.js';
-import { initBullseye } from './bullseye.js';
+import { initBullseye, refreshChart } from './bullseye.js';
 import { CompassAvatar } from './avatar.js';
 import { initValuesModule } from './ui_values.js';
 import { initSosModule } from './sos.js';
@@ -52,6 +52,7 @@ export const el = {
     sosCountdownValue: document.getElementById("sosCountdownValue"),
     sosTapArea: document.getElementById("sosTapArea"),
     breathToggle: document.getElementById("breathToggle"),
+    breathTimer: document.getElementById("breathTimer"),
     breathPhase: document.getElementById("breathPhase"),
     breathSquare: document.getElementById("breathSquare"),
 
@@ -71,12 +72,12 @@ export const el = {
 };
 
 // Initialize App
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     initTabs();
     initTheme();
     initAudio();
     initSoundToggle();
-    initBullseye();
+    await initBullseye();
     CompassAvatar.init();
     initValuesModule();
     initPathModule();
@@ -84,14 +85,102 @@ document.addEventListener("DOMContentLoaded", () => {
     initResetAll();
     initExport();
     initManualSave();
+    initInstallPrompt();
     initIntro();
+    initInfoCard();
     registerSW();
 });
 
+function initInfoCard() {
+    const modal = document.getElementById("appInfoModal");
+    const showBtn = document.getElementById("showInfoModalBtn");
+    const hideBtn = document.getElementById("hideInfoModalBtn");
+
+    if (!modal) return;
+
+    const showModal = () => {
+        modal.style.display = "flex";
+        requestAnimationFrame(() => {
+            modal.style.opacity = 1;
+            modal.style.pointerEvents = "auto";
+        });
+    };
+
+    const hideModal = () => {
+        modal.style.opacity = 0;
+        modal.style.pointerEvents = "none";
+        setTimeout(() => modal.style.display = "none", 400);
+        localStorage.setItem(LS.seenInfoCard, "true");
+    };
+
+    if (localStorage.getItem(LS.seenInfoCard) !== "true") {
+        setTimeout(showModal, 500);
+    }
+
+    showBtn?.addEventListener("click", showModal);
+    hideBtn?.addEventListener("click", hideModal);
+
+    // Close on backdrop click
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) hideModal();
+    });
+}
+
 function initManualSave() {
     el.manualSaveBtn?.addEventListener("click", () => {
-        toast("💾 Todo guardado localmente");
+        // Mejorar la capacidad de guardar: generar un respaldo JSON completo.
+        const fullData = {
+            values: safeJSONParse(localStorage.getItem(LS.values), []),
+            customValues: safeJSONParse(localStorage.getItem(LS.customValues), []),
+            bullseye: safeJSONParse(localStorage.getItem(LS.bullseye), {}),
+            actions: safeJSONParse(localStorage.getItem(LS.actions), []),
+            theme: localStorage.getItem(LS.theme) || "light"
+        };
+
+        const blob = new Blob([JSON.stringify(fullData, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Valores_Respaldo_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast("💾 Respaldo descargado");
         if (isSoundEnabled()) SoundFX.approval();
+    });
+}
+
+function initInstallPrompt() {
+    let deferredPrompt;
+    const installBtn = document.getElementById("installPwaBtn");
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+        // Prevent Chrome 67 and earlier from automatically showing the prompt
+        e.preventDefault();
+        // Stash the event so it can be triggered later.
+        deferredPrompt = e;
+        // Update UI to notify the user they can add to home screen
+        if (installBtn) installBtn.style.display = "inline-flex";
+    });
+
+    installBtn?.addEventListener("click", async () => {
+        if (!deferredPrompt) return;
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            installBtn.style.display = "none";
+        }
+        deferredPrompt = null;
+    });
+
+    window.addEventListener("appinstalled", () => {
+        if (installBtn) installBtn.style.display = "none";
+        deferredPrompt = null;
+        toast("App instalada con éxito 🎉");
     });
 }
 
@@ -128,6 +217,21 @@ function initIntro() {
 
     const track = document.getElementById("carouselTrack");
     const dots = document.getElementById("carouselDots");
+    const nextBtn = document.getElementById("introNextBtn");
+    const prevBtn = document.getElementById("introPrevBtn");
+    let currentSlide = 0;
+
+    const renderSlide = () => {
+        if (!track || !dots) return;
+        track.style.transform = `translateX(-${currentSlide * 100}%)`;
+        Array.from(dots.children).forEach((d, i) => d.classList.toggle("active", i === currentSlide));
+        if (prevBtn) prevBtn.disabled = currentSlide === 0;
+        if (nextBtn) {
+            nextBtn.textContent = currentSlide === slides.length - 1 ? "Comenzar" : "Siguiente";
+            nextBtn.setAttribute("aria-label", nextBtn.textContent);
+        }
+    };
+
     if (track) {
         track.innerHTML = slides.map(s => `
             <div class="intro-slide">
@@ -144,20 +248,59 @@ function initIntro() {
         setTimeout(show, 1000);
     }
 
+    renderSlide();
+
+    nextBtn?.addEventListener("click", () => {
+        if (currentSlide >= slides.length - 1) {
+            hide();
+            return;
+        }
+        currentSlide++;
+        renderSlide();
+    });
+
+    prevBtn?.addEventListener("click", () => {
+        if (currentSlide === 0) return;
+        currentSlide--;
+        renderSlide();
+    });
+
     // Dot navigation
     dots?.addEventListener("click", (e) => {
         if (e.target.classList.contains("dot")) {
-            const idx = Array.from(dots.children).indexOf(e.target);
-            track.style.transform = `translateX(-${idx * 100}%)`;
-            Array.from(dots.children).forEach((d, i) => d.classList.toggle("active", i === idx));
+            currentSlide = Array.from(dots.children).indexOf(e.target);
+            renderSlide();
         }
     });
 }
 
 function registerSW() {
     if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js").catch(() => { });
+        navigator.serviceWorker.register("./sw.js").then((reg) => {
+            reg.addEventListener("updatefound", () => {
+                const newWorker = reg.installing;
+                if (!newWorker) return;
+                newWorker.addEventListener("statechange", () => {
+                    if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                        // Forzar la actualización
+                        newWorker.postMessage({ type: "SKIP_WAITING" });
+                    }
+                });
+            });
+        }).catch(() => { });
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+            if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+            }
+        });
     }
+
+    // Offline / Online Status
+    window.addEventListener("online", () => toast("Conexión recuperada 🟢"));
+    window.addEventListener("offline", () => toast("Estás navegando sin conexión 🔴"));
 }
 
 function initTabs() {
@@ -167,13 +310,29 @@ function initTabs() {
     tabs.forEach((tab, i) => {
         if (!tab) return;
         tab.addEventListener("click", () => {
-            tabs.forEach(t => t.classList.remove("active"));
-            views.forEach(v => v.classList.remove("active"));
+            tabs.forEach(t => {
+                if (t) {
+                    t.classList.remove("active");
+                    t.setAttribute("aria-selected", "false");
+                }
+            });
+            views.forEach(v => v?.classList.remove("active"));
             tab.classList.add("active");
-            views[i].classList.add("active");
+            tab.setAttribute("aria-selected", "true");
+            if (views[i]) views[i].classList.add("active");
 
             // Premium transition using GSAP
-            gsap.fromTo(views[i], { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" });
+            if (views[i]) {
+                gsap.fromTo(views[i], { opacity: 0, y: 10 }, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.4,
+                    ease: "power2.out",
+                    onComplete: () => {
+                        if (tab.id === 'tab-bullseye') refreshChart();
+                    }
+                });
+            }
         });
     });
 }
@@ -202,18 +361,60 @@ function initSoundToggle() {
 }
 
 function initResetAll() {
+    const deleteModal = document.getElementById("deleteModal");
+    const cancelBtn = document.getElementById("cancelDeleteBtn");
+    const confirmBtn = document.getElementById("confirmDeleteBtn");
+    const timerEl = document.getElementById("deleteTimer");
+
     el.resetBtn?.addEventListener("click", () => {
-        if (confirm("¿Borrar todos los datos?")) {
-            localStorage.clear();
-            window.location.reload();
+        if (!deleteModal) {
+            // Fallback if modal not found
+            if (confirm("¿Borrar todos los datos?")) {
+                localStorage.clear();
+                window.location.reload();
+            }
+            return;
         }
+        // Show modal
+        deleteModal.style.display = "flex";
+        requestAnimationFrame(() => {
+            deleteModal.style.opacity = 1;
+            deleteModal.style.pointerEvents = "auto";
+        });
+        // Countdown
+        confirmBtn.disabled = true;
+        let count = 3;
+        if (timerEl) timerEl.textContent = count;
+        const t = setInterval(() => {
+            count--;
+            if (timerEl) timerEl.textContent = count;
+            if (count <= 0) {
+                clearInterval(t);
+                confirmBtn.disabled = false;
+            }
+        }, 1000);
+    });
+
+    const hideDeleteModal = () => {
+        if (!deleteModal) return;
+        deleteModal.style.opacity = 0;
+        deleteModal.style.pointerEvents = "none";
+        setTimeout(() => deleteModal.style.display = "none", 400);
+    };
+
+    cancelBtn?.addEventListener("click", hideDeleteModal);
+
+    confirmBtn?.addEventListener("click", () => {
+        localStorage.clear();
+        window.location.reload();
+    });
+
+    // Close on backdrop click
+    deleteModal?.addEventListener("click", (e) => {
+        if (e.target === deleteModal) hideDeleteModal();
     });
 }
 
 function initExport() {
     el.exportBtn?.addEventListener("click", runExport);
 }
-
-document.getElementById("closeSosOverlay")?.addEventListener("click", () => {
-    // finishSos is in sos.js, we need to handle closing correctly if needed or export it
-});
