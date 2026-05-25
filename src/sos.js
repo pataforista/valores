@@ -12,6 +12,13 @@ export function initSosModule() {
     let noiseCtx, noiseNode, noiseGain, noiseOn = false;
     const noiseToggle = document.getElementById('noiseToggle');
     const noiseVol = document.getElementById('noiseVol');
+    const noiseTargetVol = () => (Number(noiseVol?.value ?? 25) / 100) * 0.1;
+
+    noiseVol?.addEventListener("input", () => {
+        if (noiseOn && noiseGain && noiseCtx) {
+            noiseGain.gain.setTargetAtTime(noiseTargetVol(), noiseCtx.currentTime, 0.1);
+        }
+    });
 
     noiseToggle?.addEventListener("click", async () => {
         initAudio();
@@ -24,8 +31,7 @@ export function initSosModule() {
                 noiseGain.connect(noiseCtx.destination);
             }
             noiseGain.gain.setValueAtTime(0, noiseCtx.currentTime);
-            const targetVol = (noiseVol?.value / 100 || 0.25) * 0.1;
-            noiseGain.gain.linearRampToValueAtTime(targetVol, noiseCtx.currentTime + 1.5);
+            noiseGain.gain.linearRampToValueAtTime(noiseTargetVol(), noiseCtx.currentTime + 1.5);
             await noiseCtx.resume();
             noiseOn = true;
             noiseToggle.textContent = "Apagar";

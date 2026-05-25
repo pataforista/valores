@@ -1,8 +1,7 @@
 "use strict";
 
-import { LS, safeJSONParse } from './utils.js';
+import { LS, safeJSONParse, toast } from './utils.js';
 import { SoundFX } from './audio.js';
-import { DOMAIN_ILLUSTRATIONS } from './illustrations.js';
 
 let bullseyeData = safeJSONParse(localStorage.getItem(LS.bullseye), {
     work: 50,
