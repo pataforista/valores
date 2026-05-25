@@ -174,7 +174,12 @@ function renderInternalBarriers() {
     list.innerHTML = "";
     internalBarriers.forEach((b, i) => {
         const li = document.createElement("li");
-        li.innerHTML = `<span>${escapeHTML(b.text)}</span> <small>(${escapeHTML(b.skill)})</small>`;
+        li.style.cssText = "display:flex; align-items:center; gap:8px;";
+        li.innerHTML = `<span style="flex:1">${escapeHTML(b.text)} <small>(${escapeHTML(b.skill)})</small></span><button class="mini-btn" title="Quitar barrera" aria-label="Quitar barrera">✕</button>`;
+        li.querySelector("button").addEventListener("click", () => {
+            internalBarriers.splice(i, 1);
+            renderInternalBarriers();
+        });
         list.appendChild(li);
     });
 }
@@ -185,7 +190,12 @@ function renderExternalBarriers() {
     list.innerHTML = "";
     externalBarriers.forEach((b, i) => {
         const li = document.createElement("li");
-        li.innerHTML = `<span>${escapeHTML(b.text)}</span> <small>-> ${escapeHTML(b.plan)}</small>`;
+        li.style.cssText = "display:flex; align-items:center; gap:8px;";
+        li.innerHTML = `<span style="flex:1">${escapeHTML(b.text)} <small>-> ${escapeHTML(b.plan)}</small></span><button class="mini-btn" title="Quitar barrera" aria-label="Quitar barrera">✕</button>`;
+        li.querySelector("button").addEventListener("click", () => {
+            externalBarriers.splice(i, 1);
+            renderExternalBarriers();
+        });
         list.appendChild(li);
     });
 }
@@ -202,10 +212,17 @@ export function renderActionsList() {
         <strong>${escapeHTML(a.title)}</strong>
         <p class="hint">${escapeHTML(a.value)} · ${escapeHTML(a.area)}</p>
       </div>
-      <button class="mini-btn">${a.done ? '✓' : '○'}</button>
+      <button class="mini-btn toggle-action" title="${a.done ? 'Marcar como pendiente' : 'Marcar como hecha'}" aria-label="Marcar como hecha">${a.done ? '✓' : '○'}</button>
+      <button class="mini-btn remove-action" title="Eliminar acción" aria-label="Eliminar acción">🗑️</button>
     `;
-        li.querySelector('button').onclick = () => {
+        li.querySelector('.toggle-action').onclick = () => {
             a.done = !a.done;
+            localStorage.setItem(LS.actions, JSON.stringify(committedActions));
+            renderActionsList();
+        };
+        li.querySelector('.remove-action').onclick = () => {
+            const idx = committedActions.indexOf(a);
+            if (idx > -1) committedActions.splice(idx, 1);
             localStorage.setItem(LS.actions, JSON.stringify(committedActions));
             renderActionsList();
         };

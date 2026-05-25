@@ -1,8 +1,7 @@
 "use strict";
 
-import { LS, safeJSONParse } from './utils.js';
+import { LS, safeJSONParse, toast } from './utils.js';
 import { SoundFX } from './audio.js';
-import { DOMAIN_ILLUSTRATIONS } from './illustrations.js';
 
 let bullseyeData = safeJSONParse(localStorage.getItem(LS.bullseye), {
     work: 50,
@@ -29,7 +28,7 @@ function getPointLabelFontSize() {
  */
 async function preparePointImages() {
     const assets = [
-        'assets/trabajo_educación.png',
+        'assets/trabajo_educacion.png',
         'assets/relaciones.png',
         'assets/crecimiento.png',
         'assets/ocio.png'
@@ -70,7 +69,7 @@ function injectIcons() {
         left: document.querySelector('.bullseye-label-left')
     };
 
-    if (labels.top) labels.top.innerHTML = `<div class="bullseye-icon"><img src="assets/trabajo_educación.png" alt="Trabajo"></div><span>Trabajo</span>`;
+    if (labels.top) labels.top.innerHTML = `<div class="bullseye-icon"><img src="assets/trabajo_educacion.png" alt="Trabajo"></div><span>Trabajo</span>`;
     if (labels.right) labels.right.innerHTML = `<div class="bullseye-icon"><img src="assets/relaciones.png" alt="Relaciones"></div><span>Relaciones</span>`;
     if (labels.bottom) labels.bottom.innerHTML = `<div class="bullseye-icon"><img src="assets/crecimiento.png" alt="Crecimiento"></div><span>Crecimiento</span>`;
     if (labels.left) labels.left.innerHTML = `<div class="bullseye-icon"><img src="assets/ocio.png" alt="Ocio"></div><span>Ocio</span>`;

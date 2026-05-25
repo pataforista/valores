@@ -3,7 +3,7 @@
 import { el } from './main.js';
 import { SoundFX, isSoundEnabled, initAudio } from './audio.js';
 import { CompassAvatar } from './avatar.js';
-import { toast } from './utils.js';
+import { toast, attachModalKeyboard } from './utils.js';
 
 export function initSosModule() {
     if (!el.tabSos) return;
@@ -12,6 +12,13 @@ export function initSosModule() {
     let noiseCtx, noiseNode, noiseGain, noiseOn = false;
     const noiseToggle = document.getElementById('noiseToggle');
     const noiseVol = document.getElementById('noiseVol');
+    const noiseTargetVol = () => (Number(noiseVol?.value ?? 25) / 100) * 0.1;
+
+    noiseVol?.addEventListener("input", () => {
+        if (noiseOn && noiseGain && noiseCtx) {
+            noiseGain.gain.setTargetAtTime(noiseTargetVol(), noiseCtx.currentTime, 0.1);
+        }
+    });
 
     noiseToggle?.addEventListener("click", async () => {
         initAudio();
@@ -24,8 +31,7 @@ export function initSosModule() {
                 noiseGain.connect(noiseCtx.destination);
             }
             noiseGain.gain.setValueAtTime(0, noiseCtx.currentTime);
-            const targetVol = (noiseVol?.value / 100 || 0.25) * 0.1;
-            noiseGain.gain.linearRampToValueAtTime(targetVol, noiseCtx.currentTime + 1.5);
+            noiseGain.gain.linearRampToValueAtTime(noiseTargetVol(), noiseCtx.currentTime + 1.5);
             await noiseCtx.resume();
             noiseOn = true;
             noiseToggle.textContent = "Apagar";
@@ -101,7 +107,23 @@ export function initSosModule() {
 
     // --- Missing SOS Logic Restoration ---
 
+    let activeTimers = [];
+    let sosOpener = null;
+    const trackTimer = (id) => { activeTimers.push(id); return id; };
+    const clearActiveTimers = () => { activeTimers.forEach(clearInterval); activeTimers = []; };
+
+    const closeOverlay = () => {
+        clearActiveTimers();
+        el.sosOverlay.hidden = true;
+        el.sosNextBtn.onclick = null;
+        el.sosNextBtn.disabled = false;
+        sosOpener?.focus?.();
+    };
+    attachModalKeyboard(el.sosOverlay, closeOverlay);
+
     const resetOverlay = () => {
+        clearActiveTimers();
+        if (el.sosOverlay.hidden) sosOpener = document.activeElement;
         el.sosOverlay.hidden = false;
         el.sosTapArea.style.display = "none";
         el.sosIllustration.style.display = "none";
@@ -118,6 +140,8 @@ export function initSosModule() {
         document.getElementById("categoriesStep").style.display = "none";
         document.getElementById("heelStep").style.display = "none";
         document.getElementById("genericStep").style.display = "none";
+
+        document.getElementById("closeSosOverlay")?.focus();
     };
 
     const finishSos = () => {
@@ -255,7 +279,7 @@ export function initSosModule() {
         el.sosNextBtn.onclick = finishSos;
 
         let beat = 0;
-        const t = setInterval(() => {
+        const t = trackTimer(setInterval(() => {
             if (el.sosOverlay.hidden || document.getElementById("heelStep").style.display === "none") {
                 clearInterval(t);
                 return;
@@ -265,7 +289,7 @@ export function initSosModule() {
             document.getElementById("metronomeBeat").className = `metronome-beat ${isLeft ? "beat-left" : "beat-right"}`;
             document.getElementById("metronomeText").textContent = isLeft ? "Uno..." : "Dos...";
             if (navigator.vibrate) navigator.vibrate(50);
-        }, 1000);
+        }, 1000));
     });
 
     // TIP / DBT Buttons
@@ -280,7 +304,7 @@ export function initSosModule() {
         document.getElementById("sosStepHint").textContent = hint;
 
         let remaining = seconds;
-        const t = setInterval(() => {
+        const t = trackTimer(setInterval(() => {
             remaining--;
             document.getElementById("sosCountdownValue").textContent = `${remaining}s`;
             el.sosProgressBar.style.width = `${((seconds - remaining) / seconds) * 100}%`;
@@ -288,7 +312,7 @@ export function initSosModule() {
                 clearInterval(t);
                 if (remaining <= 0) finishSos();
             }
-        }, 1000);
+        }, 1000));
     };
 
     document.getElementById("tipTempBtn")?.addEventListener("click", () => runTimerStep("Temperatura", "🧊", "Usa agua fría o un hielo en tus manos.", 30));
@@ -326,11 +350,7 @@ export function initSosModule() {
         };
     });
 
-    document.getElementById("closeSosOverlay")?.addEventListener("click", () => {
-        el.sosOverlay.hidden = true;
-        el.sosNextBtn.onclick = null;
-        el.sosNextBtn.disabled = false;
-    });
+    document.getElementById("closeSosOverlay")?.addEventListener("click", closeOverlay);
 }
 
 function createBrownNoise(ctx) {

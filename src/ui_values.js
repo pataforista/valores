@@ -5,7 +5,6 @@ import { valuesData, getActiveValues, setActiveValues, MAX_VALUES, computeNextCu
 import { SoundFX } from './audio.js';
 import { escapeHTML, toast, LS, safeJSONParse } from './utils.js';
 import { renderActionValueOptions } from './ui_path.js';
-import { DOMAIN_ILLUSTRATIONS, getDomainForValue } from './illustrations.js';
 
 export function initValuesModule() {
   initCustomValueForm();

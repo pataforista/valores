@@ -1,7 +1,7 @@
 /* Valores del Valle CACB — SW (cache simple) */
 
 // Cambio versión para forzar actualización
-const CACHE_NAME = "valores-del-valle-v5";
+const CACHE_NAME = "valores-del-valle-v7";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,6 +9,7 @@ const ASSETS = [
   "./outfit.css",
   "./galaxy.js",
   "./manifest.json",
+  "./favicon.svg",
   "./src/main.js",
   "./src/utils.js",
   "./src/values.js",
@@ -20,7 +21,11 @@ const ASSETS = [
   "./src/ui_path.js",
   "./src/export.js",
   "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./icons/icon-512.png",
+  "./assets/trabajo_educacion.png",
+  "./assets/relaciones.png",
+  "./assets/crecimiento.png",
+  "./assets/ocio.png"
 ];
 
 self.addEventListener("install", (event) => {
