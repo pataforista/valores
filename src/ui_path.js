@@ -174,7 +174,12 @@ function renderInternalBarriers() {
     list.innerHTML = "";
     internalBarriers.forEach((b, i) => {
         const li = document.createElement("li");
-        li.innerHTML = `<span>${escapeHTML(b.text)}</span> <small>(${escapeHTML(b.skill)})</small>`;
+        li.style.cssText = "display:flex; align-items:center; gap:8px;";
+        li.innerHTML = `<span style="flex:1">${escapeHTML(b.text)} <small>(${escapeHTML(b.skill)})</small></span><button class="mini-btn" title="Quitar barrera" aria-label="Quitar barrera">✕</button>`;
+        li.querySelector("button").addEventListener("click", () => {
+            internalBarriers.splice(i, 1);
+            renderInternalBarriers();
+        });
         list.appendChild(li);
     });
 }
@@ -185,7 +190,12 @@ function renderExternalBarriers() {
     list.innerHTML = "";
     externalBarriers.forEach((b, i) => {
         const li = document.createElement("li");
-        li.innerHTML = `<span>${escapeHTML(b.text)}</span> <small>-> ${escapeHTML(b.plan)}</small>`;
+        li.style.cssText = "display:flex; align-items:center; gap:8px;";
+        li.innerHTML = `<span style="flex:1">${escapeHTML(b.text)} <small>-> ${escapeHTML(b.plan)}</small></span><button class="mini-btn" title="Quitar barrera" aria-label="Quitar barrera">✕</button>`;
+        li.querySelector("button").addEventListener("click", () => {
+            externalBarriers.splice(i, 1);
+            renderExternalBarriers();
+        });
         list.appendChild(li);
     });
 }
