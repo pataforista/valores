@@ -107,7 +107,12 @@ export function initSosModule() {
 
     // --- Missing SOS Logic Restoration ---
 
+    let activeTimers = [];
+    const trackTimer = (id) => { activeTimers.push(id); return id; };
+    const clearActiveTimers = () => { activeTimers.forEach(clearInterval); activeTimers = []; };
+
     const resetOverlay = () => {
+        clearActiveTimers();
         el.sosOverlay.hidden = false;
         el.sosTapArea.style.display = "none";
         el.sosIllustration.style.display = "none";
@@ -261,7 +266,7 @@ export function initSosModule() {
         el.sosNextBtn.onclick = finishSos;
 
         let beat = 0;
-        const t = setInterval(() => {
+        const t = trackTimer(setInterval(() => {
             if (el.sosOverlay.hidden || document.getElementById("heelStep").style.display === "none") {
                 clearInterval(t);
                 return;
@@ -271,7 +276,7 @@ export function initSosModule() {
             document.getElementById("metronomeBeat").className = `metronome-beat ${isLeft ? "beat-left" : "beat-right"}`;
             document.getElementById("metronomeText").textContent = isLeft ? "Uno..." : "Dos...";
             if (navigator.vibrate) navigator.vibrate(50);
-        }, 1000);
+        }, 1000));
     });
 
     // TIP / DBT Buttons
@@ -286,7 +291,7 @@ export function initSosModule() {
         document.getElementById("sosStepHint").textContent = hint;
 
         let remaining = seconds;
-        const t = setInterval(() => {
+        const t = trackTimer(setInterval(() => {
             remaining--;
             document.getElementById("sosCountdownValue").textContent = `${remaining}s`;
             el.sosProgressBar.style.width = `${((seconds - remaining) / seconds) * 100}%`;
@@ -294,7 +299,7 @@ export function initSosModule() {
                 clearInterval(t);
                 if (remaining <= 0) finishSos();
             }
-        }, 1000);
+        }, 1000));
     };
 
     document.getElementById("tipTempBtn")?.addEventListener("click", () => runTimerStep("Temperatura", "🧊", "Usa agua fría o un hielo en tus manos.", 30));
@@ -333,6 +338,7 @@ export function initSosModule() {
     });
 
     document.getElementById("closeSosOverlay")?.addEventListener("click", () => {
+        clearActiveTimers();
         el.sosOverlay.hidden = true;
         el.sosNextBtn.onclick = null;
         el.sosNextBtn.disabled = false;
