@@ -3,7 +3,7 @@
 import { el } from './main.js';
 import { SoundFX, isSoundEnabled, initAudio } from './audio.js';
 import { CompassAvatar } from './avatar.js';
-import { toast } from './utils.js';
+import { toast, attachModalKeyboard } from './utils.js';
 
 export function initSosModule() {
     if (!el.tabSos) return;
@@ -108,11 +108,22 @@ export function initSosModule() {
     // --- Missing SOS Logic Restoration ---
 
     let activeTimers = [];
+    let sosOpener = null;
     const trackTimer = (id) => { activeTimers.push(id); return id; };
     const clearActiveTimers = () => { activeTimers.forEach(clearInterval); activeTimers = []; };
 
+    const closeOverlay = () => {
+        clearActiveTimers();
+        el.sosOverlay.hidden = true;
+        el.sosNextBtn.onclick = null;
+        el.sosNextBtn.disabled = false;
+        sosOpener?.focus?.();
+    };
+    attachModalKeyboard(el.sosOverlay, closeOverlay);
+
     const resetOverlay = () => {
         clearActiveTimers();
+        if (el.sosOverlay.hidden) sosOpener = document.activeElement;
         el.sosOverlay.hidden = false;
         el.sosTapArea.style.display = "none";
         el.sosIllustration.style.display = "none";
@@ -129,6 +140,8 @@ export function initSosModule() {
         document.getElementById("categoriesStep").style.display = "none";
         document.getElementById("heelStep").style.display = "none";
         document.getElementById("genericStep").style.display = "none";
+
+        document.getElementById("closeSosOverlay")?.focus();
     };
 
     const finishSos = () => {
@@ -337,12 +350,7 @@ export function initSosModule() {
         };
     });
 
-    document.getElementById("closeSosOverlay")?.addEventListener("click", () => {
-        clearActiveTimers();
-        el.sosOverlay.hidden = true;
-        el.sosNextBtn.onclick = null;
-        el.sosNextBtn.disabled = false;
-    });
+    document.getElementById("closeSosOverlay")?.addEventListener("click", closeOverlay);
 }
 
 function createBrownNoise(ctx) {

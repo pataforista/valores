@@ -44,14 +44,14 @@
   </header>
 
   <div class="tabs" role="tablist" aria-label="Navegación principal">
-    <button class="tab-btn active" id="tab-values" aria-selected="true">Valores</button>
-    <button class="tab-btn" id="tab-bullseye" aria-selected="false">Diana</button>
-    <button class="tab-btn" id="tab-path" aria-selected="false">Sendero</button>
-    <button class="tab-btn" id="tab-sos" aria-selected="false">SOS</button>
+    <button class="tab-btn active" id="tab-values" role="tab" aria-selected="true" aria-controls="view-values" tabindex="0">Valores</button>
+    <button class="tab-btn" id="tab-bullseye" role="tab" aria-selected="false" aria-controls="view-bullseye" tabindex="-1">Diana</button>
+    <button class="tab-btn" id="tab-path" role="tab" aria-selected="false" aria-controls="view-path" tabindex="-1">Sendero</button>
+    <button class="tab-btn" id="tab-sos" role="tab" aria-selected="false" aria-controls="view-sos" tabindex="-1">SOS</button>
   </div>
 
   <main>
-    <div id="view-values" class="view active">
+    <div id="view-values" class="view active" role="tabpanel" aria-labelledby="tab-values">
 
       <section class="card-panel">
         <div class="panel-title">
@@ -79,7 +79,7 @@
       <div class="values-grid" id="cards-container"></div>
     </div>
 
-    <div id="view-bullseye" class="view">
+    <div id="view-bullseye" class="view" role="tabpanel" aria-labelledby="tab-bullseye">
       <div class="bullseye-wrap">
         <section class="card-panel">
           <div class="panel-title"><span>La Diana</span></div>
@@ -123,7 +123,7 @@
       </div>
     </div>
 
-    <div id="view-path" class="view">
+    <div id="view-path" class="view" role="tabpanel" aria-labelledby="tab-path">
       <section class="card-panel">
         <div class="panel-title">
           <span>El Sendero de los Pasos Pequeños</span>
@@ -264,7 +264,7 @@
     </div>
 
     <!-- SOS View (Steam Out) -->
-    <div id="view-sos" class="view">
+    <div id="view-sos" class="view" role="tabpanel" aria-labelledby="tab-sos">
       <section class="card-panel hero-sos">
         <div class="panel-title">
           <span>SOS · Enfoque</span>
@@ -431,7 +431,7 @@
     </div>
   </footer>
 
-  <div id="introModal" class="carousel-modal">
+  <div id="introModal" class="carousel-modal" role="dialog" aria-modal="true" aria-label="Introducción a la aplicación">
     <div class="carousel-wrap">
       <div class="carousel-track" id="carouselTrack"></div>
       <div class="carousel-dots" id="carouselDots"></div>
@@ -446,10 +446,10 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
 
-  <div id="deleteModal" class="carousel-modal">
+  <div id="deleteModal" class="carousel-modal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
     <div class="carousel-wrap delete-modal-content">
       <div style="font-size:3rem;">🗑️</div>
-      <h3>¿Borrar todo?</h3>
+      <h3 id="deleteModalTitle">¿Borrar todo?</h3>
       <p>Esto eliminará tus valores, diana y compromisos. No se puede deshacer.</p>
       <div class="delete-timer" id="deleteTimer">3</div>
       <div class="inline-actions" style="justify-content:center; gap:8px;">
@@ -459,11 +459,11 @@
     </div>
   </div>
 
-  <div id="appInfoModal" class="carousel-modal">
+  <div id="appInfoModal" class="carousel-modal" role="dialog" aria-modal="true" aria-labelledby="appInfoTitle">
     <div class="carousel-wrap" style="text-align: left; padding: 24px;">
       <button class="icon-btn close-card-btn" id="hideInfoModalBtn" aria-label="Cerrar introducción"
         style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
-      <h3 style="color: var(--primary); font-size: 1.2rem; margin-top: 0; margin-bottom: 12px;">🧭 Sobre esta brújula
+      <h3 id="appInfoTitle" style="color: var(--primary); font-size: 1.2rem; margin-top: 0; margin-bottom: 12px;">🧭 Sobre esta brújula
       </h3>
       <div style="overflow-y: auto; max-height: 60vh; padding-right: 8px;">
         <p style="margin-top: 0;"><strong>Objetivo:</strong> Valores del Valle es una herramienta para ayudarte a
@@ -558,7 +558,7 @@
     </div>
   </div>
   <div id="sosOverlay" class="sos-overlay-backdrop" hidden>
-    <div class="sos-modal">
+    <div class="sos-modal" role="dialog" aria-modal="true" aria-labelledby="sosModalTitle">
       <div class="sos-modal-header">
         <h3 id="sosModalTitle">SOS</h3>
         <button class="mini-btn" id="closeSosOverlay">✕</button>

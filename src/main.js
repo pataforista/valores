@@ -1,6 +1,6 @@
 "use strict";
 
-import { LS, toast, safeJSONParse } from './utils.js';
+import { LS, toast, safeJSONParse, attachModalKeyboard } from './utils.js';
 import { valuesData, getActiveValues, setActiveValues } from './values.js';
 import { initAudio, SoundFX, toggleSound, isSoundEnabled } from './audio.js';
 import { initBullseye, refreshChart } from './bullseye.js';
@@ -98,11 +98,15 @@ function initInfoCard() {
 
     if (!modal) return;
 
+    let infoOpener = null;
+
     const showModal = () => {
+        infoOpener = document.activeElement;
         modal.style.display = "flex";
         requestAnimationFrame(() => {
             modal.style.opacity = 1;
             modal.style.pointerEvents = "auto";
+            hideBtn?.focus();
         });
     };
 
@@ -111,6 +115,7 @@ function initInfoCard() {
         modal.style.pointerEvents = "none";
         setTimeout(() => modal.style.display = "none", 400);
         localStorage.setItem(LS.seenInfoCard, "true");
+        infoOpener?.focus?.();
     };
 
     if (localStorage.getItem(LS.seenInfoCard) !== "true") {
@@ -119,6 +124,7 @@ function initInfoCard() {
 
     showBtn?.addEventListener("click", showModal);
     hideBtn?.addEventListener("click", hideModal);
+    attachModalKeyboard(modal, hideModal);
 
     // Close on backdrop click
     modal.addEventListener("click", (e) => {
@@ -189,11 +195,15 @@ function initIntro() {
     const closeBtn = document.getElementById("closeIntroBtn");
     const helpBtn = document.getElementById("helpBtn");
 
+    let introOpener = null;
+
     const show = () => {
+        introOpener = document.activeElement;
         modal.style.display = "flex";
         requestAnimationFrame(() => {
             modal.style.opacity = 1;
             modal.style.pointerEvents = "auto";
+            (document.getElementById("introNextBtn") || closeBtn)?.focus();
         });
     };
 
@@ -202,10 +212,12 @@ function initIntro() {
         modal.style.pointerEvents = "none";
         setTimeout(() => modal.style.display = "none", 400);
         localStorage.setItem(LS.seenIntro, "true");
+        introOpener?.focus?.();
     };
 
     helpBtn?.addEventListener("click", show);
     closeBtn?.addEventListener("click", hide);
+    attachModalKeyboard(modal, hide);
 
     const slides = [
         { t: "¡Bienvenido! 🌟", d: "Esta es tu brújula personal para vivir una vida con propósito basándonos en ACT y DBT." },
@@ -307,32 +319,43 @@ function initTabs() {
     const tabs = [el.tabValues, el.tabBull, el.tabPath, el.tabSos];
     const views = [el.viewValues, el.viewBull, el.viewPath, el.viewSos];
 
-    tabs.forEach((tab, i) => {
-        if (!tab) return;
-        tab.addEventListener("click", () => {
-            tabs.forEach(t => {
-                if (t) {
-                    t.classList.remove("active");
-                    t.setAttribute("aria-selected", "false");
+    const activateTab = (i, setFocus = false) => {
+        tabs.forEach((t, j) => {
+            if (!t) return;
+            const selected = j === i;
+            t.classList.toggle("active", selected);
+            t.setAttribute("aria-selected", selected ? "true" : "false");
+            t.tabIndex = selected ? 0 : -1;
+        });
+        views.forEach((v, j) => v?.classList.toggle("active", j === i));
+        if (setFocus) tabs[i]?.focus();
+
+        // Premium transition using GSAP
+        if (views[i]) {
+            gsap.fromTo(views[i], { opacity: 0, y: 10 }, {
+                opacity: 1,
+                y: 0,
+                duration: 0.4,
+                ease: "power2.out",
+                onComplete: () => {
+                    if (tabs[i]?.id === 'tab-bullseye') refreshChart();
                 }
             });
-            views.forEach(v => v?.classList.remove("active"));
-            tab.classList.add("active");
-            tab.setAttribute("aria-selected", "true");
-            if (views[i]) views[i].classList.add("active");
+        }
+    };
 
-            // Premium transition using GSAP
-            if (views[i]) {
-                gsap.fromTo(views[i], { opacity: 0, y: 10 }, {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.4,
-                    ease: "power2.out",
-                    onComplete: () => {
-                        if (tab.id === 'tab-bullseye') refreshChart();
-                    }
-                });
-            }
+    tabs.forEach((tab, i) => {
+        if (!tab) return;
+        tab.addEventListener("click", () => activateTab(i));
+        tab.addEventListener("keydown", (e) => {
+            let next = null;
+            if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (i + 1) % tabs.length;
+            else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (i - 1 + tabs.length) % tabs.length;
+            else if (e.key === "Home") next = 0;
+            else if (e.key === "End") next = tabs.length - 1;
+            if (next === null) return;
+            e.preventDefault();
+            activateTab(next, true);
         });
     });
 }
@@ -366,6 +389,9 @@ function initResetAll() {
     const confirmBtn = document.getElementById("confirmDeleteBtn");
     const timerEl = document.getElementById("deleteTimer");
 
+    let countdownTimer = null;
+    let deleteOpener = null;
+
     el.resetBtn?.addEventListener("click", () => {
         if (!deleteModal) {
             // Fallback if modal not found
@@ -376,20 +402,24 @@ function initResetAll() {
             return;
         }
         // Show modal
+        deleteOpener = document.activeElement;
         deleteModal.style.display = "flex";
         requestAnimationFrame(() => {
             deleteModal.style.opacity = 1;
             deleteModal.style.pointerEvents = "auto";
+            cancelBtn?.focus();
         });
         // Countdown
         confirmBtn.disabled = true;
         let count = 3;
         if (timerEl) timerEl.textContent = count;
-        const t = setInterval(() => {
+        if (countdownTimer) clearInterval(countdownTimer);
+        countdownTimer = setInterval(() => {
             count--;
             if (timerEl) timerEl.textContent = count;
             if (count <= 0) {
-                clearInterval(t);
+                clearInterval(countdownTimer);
+                countdownTimer = null;
                 confirmBtn.disabled = false;
             }
         }, 1000);
@@ -397,12 +427,15 @@ function initResetAll() {
 
     const hideDeleteModal = () => {
         if (!deleteModal) return;
+        if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
         deleteModal.style.opacity = 0;
         deleteModal.style.pointerEvents = "none";
         setTimeout(() => deleteModal.style.display = "none", 400);
+        deleteOpener?.focus?.();
     };
 
     cancelBtn?.addEventListener("click", hideDeleteModal);
+    attachModalKeyboard(deleteModal, hideDeleteModal);
 
     confirmBtn?.addEventListener("click", () => {
         localStorage.clear();

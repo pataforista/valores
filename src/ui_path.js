@@ -212,10 +212,17 @@ export function renderActionsList() {
         <strong>${escapeHTML(a.title)}</strong>
         <p class="hint">${escapeHTML(a.value)} · ${escapeHTML(a.area)}</p>
       </div>
-      <button class="mini-btn">${a.done ? '✓' : '○'}</button>
+      <button class="mini-btn toggle-action" title="${a.done ? 'Marcar como pendiente' : 'Marcar como hecha'}" aria-label="Marcar como hecha">${a.done ? '✓' : '○'}</button>
+      <button class="mini-btn remove-action" title="Eliminar acción" aria-label="Eliminar acción">🗑️</button>
     `;
-        li.querySelector('button').onclick = () => {
+        li.querySelector('.toggle-action').onclick = () => {
             a.done = !a.done;
+            localStorage.setItem(LS.actions, JSON.stringify(committedActions));
+            renderActionsList();
+        };
+        li.querySelector('.remove-action').onclick = () => {
+            const idx = committedActions.indexOf(a);
+            if (idx > -1) committedActions.splice(idx, 1);
             localStorage.setItem(LS.actions, JSON.stringify(committedActions));
             renderActionsList();
         };

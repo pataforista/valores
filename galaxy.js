@@ -21,6 +21,9 @@ let mouseX = -1000, mouseY = -1000;
 let lastMouseMoveTime = Date.now();
 let virtualMouse = { x: 0, y: 0 };
 
+const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+let rafId = null;
+
 function initAntigravity() {
     resize();
     window.addEventListener("resize", resize);
@@ -40,6 +43,15 @@ function initAntigravity() {
 
     createParticles();
     animate();
+
+    // Pause the loop when the tab is hidden to save battery/CPU
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+        } else if (!prefersReducedMotion && rafId == null) {
+            rafId = requestAnimationFrame(animate);
+        }
+    });
 }
 
 function resize() {
@@ -67,6 +79,7 @@ function createParticles() {
 }
 
 function animate() {
+    rafId = null;
     ctx.clearRect(0, 0, width, height);
 
     let destX = mouseX;
@@ -118,7 +131,8 @@ function animate() {
         ctx.fill();
     });
 
-    requestAnimationFrame(animate);
+    // Respect reduced-motion: render a single static frame, no loop
+    if (!prefersReducedMotion) rafId = requestAnimationFrame(animate);
 }
 
 if (canvas) initAntigravity();
