@@ -1,7 +1,7 @@
 /* Valores del Valle CACB — SW (cache simple) */
 
 // Cambio versión para forzar actualización
-const CACHE_NAME = "valores-del-valle-v7";
+const CACHE_NAME = "valores-del-valle-v8";
 const ASSETS = [
   "./",
   "./index.html",
@@ -10,6 +10,8 @@ const ASSETS = [
   "./galaxy.js",
   "./manifest.json",
   "./favicon.svg",
+  "./vendor/gsap.min.js",
+  "./vendor/chart.umd.min.js",
   "./src/main.js",
   "./src/utils.js",
   "./src/values.js",
@@ -22,6 +24,7 @@ const ASSETS = [
   "./src/export.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
+  "./icons/icon-maskable-512.png",
   "./assets/trabajo_educacion.png",
   "./assets/relaciones.png",
   "./assets/crecimiento.png",
