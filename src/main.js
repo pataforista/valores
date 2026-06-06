@@ -73,11 +73,18 @@ export const el = {
 
 // Initialize App
 document.addEventListener("DOMContentLoaded", async () => {
+    ensureGsapFallback();
     initTabs();
     initTheme();
     initAudio();
     initSoundToggle();
-    await initBullseye();
+    // La diana depende de Chart.js; si falla (p. ej. sin librería), no debe
+    // impedir que se inicialice el resto de la app (sobre todo SOS).
+    try {
+        await initBullseye();
+    } catch (err) {
+        console.error("No se pudo inicializar la diana:", err);
+    }
     CompassAvatar.init();
     initValuesModule();
     initPathModule();
@@ -90,6 +97,33 @@ document.addEventListener("DOMContentLoaded", async () => {
     initInfoCard();
     registerSW();
 });
+
+// Si GSAP no llegó a cargar (red, bloqueo, etc.), define un sustituto sin
+// animaciones para que las decenas de llamadas a `gsap.*` no lancen errores y
+// la app siga siendo usable. Respeta los callbacks onStart/onComplete.
+function ensureGsapFallback() {
+    if (window.gsap) return;
+
+    const fire = (vars) => {
+        try { vars?.onStart?.(); } catch { /* noop */ }
+        try { vars?.onComplete?.(); } catch { /* noop */ }
+    };
+
+    const api = {
+        to: (_t, vars) => { fire(vars); return api; },
+        from: (_t, vars) => { fire(vars); return api; },
+        fromTo: (_t, _from, vars) => { fire(vars); return api; },
+        set: () => api,
+        killTweensOf: () => { },
+        timeline: (vars) => {
+            const t = { to: () => t, from: () => t, fromTo: () => t, set: () => t };
+            fire(vars);
+            return t;
+        }
+    };
+
+    window.gsap = api;
+}
 
 function initInfoCard() {
     const modal = document.getElementById("appInfoModal");
