@@ -1,7 +1,7 @@
 /* Valores del Valle CACB — SW (cache simple) */
 
 // Cambio versión para forzar actualización
-const CACHE_NAME = "valores-del-valle-v8";
+const CACHE_NAME = "valores-del-valle-v9";
 const ASSETS = [
   "./",
   "./index.html",
@@ -28,7 +28,11 @@ const ASSETS = [
   "./assets/trabajo_educacion.png",
   "./assets/relaciones.png",
   "./assets/crecimiento.png",
-  "./assets/ocio.png"
+  "./assets/ocio.png",
+  "./fonts/outfit-latin-400-normal.woff2",
+  "./fonts/outfit-latin-600-normal.woff2",
+  "./fonts/outfit-latin-700-normal.woff2",
+  "./fonts/outfit-latin-800-normal.woff2"
 ];
 
 self.addEventListener("install", (event) => {
@@ -52,6 +56,25 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   if (!req.url.startsWith("http")) return;
 
+  // Network-first for navigation requests (prevents permanent cache lock)
+  if (req.mode === "navigate") {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res && res.status === 200) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => { });
+          }
+          return res;
+        })
+        .catch(() => {
+          return caches.match("./index.html");
+        })
+    );
+    return;
+  }
+
+  // Cache-first with network fallback for other resources
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
@@ -67,7 +90,6 @@ self.addEventListener("fetch", (event) => {
           return res;
         })
         .catch(() => {
-          if (req.mode === "navigate") return caches.match("./index.html");
           return cached;
         });
     })

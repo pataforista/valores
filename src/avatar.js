@@ -9,6 +9,7 @@ function initBlinkEffect() {
     if (!eyes) return;
 
     const blink = () => {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
         gsap.killTweensOf(eyes);
         gsap.timeline({
             onComplete: () => {
@@ -47,8 +48,10 @@ export const CompassAvatar = (function () {
 
         setState("neutral");
 
-        // Add micro-animation with GSAP
-        gsap.to(box, { y: -5, duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        // Add micro-animation with GSAP (disabled if reduced motion preferred)
+        if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            gsap.to(box, { y: -5, duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        }
 
         box.addEventListener("click", () => {
             const r = Math.random();
@@ -84,11 +87,12 @@ export const CompassAvatar = (function () {
         if (bubbleText) bubbleText.textContent = text;
         if (bubble) {
             bubble.classList.add("show");
-            gsap.fromTo(bubble, { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" });
+            const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            gsap.fromTo(bubble, { scale: reduced ? 1 : 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: reduced ? 0 : 0.3, ease: "back.out(1.7)" });
 
             clearTimeout(speakTimer);
             speakTimer = setTimeout(() => {
-                gsap.to(bubble, { scale: 0.8, opacity: 0, duration: 0.2, onComplete: () => bubble.classList.remove("show") });
+                gsap.to(bubble, { scale: reduced ? 1 : 0.8, opacity: 0, duration: reduced ? 0 : 0.2, onComplete: () => bubble.classList.remove("show") });
             }, 5000);
         }
 

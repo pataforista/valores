@@ -6,70 +6,11 @@ import { initAudio, SoundFX, toggleSound, isSoundEnabled } from './audio.js';
 import { initBullseye, refreshChart } from './bullseye.js';
 import { CompassAvatar } from './avatar.js';
 import { initValuesModule } from './ui_values.js';
-import { initSosModule } from './sos.js';
+import { initSosModule, stopBreathing } from './sos.js';
 import { initPathModule } from './ui_path.js';
 import { runExport } from './export.js';
 
-// DOM Elements
-export const el = {
-    cards: document.getElementById("cards-container"),
-    list: document.getElementById("active-list"),
-    counter: document.getElementById("counter"),
-    toast: document.getElementById("toast"),
-    tabValues: document.getElementById("tab-values"),
-    tabBull: document.getElementById("tab-bullseye"),
-    tabPath: document.getElementById("tab-path"),
-    tabSos: document.getElementById("tab-sos"),
-    viewValues: document.getElementById("view-values"),
-    viewBull: document.getElementById("view-bullseye"),
-    viewPath: document.getElementById("view-path"),
-    viewSos: document.getElementById("view-sos"),
-    themeBtn: document.getElementById("themeBtn"),
-    soundBtn: document.getElementById("soundBtn"),
-    exportBtn: document.getElementById("exportBtn"),
-    manualSaveBtn: document.getElementById("manualSaveBtn"),
-    resetBtn: document.getElementById("resetBtn"),
-
-    // Bullseye inputs
-    inWork: document.getElementById("input-work"),
-    inRel: document.getElementById("input-rel"),
-    inGrowth: document.getElementById("input-growth"),
-    inLeisure: document.getElementById("input-leisure"),
-    numWork: document.getElementById("num-work"),
-    numRel: document.getElementById("num-rel"),
-    numGrowth: document.getElementById("num-growth"),
-    numLeisure: document.getElementById("num-leisure"),
-
-    // SOS Elements
-    sosOverlay: document.getElementById("sosOverlay"),
-    sosModalTitle: document.getElementById("sosModalTitle"),
-    sosIcon: document.getElementById("sosIcon"),
-    sosIllustration: document.getElementById("sosIllustration"),
-    sosProgressBar: document.getElementById("sosProgressBar"),
-    sosNextBtn: document.getElementById("sosNextBtn"),
-    sosBackBtn: document.getElementById("sosBackBtn"),
-    sosCountdown: document.getElementById("sosCountdown"),
-    sosCountdownValue: document.getElementById("sosCountdownValue"),
-    sosTapArea: document.getElementById("sosTapArea"),
-    breathToggle: document.getElementById("breathToggle"),
-    breathTimer: document.getElementById("breathTimer"),
-    breathPhase: document.getElementById("breathPhase"),
-    breathSquare: document.getElementById("breathSquare"),
-
-    // Path Elements
-    actionForm: document.getElementById("actionForm"),
-    actionDesc: document.getElementById("actionDesc"),
-    actionValue: document.getElementById("actionValue"),
-    actionArea: document.getElementById("actionArea"),
-    actionDate: document.getElementById("actionDate"),
-    internalBarrier: document.getElementById("internalBarrier"),
-    mindfulnessSkill: document.getElementById("mindfulnessSkill"),
-    internalList: document.getElementById("internalList"),
-    externalBarrier: document.getElementById("externalBarrier"),
-    externalPlan: document.getElementById("externalPlan"),
-    externalList: document.getElementById("externalList"),
-    actionsList: document.getElementById("actionsList")
-};
+import { el } from './dom.js';
 
 // Initialize App
 document.addEventListener("DOMContentLoaded", async () => {
@@ -91,7 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     initSosModule();
     initResetAll();
     initExport();
-    initManualSave();
+    initBackupSystem();
     initInstallPrompt();
     initIntro();
     initInfoCard();
@@ -166,9 +107,8 @@ function initInfoCard() {
     });
 }
 
-function initManualSave() {
+function initBackupSystem() {
     el.manualSaveBtn?.addEventListener("click", () => {
-        // Mejorar la capacidad de guardar: generar un respaldo JSON completo.
         const fullData = {
             values: safeJSONParse(localStorage.getItem(LS.values), []),
             customValues: safeJSONParse(localStorage.getItem(LS.customValues), []),
@@ -189,6 +129,44 @@ function initManualSave() {
 
         toast("💾 Respaldo descargado");
         if (isSoundEnabled()) SoundFX.approval();
+    });
+
+    const restoreBtn = document.getElementById("restoreBackupBtn");
+    const restoreInput = document.getElementById("restoreBackupInput");
+
+    restoreBtn?.addEventListener("click", () => {
+        restoreInput?.click();
+    });
+
+    restoreInput?.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                if (data && (Array.isArray(data.values) || Array.isArray(data.customValues) || typeof data.bullseye === 'object' || Array.isArray(data.actions))) {
+                    if (data.values) localStorage.setItem(LS.values, JSON.stringify(data.values));
+                    if (data.customValues) localStorage.setItem(LS.customValues, JSON.stringify(data.customValues));
+                    if (data.bullseye) localStorage.setItem(LS.bullseye, JSON.stringify(data.bullseye));
+                    if (data.actions) localStorage.setItem(LS.actions, JSON.stringify(data.actions));
+                    if (data.theme) localStorage.setItem(LS.theme, data.theme);
+
+                    toast("✅ Respaldo restaurado");
+                    if (isSoundEnabled()) SoundFX.approval();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    toast("❌ Formato inválido");
+                }
+            } catch (err) {
+                console.error("Error parsing backup:", err);
+                toast("❌ Archivo corrupto");
+            }
+        };
+        reader.readAsText(file);
     });
 }
 
@@ -287,7 +265,7 @@ function initIntro() {
         `).join("");
     }
     if (dots) {
-        dots.innerHTML = slides.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join("");
+        dots.innerHTML = slides.map((_, i) => `<button class="dot ${i === 0 ? 'active' : ''}" aria-label="Ver diapositiva ${i + 1}"></button>`).join("");
     }
 
     if (localStorage.getItem(LS.seenIntro) !== "true") {
@@ -364,12 +342,17 @@ function initTabs() {
         views.forEach((v, j) => v?.classList.toggle("active", j === i));
         if (setFocus) tabs[i]?.focus();
 
+        if (views[i] && views[i].id !== 'view-sos') {
+            stopBreathing();
+        }
+
         // Premium transition using GSAP
         if (views[i]) {
-            gsap.fromTo(views[i], { opacity: 0, y: 10 }, {
+            const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            gsap.fromTo(views[i], { opacity: 0, y: reduced ? 0 : 10 }, {
                 opacity: 1,
                 y: 0,
-                duration: 0.4,
+                duration: reduced ? 0 : 0.4,
                 ease: "power2.out",
                 onComplete: () => {
                     if (tabs[i]?.id === 'tab-bullseye') refreshChart();
@@ -396,12 +379,16 @@ function initTabs() {
 
 function initTheme() {
     const savedTheme = localStorage.getItem(LS.theme);
-    if (savedTheme === "dark") document.body.classList.add("dark-theme");
+    const isDark = savedTheme === "dark";
+    if (isDark) {
+        document.body.classList.add("dark-theme");
+        if (el.themeBtn) el.themeBtn.textContent = "☀️";
+    }
 
     el.themeBtn?.addEventListener("click", () => {
-        const isDark = document.body.classList.toggle("dark-theme");
-        localStorage.setItem(LS.theme, isDark ? "dark" : "light");
-        el.themeBtn.textContent = isDark ? "☀️" : "🌙";
+        const isDarkNow = document.body.classList.toggle("dark-theme");
+        localStorage.setItem(LS.theme, isDarkNow ? "dark" : "light");
+        el.themeBtn.textContent = isDarkNow ? "☀️" : "🌙";
         if (isSoundEnabled()) SoundFX.click();
     });
 }

@@ -73,11 +73,24 @@ if (Array.isArray(customValues) && customValues.length > 0) {
 
 export const MAX_VALUES = 10;
 
-let activeValues = safeJSONParse(localStorage.getItem(LS.values), []);
+let activeValuesRaw = safeJSONParse(localStorage.getItem(LS.values), []);
+if (activeValuesRaw.length > 0 && typeof activeValuesRaw[0] === "object" && activeValuesRaw[0] !== null) {
+    activeValuesRaw = activeValuesRaw.map(v => v.id).filter(id => id !== undefined);
+    localStorage.setItem(LS.values, JSON.stringify(activeValuesRaw));
+}
+let activeValues = activeValuesRaw; // Stores only IDs
 
-export function getActiveValues() { return activeValues; }
+export function getActiveValues() {
+    // Resolve IDs against current valuesData (which includes custom values loaded at startup)
+    return activeValues.map(id => valuesData.find(v => v.id === id)).filter(v => v !== undefined);
+}
+
 export function setActiveValues(v) {
-    activeValues = v;
+    if (v.length > 0 && typeof v[0] === "object" && v[0] !== null) {
+        activeValues = v.map(item => item.id);
+    } else {
+        activeValues = v;
+    }
     localStorage.setItem(LS.values, JSON.stringify(activeValues));
 }
 

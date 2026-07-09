@@ -11,6 +11,13 @@ export const LS = {
     sound: "vv_sound_enabled"
 };
 
+export const AREA_LABELS = {
+    work: "Trabajo / Educación",
+    rel: "Relaciones",
+    growth: "Crecimiento / Salud",
+    leisure: "Ocio / Tiempo libre"
+};
+
 export function safeJSONParse(text, fallback) {
     try {
         if (!text) return fallback;

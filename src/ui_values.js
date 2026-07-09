@@ -1,15 +1,27 @@
 "use strict";
 
-import { el } from './main.js';
+import { el } from './dom.js';
 import { valuesData, getActiveValues, setActiveValues, MAX_VALUES, computeNextCustomId } from './values.js';
 import { SoundFX } from './audio.js';
 import { escapeHTML, toast, LS, safeJSONParse } from './utils.js';
 import { renderActionValueOptions } from './ui_path.js';
+import { getDomainForValue } from './illustrations.js';
 
 export function initValuesModule() {
   initCustomValueForm();
+  initDeckFilters();
   renderCards();
   renderActiveList();
+}
+
+function initDeckFilters() {
+  const searchInput = document.getElementById("deckSearch");
+  const domainFilter = document.getElementById("deckFilterDomain");
+  const onlySelectedFilter = document.getElementById("deckOnlySelected");
+
+  searchInput?.addEventListener("input", renderCards);
+  domainFilter?.addEventListener("change", renderCards);
+  onlySelectedFilter?.addEventListener("change", renderCards);
 }
 
 function initCustomValueForm() {
@@ -53,8 +65,33 @@ export function renderCards() {
   el.cards.innerHTML = "";
   const activeIds = getActiveValues().map(v => v.id);
 
-  valuesData.forEach(v => {
+  const searchInput = document.getElementById("deckSearch");
+  const domainFilter = document.getElementById("deckFilterDomain");
+  const onlySelectedFilter = document.getElementById("deckOnlySelected");
+
+  const query = (searchInput?.value || "").toLowerCase().trim();
+  const domain = domainFilter?.value || "all";
+  const onlySelected = onlySelectedFilter?.checked || false;
+
+  const filteredValues = valuesData.filter(v => {
+    const matchesQuery = v.name.toLowerCase().includes(query) || v.def.toLowerCase().includes(query);
+    if (!matchesQuery) return false;
+
+    if (domain !== "all" && getDomainForValue(v.name) !== domain) return false;
+
+    if (onlySelected && !activeIds.includes(v.id)) return false;
+
+    return true;
+  });
+
+  if (filteredValues.length === 0) {
+    el.cards.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px; font-size: 0.95rem;">No se encontraron valores con los filtros aplicados.</div>`;
+    return;
+  }
+
+  filteredValues.forEach((v, i) => {
     const isSelected = activeIds.includes(v.id);
+    const isCustom = v.id > 58;
 
     const card = document.createElement("div");
     card.className = "card-container";
@@ -65,30 +102,63 @@ export function renderCards() {
         <div class="card-content">
           <h3 class="card-title">${escapeHTML(v.name)}</h3>
           <p class="card-def">${escapeHTML(v.def)}</p>
-          <div class="card-actions">
-            <button class="btn btn-sm ${isSelected ? 'danger' : 'secondary'}" data-id="${v.id}">
+          <div class="card-actions" style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="btn btn-sm ${isSelected ? 'danger' : 'secondary'} select-btn" data-id="${v.id}">
               ${isSelected ? 'Quitar' : 'Agregar'}
             </button>
+            ${isCustom ? `
+              <button class="btn btn-sm secondary edit-btn" data-id="${v.id}" title="Editar">✏️</button>
+              <button class="btn btn-sm danger delete-btn" data-id="${v.id}" title="Eliminar">🗑️</button>
+            ` : ''}
           </div>
         </div>
       </div>
     `;
 
-    card.querySelector('button').addEventListener('click', (e) => {
+    card.querySelector('.select-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       toggleValue(v.id);
     });
 
+    if (isCustom) {
+      card.querySelector('.edit-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        editCustomValue(v.id);
+      });
+      card.querySelector('.delete-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteCustomValue(v.id);
+      });
+    }
+
     el.cards.appendChild(card);
 
-    // Premium entry animation
-    gsap.from(card, { opacity: 0, scale: 0.9, y: 15, duration: 0.3, delay: Math.random() * 0.15 });
+    // Premium entry animation (reduced delay for fast UI)
+    gsap.from(card, { opacity: 0, scale: 0.9, y: 15, duration: 0.3, delay: Math.min(i * 0.02, 0.4) });
   });
+}
+
+function updateSingleCardState(id, isSelected) {
+  const selectBtn = el.cards?.querySelector(`.select-btn[data-id="${id}"]`);
+  if (!selectBtn) return;
+  const cardDiv = selectBtn.closest(".card");
+  if (!cardDiv) return;
+
+  if (isSelected) {
+    cardDiv.classList.add("selected");
+    selectBtn.className = "btn btn-sm danger select-btn";
+    selectBtn.textContent = "Quitar";
+  } else {
+    cardDiv.classList.remove("selected");
+    selectBtn.className = "btn btn-sm secondary select-btn";
+    selectBtn.textContent = "Agregar";
+  }
 }
 
 export function toggleValue(id) {
   let active = getActiveValues();
   const idx = active.findIndex(v => v.id === id);
+  let isSelected = false;
 
   if (idx > -1) {
     active.splice(idx, 1);
@@ -102,12 +172,78 @@ export function toggleValue(id) {
     if (val) active.push(val);
     toast("¡Agregado!");
     SoundFX.approval();
+    isSelected = true;
   }
 
   setActiveValues(active);
+  updateSingleCardState(id, isSelected);
+  renderActiveList();
+  renderActionValueOptions();
+}
+
+function editCustomValue(id) {
+  const val = valuesData.find(v => v.id === id);
+  if (!val) return;
+
+  const newName = prompt("Editar nombre del valor:", val.name);
+  if (newName === null) return;
+  const trimmedName = newName.trim();
+  if (!trimmedName) {
+    toast("El nombre no puede estar vacío");
+    return;
+  }
+
+  const newDef = prompt("Editar definición:", val.def);
+  if (newDef === null) return;
+  const trimmedDef = newDef.trim();
+  if (!trimmedDef) {
+    toast("La definición no puede estar vacía");
+    return;
+  }
+
+  const alreadyExists = valuesData.some(v => v.id !== id && v.name.toLowerCase() === trimmedName.toLowerCase());
+  if (alreadyExists) {
+    toast("Ese nombre de valor ya existe");
+    return;
+  }
+
+  val.name = trimmedName;
+  val.def = trimmedDef;
+
+  const customValues = safeJSONParse(localStorage.getItem(LS.customValues), []);
+  const customVal = customValues.find(v => v.id === id);
+  if (customVal) {
+    customVal.name = trimmedName;
+    customVal.def = trimmedDef;
+    localStorage.setItem(LS.customValues, JSON.stringify(customValues));
+  }
+
   renderCards();
   renderActiveList();
   renderActionValueOptions();
+  toast("Valor editado");
+}
+
+function deleteCustomValue(id) {
+  if (!confirm("¿Seguro que deseas eliminar permanentemente este valor del mazo?")) return;
+
+  const idx = valuesData.findIndex(v => v.id === id);
+  if (idx > -1) valuesData.splice(idx, 1);
+
+  let customValues = safeJSONParse(localStorage.getItem(LS.customValues), []);
+  customValues = customValues.filter(v => v.id !== id);
+  localStorage.setItem(LS.customValues, JSON.stringify(customValues));
+
+  let active = getActiveValues().map(v => v.id);
+  if (active.includes(id)) {
+    active = active.filter(activeId => activeId !== id);
+    setActiveValues(active);
+  }
+
+  renderCards();
+  renderActiveList();
+  renderActionValueOptions();
+  toast("Valor eliminado");
 }
 
 export function renderActiveList() {
@@ -176,8 +312,10 @@ function addTouchReorder(list) {
   let ghost = null;
 
   list.addEventListener("touchstart", (e) => {
+    const grab = e.target.closest(".grab");
+    if (!grab) return;
     const target = e.target.closest(".rank-item");
-    if (!target || e.target.closest("button")) return;
+    if (!target) return;
     dragEl = target;
     fromIdx = parseInt(target.dataset.index);
     dragEl.classList.add("dragging");

@@ -1,8 +1,8 @@
 "use strict";
 
-import { el } from './main.js';
+import { el } from './dom.js';
 import { getActiveValues } from './values.js';
-import { LS, safeJSONParse, toast, escapeHTML } from './utils.js';
+import { LS, safeJSONParse, toast, escapeHTML, copyToClipboard, AREA_LABELS } from './utils.js';
 import { SoundFX, isSoundEnabled } from './audio.js';
 import { CompassAvatar } from './avatar.js';
 
@@ -59,7 +59,7 @@ export function initPathModule() {
     el.actionForm.addEventListener("submit", (e) => {
         e.preventDefault();
         const action = {
-            title: el.actionDesc.value,
+            title: el.actionDesc.value.trim(),
             value: el.actionValue.value,
             area: el.actionArea.value,
             date: el.actionDate.value,
@@ -79,14 +79,28 @@ export function initPathModule() {
             return;
         }
 
+        if (!action.date) {
+            toast("Selecciona fecha y hora exactas");
+            return;
+        }
+
+        const inputDate = new Date(action.date);
+        if (inputDate < new Date()) {
+            toast("La fecha debe ser en el futuro");
+            return;
+        }
+
+        const smartSpecific = document.getElementById("smartSpecific")?.checked;
         const smartMeaningful = document.getElementById("smartMeaningful")?.checked;
         const smartAdaptive = document.getElementById("smartAdaptive")?.checked;
+        const smartTimebound = document.getElementById("smartTimebound")?.checked;
         const hasResource = ["resTime", "resMoney", "resSkills"].some(id => document.getElementById(id)?.checked);
         const smartError = document.getElementById("smartError");
-        if (!smartMeaningful || !smartAdaptive || !hasResource) {
+
+        if (!smartSpecific || !smartMeaningful || !smartAdaptive || !smartTimebound || !hasResource) {
             if (smartError) {
                 smartError.hidden = false;
-                smartError.textContent = "Completa M, A y al menos un recurso (R).";
+                smartError.textContent = "Completa todos los parámetros SMART (S, M, A, T y al menos un recurso R).";
             }
             return;
         }
@@ -125,7 +139,9 @@ function showCommitmentPanel(action) {
     const status = document.getElementById("commitmentStatus");
     if (!panel || !summary || !status) return;
 
-    summary.textContent = `Acción: ${action.title} · Valor: ${action.value} · Área: ${action.area}`;
+    const areaText = AREA_LABELS[action.area] || action.area;
+    const dateText = action.date ? new Date(action.date).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) : 'No definida';
+    summary.textContent = `Acción: ${action.title} · Valor: ${action.value} · Área: ${areaText} · Fecha: ${dateText}`;
     status.textContent = "Pendiente";
     panel.hidden = false;
 }
@@ -161,11 +177,23 @@ function shareCommitment() {
         toast("No hay compromiso para compartir");
         return;
     }
-    if (!navigator.clipboard?.writeText) {
-        toast("Portapapeles no disponible");
-        return;
+    if (navigator.share) {
+        navigator.share({
+            title: 'Mi Compromiso — Valores del Valle',
+            text: summary
+        }).catch(() => {
+            fallbackShare(summary);
+        });
+    } else {
+        fallbackShare(summary);
     }
-    navigator.clipboard.writeText(summary).then(() => toast("Resumen copiado")).catch(() => toast("No se pudo copiar"));
+}
+
+function fallbackShare(text) {
+    copyToClipboard(text).then(ok => {
+        if (ok) toast("📋 Resumen copiado");
+        else toast("❌ Error al copiar");
+    });
 }
 
 function renderInternalBarriers() {
@@ -207,10 +235,12 @@ export function renderActionsList() {
     committedActions.forEach(a => {
         const li = document.createElement("li");
         li.className = `action-item ${a.done ? 'done' : ''}`;
+        const areaText = AREA_LABELS[a.area] || a.area;
+        const dateText = a.date ? new Date(a.date).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) : 'No definida';
         li.innerHTML = `
       <div style="flex:1">
         <strong>${escapeHTML(a.title)}</strong>
-        <p class="hint">${escapeHTML(a.value)} · ${escapeHTML(a.area)}</p>
+        <p class="hint">${escapeHTML(a.value)} · ${escapeHTML(areaText)}<br>📅 ${escapeHTML(dateText)}</p>
       </div>
       <button class="mini-btn toggle-action" title="${a.done ? 'Marcar como pendiente' : 'Marcar como hecha'}" aria-label="Marcar como hecha">${a.done ? '✓' : '○'}</button>
       <button class="mini-btn remove-action" title="Eliminar acción" aria-label="Eliminar acción">🗑️</button>

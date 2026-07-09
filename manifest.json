@@ -1,14 +1,15 @@
 {
   "id": "./",
-  "name": "Valores del Valle CACB",
+  "name": "Valores del Valle",
   "short_name": "Valores",
+  "description": "Brújula personal para vivir una vida con propósito basada en ACT y DBT.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait-primary",
-  "background_color": "#FFFBF0",
-  "theme_color": "#8BC4C2",
+  "background_color": "#F0F2F5",
+  "theme_color": "#5B8C96",
   "icons": [
     {
       "src": "./icons/icon-192.png",

@@ -1,9 +1,27 @@
 "use strict";
 
-import { el } from './main.js';
+import { el } from './dom.js';
 import { SoundFX, isSoundEnabled, initAudio } from './audio.js';
 import { CompassAvatar } from './avatar.js';
 import { toast, attachModalKeyboard } from './utils.js';
+
+let breathing = false;
+let boxTimer;
+
+export function stopBreathing() {
+    if (breathing) {
+        breathing = false;
+        clearInterval(boxTimer);
+        const toggleBtn = document.getElementById("breathToggle");
+        if (toggleBtn) toggleBtn.textContent = "Iniciar";
+        if (el.breathPhase) el.breathPhase.textContent = "Listo";
+        if (el.breathTimer) el.breathTimer.textContent = "0s";
+        if (el.breathSquare) {
+            gsap.to(el.breathSquare, { scale: 1, duration: 0.5 });
+            el.breathSquare.className = "breath-square";
+        }
+    }
+}
 
 export function initSosModule() {
     if (!el.tabSos) return;
@@ -35,19 +53,17 @@ export function initSosModule() {
             await noiseCtx.resume();
             noiseOn = true;
             noiseToggle.textContent = "Apagar";
-            gsap.to(noiseToggle, { backgroundColor: "var(--danger)", duration: 0.3 });
+            noiseToggle.classList.add("danger");
         } else {
             noiseGain.gain.linearRampToValueAtTime(0, noiseCtx.currentTime + 0.8);
             setTimeout(() => { if (!noiseOn) noiseCtx.suspend(); }, 800);
             noiseOn = false;
             noiseToggle.textContent = "Encender";
-            gsap.to(noiseToggle, { backgroundColor: "var(--primary)", duration: 0.3 });
+            noiseToggle.classList.remove("danger");
         }
     });
 
     // Box Breathing Logic
-    let breathing = false;
-    let boxTimer;
     const boxPhases = [
         { name: "Inhala", class: "expanding" },
         { name: "Sostén", class: "holding" },
@@ -183,13 +199,25 @@ export function initSosModule() {
             for (let i = 0; i < s.n; i++) {
                 const item = document.createElement("div");
                 item.className = "sensory-item";
+                item.setAttribute("role", "button");
+                item.setAttribute("tabindex", "0");
+                item.setAttribute("aria-label", `${s.title}: elemento ${i + 1}`);
                 item.textContent = s.icon;
-                item.onclick = () => {
+                
+                const activateItem = () => {
                     if (item.classList.contains("checked")) return;
                     item.classList.add("checked");
                     checked++;
                     if (isSoundEnabled()) SoundFX.click();
                     if (checked >= s.n) el.sosNextBtn.disabled = false;
+                };
+
+                item.onclick = activateItem;
+                item.onkeydown = (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        activateItem();
+                    }
                 };
                 area.appendChild(item);
             }
@@ -226,8 +254,12 @@ export function initSosModule() {
         const bubbles = allWords.map(text => {
             const b = document.createElement("div");
             b.className = "bubble";
+            b.setAttribute("role", "button");
+            b.setAttribute("tabindex", "0");
             b.textContent = text;
-            b.onclick = () => {
+            
+            const activateBubble = () => {
+                if (b.classList.contains("burst")) return;
                 if (cat.items.includes(text)) {
                     b.classList.add("burst", "correct");
                     found++;
@@ -235,6 +267,14 @@ export function initSosModule() {
                     if (found >= cat.items.length) finishSos();
                 } else {
                     gsap.to(b, { x: 5, duration: 0.1, repeat: 3, yoyo: true });
+                }
+            };
+
+            b.onclick = activateBubble;
+            b.onkeydown = (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    activateBubble();
                 }
             };
             container.appendChild(b);
@@ -304,6 +344,9 @@ export function initSosModule() {
         document.getElementById("sosStepHint").textContent = hint;
 
         let remaining = seconds;
+        document.getElementById("sosCountdownValue").textContent = `${remaining}s`;
+        el.sosProgressBar.style.width = "0%";
+
         const t = trackTimer(setInterval(() => {
             remaining--;
             document.getElementById("sosCountdownValue").textContent = `${remaining}s`;
