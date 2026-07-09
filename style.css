@@ -2123,6 +2123,43 @@ textarea:focus-visible {
 
 /* Bullet-proof centering applied in main block */
 
+/* --- Accessibility & responsive card sizing overrides --- */
+/* Allow cards to size to content and avoid excessive empty space */
+.card-container {
+  height: auto !important;
+  min-height: 120px !important;
+}
+
+.card {
+  height: auto !important;
+}
+
+.card-content {
+  /* Let content stack from top so short text doesn't vertically center */
+  justify-content: flex-start !important;
+  padding: 16px !important;
+}
+
+.card-def {
+  /* Remove forced centering so multiline text wraps naturally */
+  display: block !important;
+  flex-grow: 0 !important;
+  align-items: stretch !important;
+  text-align: left !important;
+}
+
+.values-grid {
+  /* prefer auto-fit for responsive columns */
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+@media (max-width: 480px) {
+  .card-title { font-size: 1.05rem !important; }
+  .card-content { padding: 12px !important; }
+}
+
+
 /* --- Overflow + alignment hardening --- */
 .rank-item {
   min-width: 0;
