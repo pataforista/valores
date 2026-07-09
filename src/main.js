@@ -313,6 +313,19 @@ function registerSW() {
             });
         }).catch(() => { });
 
+        // Listen for messages from the SW (e.g., activation of a new version)
+        navigator.serviceWorker.addEventListener("message", (e) => {
+            try {
+                if (e.data && e.data.type === 'SW_UPDATED') {
+                    toast('Nueva versión disponible — recargando...');
+                    // If a waiting worker exists, request it to skip waiting (defensive)
+                    if (navigator.serviceWorker.controller) {
+                        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                }
+            } catch (err) { /* noop */ }
+        });
+
         let refreshing = false;
         navigator.serviceWorker.addEventListener("controllerchange", () => {
             if (!refreshing) {
