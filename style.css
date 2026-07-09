@@ -2127,11 +2127,14 @@ textarea:focus-visible {
 /* Allow cards to size to content and avoid excessive empty space */
 .card-container {
   height: auto !important;
-  min-height: 120px !important;
+min-height: 100px !important;
+/* remove forced aspect-ratio where present */
+aspect-ratio: auto !important;
 }
 
 .card {
-  height: auto !important;
+height: auto !important;
+align-items: flex-start !important;
 }
 
 .card-content {
@@ -2146,17 +2149,26 @@ textarea:focus-visible {
   flex-grow: 0 !important;
   align-items: stretch !important;
   text-align: left !important;
+/* cap visible height on small screens to avoid very tall cards */
+max-height: 6.5rem;
+overflow: auto;
 }
 
 .values-grid {
   /* prefer auto-fit for responsive columns */
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
-  gap: 14px !important;
+gap: 12px !important;
+}
+
+@media (max-width: 768px) {
+  .card-title { font-size: 1.05rem !important; }
+  .card-content { padding: 12px !important; }
 }
 
 @media (max-width: 480px) {
-  .card-title { font-size: 1.05rem !important; }
-  .card-content { padding: 12px !important; }
+.card-title { font-size: 0.98rem !important; }
+.card-def { max-height: 5.5rem !important; }
+.values-grid { gap: 10px !important; }
 }
 
 
