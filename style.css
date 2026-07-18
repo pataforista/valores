@@ -598,9 +598,9 @@ select:focus {
 }
 
 .bullseye-label-right {
-  right: -30px;
+  right: -25px;
   top: 50%;
-  transform: translateY(-50%) rotate(90deg);
+  transform: translateY(-50%);
   border-color: #f43f5e;
   background: rgba(244, 63, 94, 0.05);
 }
@@ -614,9 +614,9 @@ select:focus {
 }
 
 .bullseye-label-left {
-  left: -30px;
+  left: -25px;
   top: 50%;
-  transform: translateY(-50%) rotate(-90deg);
+  transform: translateY(-50%);
   border-color: #f59e0b;
   background: rgba(245, 158, 11, 0.05);
 }
@@ -2273,3 +2273,189 @@ button {
   margin-top: 8px;
 }
 
+/* Minimizable Avatar Toggle Button */
+.avatar-toggle-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: var(--card);
+  border: 1px solid var(--ring);
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+  color: var(--text);
+  padding: 0;
+}
+.avatar-toggle-btn:hover {
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+.avatar-float.minimized {
+  width: 50px !important;
+  height: 50px !important;
+  overflow: visible;
+  cursor: pointer;
+  bottom: 20px;
+  right: 20px;
+}
+.avatar-float.minimized .avatar-bubble,
+.avatar-float.minimized .avatar-container {
+  display: none !important;
+}
+.avatar-float.minimized::before {
+  content: "🧭";
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: var(--card);
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.avatar-float.minimized .avatar-toggle-btn {
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  font-size: 0.65rem;
+}
+
+/* --- Quality & Layout Fixes --- */
+
+.list-clean {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg);
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  border: 1px solid var(--ring);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  min-width: 0;
+}
+
+.action-item.done {
+  opacity: 0.75;
+  border-color: var(--primary);
+  background: var(--card);
+}
+
+.action-item.done strong {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+#commitmentSummary {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.text-wrap {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* Prevent flex child sizing issue on small screens */
+.rank-item,
+.action-item,
+.smart-card {
+  min-width: 0;
+}
+
+/* Responsive card heights and wrap */
+.card-container {
+  min-height: 200px !important;
+  height: auto !important;
+}
+
+.card-title,
+.card-def {
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* --- SW Update Banner --- */
+.sw-update-banner {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card);
+  border: 2px solid var(--primary);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  max-width: 90vw;
+  text-align: center;
+}
+
+/* --- Offline Indicator --- */
+#offline-indicator {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+/* --- Onboarding Modal --- */
+#onboardingModal .carousel-wrap {
+  max-width: 500px;
+  background: var(--card);
+  border: 1px solid var(--ring);
+  border-radius: 18px;
+  padding: 24px;
+}
+#onboardingModal .intro-slide {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+#onboardingModal .intro-slide h2 {
+  color: var(--primary);
+  margin: 12px 0;
+}
+#onboardingModal .intro-slide p {
+  white-space: pre-wrap;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* --- Glossary Button --- */
+#glossaryBtn {
+  border: 1px solid var(--ring);
+  background: var(--card);
+}

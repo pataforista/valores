@@ -4,11 +4,17 @@ export const LS = {
     values: "vv_myValues_v1",
     customValues: "vv_custom_values_v1",
     bullseye: "vv_bullseye_v1",
+    bullseyeHistory: "vv_bullseye_history_v1",
     theme: "vv_theme_v1",
     actions: "vv_actions_v1",
     seenIntro: "vv_seenIntro_v1",
     seenInfoCard: "vv_seenInfo_v1",
-    sound: "vv_sound_enabled"
+    sound: "vv_sound_enabled",
+    notificationConfig: 'vv_notification_config_v1',
+    lastBullseyeUpdate: 'vv_last_bullseye_update_v1',
+    achievements: 'vv_achievements_v1',
+    totalActionsDone: 'vv_total_actions_done_v1',
+    seenOnboarding: 'vv_seen_onboarding_v1'
 };
 
 export const AREA_LABELS = {

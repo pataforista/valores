@@ -7,6 +7,30 @@ import { toast, attachModalKeyboard } from './utils.js';
 
 let breathing = false;
 let boxTimer;
+let activeTimers = [];
+let noiseCtx = null, noiseNode = null, noiseGain = null, noiseOn = false;
+
+export function clearAllTimers() {
+    activeTimers.forEach(clearInterval);
+    activeTimers = [];
+
+    stopBreathing();
+
+    if (noiseOn && noiseGain && noiseCtx) {
+        try {
+            noiseGain.gain.setValueAtTime(0, noiseCtx.currentTime);
+            noiseCtx.suspend();
+        } catch (e) {
+            console.error("Failed to suspend noise context in clearAllTimers:", e);
+        }
+        noiseOn = false;
+        const noiseToggle = document.getElementById('noiseToggle');
+        if (noiseToggle) {
+            noiseToggle.textContent = "Encender";
+            noiseToggle.classList.remove("danger");
+        }
+    }
+}
 
 export function stopBreathing() {
     if (breathing) {
@@ -27,7 +51,6 @@ export function initSosModule() {
     if (!el.tabSos) return;
 
     // Brown Noise Logic
-    let noiseCtx, noiseNode, noiseGain, noiseOn = false;
     const noiseToggle = document.getElementById('noiseToggle');
     const noiseVol = document.getElementById('noiseVol');
     const noiseTargetVol = () => (Number(noiseVol?.value ?? 25) / 100) * 0.1;
@@ -123,13 +146,11 @@ export function initSosModule() {
 
     // --- Missing SOS Logic Restoration ---
 
-    let activeTimers = [];
     let sosOpener = null;
     const trackTimer = (id) => { activeTimers.push(id); return id; };
-    const clearActiveTimers = () => { activeTimers.forEach(clearInterval); activeTimers = []; };
 
     const closeOverlay = () => {
-        clearActiveTimers();
+        clearAllTimers();
         el.sosOverlay.hidden = true;
         el.sosNextBtn.onclick = null;
         el.sosNextBtn.disabled = false;
@@ -138,7 +159,7 @@ export function initSosModule() {
     attachModalKeyboard(el.sosOverlay, closeOverlay);
 
     const resetOverlay = () => {
-        clearActiveTimers();
+        clearAllTimers();
         if (el.sosOverlay.hidden) sosOpener = document.activeElement;
         el.sosOverlay.hidden = false;
         el.sosTapArea.style.display = "none";

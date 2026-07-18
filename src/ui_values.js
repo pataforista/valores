@@ -156,6 +156,7 @@ function updateSingleCardState(id, isSelected) {
 }
 
 export function toggleValue(id) {
+  const scrollPos = window.scrollY;
   let active = getActiveValues();
   const idx = active.findIndex(v => v.id === id);
   let isSelected = false;
@@ -179,6 +180,10 @@ export function toggleValue(id) {
   updateSingleCardState(id, isSelected);
   renderActiveList();
   renderActionValueOptions();
+
+  requestAnimationFrame(() => {
+    window.scrollTo(0, scrollPos);
+  });
 }
 
 function editCustomValue(id) {
@@ -207,6 +212,7 @@ function editCustomValue(id) {
     return;
   }
 
+  const scrollPos = window.scrollY;
   val.name = trimmedName;
   val.def = trimmedDef;
 
@@ -222,11 +228,16 @@ function editCustomValue(id) {
   renderActiveList();
   renderActionValueOptions();
   toast("Valor editado");
+
+  requestAnimationFrame(() => {
+    window.scrollTo(0, scrollPos);
+  });
 }
 
 function deleteCustomValue(id) {
   if (!confirm("¿Seguro que deseas eliminar permanentemente este valor del mazo?")) return;
 
+  const scrollPos = window.scrollY;
   const idx = valuesData.findIndex(v => v.id === id);
   if (idx > -1) valuesData.splice(idx, 1);
 
@@ -244,6 +255,10 @@ function deleteCustomValue(id) {
   renderActiveList();
   renderActionValueOptions();
   toast("Valor eliminado");
+
+  requestAnimationFrame(() => {
+    window.scrollTo(0, scrollPos);
+  });
 }
 
 export function renderActiveList() {

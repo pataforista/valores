@@ -1,7 +1,7 @@
 /* Valores del Valle CACB — SW (cache simple) */
 
 // Cambio versión para forzar actualización
-const CACHE_NAME = "valores-del-valle-v9";
+const CACHE_NAME = "valores-del-valle-v11";
 const ASSETS = [
   "./",
   "./index.html",
@@ -13,6 +13,8 @@ const ASSETS = [
   "./vendor/gsap.min.js",
   "./vendor/chart.umd.min.js",
   "./src/main.js",
+  "./src/dom.js",
+  "./src/illustrations.js",
   "./src/utils.js",
   "./src/values.js",
   "./src/audio.js",

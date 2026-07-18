@@ -53,7 +53,35 @@ export const CompassAvatar = (function () {
             gsap.to(box, { y: -5, duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut" });
         }
 
-        box.addEventListener("click", () => {
+        // Minimization logic
+        const toggleBtn = document.getElementById('toggleAvatarBtn');
+        const isMinimized = localStorage.getItem("vv_avatar_minimized") === "true";
+        if (isMinimized) {
+            root.classList.add("minimized");
+            if (toggleBtn) toggleBtn.textContent = "🧭";
+        }
+
+        toggleBtn?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const minimized = root.classList.toggle("minimized");
+            localStorage.setItem("vv_avatar_minimized", minimized ? "true" : "false");
+            toggleBtn.textContent = minimized ? "🧭" : "✕";
+        });
+
+        // Clicking the minimized indicator restores it
+        root.addEventListener("click", (e) => {
+            if (root.classList.contains("minimized")) {
+                if (e.target === toggleBtn) return;
+                root.classList.remove("minimized");
+                localStorage.setItem("vv_avatar_minimized", "false");
+                if (toggleBtn) toggleBtn.textContent = "✕";
+                speak("¡Hola de nuevo!", "happy");
+            }
+        });
+
+        box.addEventListener("click", (e) => {
+            if (root.classList.contains("minimized")) return;
+            e.stopPropagation();
             const r = Math.random();
             if (r < 0.33) speak("¡Aquí estoy! ¿Seguimos al norte?", "happy");
             else if (r < 0.66) speak("Tú tienes el control del timón.", "neutral");

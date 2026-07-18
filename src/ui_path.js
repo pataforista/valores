@@ -5,6 +5,8 @@ import { getActiveValues } from './values.js';
 import { LS, safeJSONParse, toast, escapeHTML, copyToClipboard, AREA_LABELS } from './utils.js';
 import { SoundFX, isSoundEnabled } from './audio.js';
 import { CompassAvatar } from './avatar.js';
+import { updateAchievements } from './achievements.js';
+import { notifySaved } from './offlineIndicator.js';
 
 let committedActions = safeJSONParse(localStorage.getItem(LS.actions), []);
 let internalBarriers = [];
@@ -18,6 +20,7 @@ export function initPathModule() {
 
     renderActionValueOptions();
     renderActionsList();
+    updateAchievements(committedActions);
 
     // Suggest Skill Logic
     document.getElementById("suggestSkillBtn")?.addEventListener("click", () => {
@@ -55,6 +58,20 @@ export function initPathModule() {
 
     document.getElementById("declareCommitment")?.addEventListener("click", declareCommitment);
     document.getElementById("shareCommitment")?.addEventListener("click", shareCommitment);
+    
+    document.getElementById("discardCommitment")?.addEventListener("click", () => {
+        pendingAction = null;
+        localStorage.removeItem("vv_pending_action_v1");
+        const panel = document.getElementById("commitmentPanel");
+        if (panel) panel.hidden = true;
+        
+        el.actionForm.reset();
+        internalBarriers = [];
+        externalBarriers = [];
+        renderInternalBarriers();
+        renderExternalBarriers();
+        toast("Compromiso descartado");
+    });
 
     el.actionForm.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -85,9 +102,17 @@ export function initPathModule() {
         }
 
         const inputDate = new Date(action.date);
-        if (inputDate < new Date()) {
-            toast("La fecha debe ser en el futuro");
+        if (isNaN(inputDate.getTime())) {
+            toast("Fecha inválida");
             return;
+        }
+
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        if (inputDate < startOfToday) {
+            toast("⚠️ Nota: Fecha en el pasado (retrospectiva)");
+        } else if (inputDate < now) {
+            toast("⚠️ Nota: La hora ya ha pasado para hoy");
         }
 
         const smartSpecific = document.getElementById("smartSpecific")?.checked;
@@ -107,9 +132,27 @@ export function initPathModule() {
         if (smartError) smartError.hidden = true;
 
         pendingAction = action;
+        localStorage.setItem("vv_pending_action_v1", JSON.stringify(pendingAction));
         showCommitmentPanel(action);
         toast("Revisa y declara tu compromiso");
     });
+
+    // Restore pendingAction from localStorage
+    const savedPending = safeJSONParse(localStorage.getItem("vv_pending_action_v1"), null);
+    if (savedPending) {
+        const active = getActiveValues();
+        const valueExists = active.some(v => v.name === savedPending.value);
+        if (valueExists) {
+            pendingAction = savedPending;
+            internalBarriers = pendingAction.internal || [];
+            externalBarriers = pendingAction.external || [];
+            renderInternalBarriers();
+            renderExternalBarriers();
+            showCommitmentPanel(pendingAction);
+        } else {
+            localStorage.removeItem("vv_pending_action_v1");
+        }
+    }
 }
 
 export function renderActionValueOptions() {
@@ -154,7 +197,10 @@ function declareCommitment() {
 
     committedActions.push(pendingAction);
     localStorage.setItem(LS.actions, JSON.stringify(committedActions));
+    localStorage.removeItem("vv_pending_action_v1");
     renderActionsList();
+    updateAchievements(committedActions);
+    notifySaved('👣 Compromiso guardado');
 
     el.actionForm.reset();
     internalBarriers = [];
@@ -191,8 +237,11 @@ function shareCommitment() {
 
 function fallbackShare(text) {
     copyToClipboard(text).then(ok => {
-        if (ok) toast("📋 Resumen copiado");
-        else toast("❌ Error al copiar");
+        if (ok) {
+            toast("📋 Resumen copiado al portapapeles");
+        } else {
+            prompt("El copiado automático no está disponible o ha fallado.\n\nPor favor, copia el siguiente texto de forma manual (Ctrl+C o Cmd+C):", text);
+        }
     });
 }
 
@@ -242,22 +291,75 @@ export function renderActionsList() {
         <strong>${escapeHTML(a.title)}</strong>
         <p class="hint">${escapeHTML(a.value)} · ${escapeHTML(areaText)}<br>📅 ${escapeHTML(dateText)}</p>
       </div>
+      <button class="mini-btn download-ics" title="Descargar recordatorio de calendario (.ics)" aria-label="Descargar recordatorio de calendario">📅</button>
       <button class="mini-btn toggle-action" title="${a.done ? 'Marcar como pendiente' : 'Marcar como hecha'}" aria-label="Marcar como hecha">${a.done ? '✓' : '○'}</button>
       <button class="mini-btn remove-action" title="Eliminar acción" aria-label="Eliminar acción">🗑️</button>
     `;
+        li.querySelector('.download-ics').onclick = () => downloadIcs(a);
         li.querySelector('.toggle-action').onclick = () => {
             a.done = !a.done;
             localStorage.setItem(LS.actions, JSON.stringify(committedActions));
             renderActionsList();
+            updateAchievements(committedActions);
+            notifySaved('✅ Estado de acción actualizado');
         };
         li.querySelector('.remove-action').onclick = () => {
             const idx = committedActions.indexOf(a);
             if (idx > -1) committedActions.splice(idx, 1);
             localStorage.setItem(LS.actions, JSON.stringify(committedActions));
             renderActionsList();
+            updateAchievements(committedActions);
+            notifySaved('🗑️ Acción eliminada');
         };
         list.appendChild(li);
     });
+}
+
+function escapeICS(text) {
+    return String(text || "")
+        .replace(/\\/g, '\\\\')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,')
+        .replace(/\n/g, '\\n');
+}
+
+function downloadIcs(a) {
+    const areaText = AREA_LABELS[a.area] || a.area;
+    const start = new Date(a.date);
+    const end = new Date(start.getTime() + 30 * 60 * 1000); // 30 mins
+    
+    const formatICSDate = (date) => {
+        return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+    };
+
+    const title = escapeICS(`Compromiso: ${a.title}`);
+    const desc = escapeICS(`Compromiso de valores.\nValor: ${a.value}\nÁrea: ${areaText}\n\nCreado en Valores del Valle.`);
+    
+    const icsContent = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Valores del Valle//ES",
+        "BEGIN:VEVENT",
+        `UID:${a.id}@valoresdelvalle.com`,
+        `DTSTAMP:${formatICSDate(new Date())}`,
+        `DTSTART:${formatICSDate(start)}`,
+        `DTEND:${formatICSDate(end)}`,
+        `SUMMARY:${title}`,
+        `DESCRIPTION:${desc}`,
+        "END:VEVENT",
+        "END:VCALENDAR"
+    ].join("\r\n");
+
+    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `compromiso_${a.id}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast("📅 Recordatorio .ics descargado");
 }
 
 function suggestMindfulnessSkill(text) {
@@ -267,9 +369,11 @@ function suggestMindfulnessSkill(text) {
         "pereza": "Contacto con valores",
         "estres": "Aceptación",
         "tristeza": "Autocompasión",
-        "autocrítica": "Defusión"
+        "autocritica": "Defusión"
     };
-    const t = text.toLowerCase();
+    const t = (text || "").toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
     for (let k in map) {
         if (t.includes(k)) return map[k];
     }

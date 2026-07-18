@@ -6,9 +6,14 @@ import { initAudio, SoundFX, toggleSound, isSoundEnabled } from './audio.js';
 import { initBullseye, refreshChart } from './bullseye.js';
 import { CompassAvatar } from './avatar.js';
 import { initValuesModule } from './ui_values.js';
-import { initSosModule, stopBreathing } from './sos.js';
+import { initSosModule, clearAllTimers } from './sos.js';
 import { initPathModule } from './ui_path.js';
 import { runExport } from './export.js';
+import { initNotifications } from './notifications.js';
+import { initAchievements } from './achievements.js';
+import { initOfflineIndicator } from './offlineIndicator.js';
+import { initOnboarding } from './onboarding.js';
+import { initGlossaryButton } from './glossary.js';
 
 import { el } from './dom.js';
 
@@ -37,6 +42,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     initIntro();
     initInfoCard();
     registerSW();
+
+    initNotifications();
+    initAchievements();
+    initOfflineIndicator();
+    initOnboarding();
+    initGlossaryButton();
 });
 
 // Si GSAP no llegó a cargar (red, bloqueo, etc.), define un sustituto sin
@@ -113,6 +124,7 @@ function initBackupSystem() {
             values: safeJSONParse(localStorage.getItem(LS.values), []),
             customValues: safeJSONParse(localStorage.getItem(LS.customValues), []),
             bullseye: safeJSONParse(localStorage.getItem(LS.bullseye), {}),
+            bullseyeHistory: safeJSONParse(localStorage.getItem(LS.bullseyeHistory), []),
             actions: safeJSONParse(localStorage.getItem(LS.actions), []),
             theme: localStorage.getItem(LS.theme) || "light"
         };
@@ -150,6 +162,7 @@ function initBackupSystem() {
                     if (data.values) localStorage.setItem(LS.values, JSON.stringify(data.values));
                     if (data.customValues) localStorage.setItem(LS.customValues, JSON.stringify(data.customValues));
                     if (data.bullseye) localStorage.setItem(LS.bullseye, JSON.stringify(data.bullseye));
+                    if (data.bullseyeHistory) localStorage.setItem(LS.bullseyeHistory, JSON.stringify(data.bullseyeHistory));
                     if (data.actions) localStorage.setItem(LS.actions, JSON.stringify(data.actions));
                     if (data.theme) localStorage.setItem(LS.theme, data.theme);
 
@@ -306,11 +319,14 @@ function registerSW() {
                 if (!newWorker) return;
                 newWorker.addEventListener("statechange", () => {
                     if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                        // Forzar la actualización
-                        newWorker.postMessage({ type: "SKIP_WAITING" });
+                        showUpdateBanner(newWorker);
                     }
                 });
             });
+            // Check if there is already a waiting worker on page load
+            if (reg.waiting && navigator.serviceWorker.controller) {
+                showUpdateBanner(reg.waiting);
+            }
         }).catch(() => { });
 
         let refreshing = false;
@@ -325,6 +341,30 @@ function registerSW() {
     // Offline / Online Status
     window.addEventListener("online", () => toast("Conexión recuperada 🟢"));
     window.addEventListener("offline", () => toast("Estás navegando sin conexión 🔴"));
+
+    window.addEventListener("beforeunload", () => {
+        clearAllTimers();
+    });
+}
+
+function showUpdateBanner(worker) {
+    let banner = document.getElementById("swUpdateBanner");
+    if (!banner) {
+        banner = document.createElement("div");
+        banner.id = "swUpdateBanner";
+        banner.className = "sw-update-banner";
+        document.body.appendChild(banner);
+    }
+    banner.innerHTML = `
+        <div style="font-weight:bold; color:var(--text); font-size:0.9rem;">✨ ¡Nueva versión disponible!</div>
+        <div class="hint" style="margin:0; font-size:0.8rem;">Se han aplicado mejoras para tu experiencia.</div>
+        <button class="btn primary" id="swUpdateBtn" style="padding:8px 16px; font-size:0.85rem;">Actualizar y recargar</button>
+    `;
+    
+    document.getElementById("swUpdateBtn")?.addEventListener("click", () => {
+        worker.postMessage({ type: "SKIP_WAITING" });
+        banner.remove();
+    });
 }
 
 function initTabs() {
@@ -343,7 +383,7 @@ function initTabs() {
         if (setFocus) tabs[i]?.focus();
 
         if (views[i] && views[i].id !== 'view-sos') {
-            stopBreathing();
+            clearAllTimers();
         }
 
         // Premium transition using GSAP

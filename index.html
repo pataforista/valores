@@ -10,7 +10,6 @@
 
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#5B8C96" />
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1A202C" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Valores" />
@@ -138,6 +137,13 @@
           </div>
         </section>
       </div>
+      <section class="card-panel" id="evolutionSection" style="margin-top:16px;">
+        <div class="panel-title"><span>Historial de Evolución</span></div>
+        <p class="hint">Evolución en el tiempo de tu satisfacción por cada área vital (basado en tus guardados).</p>
+        <div class="chart-container-line" style="position:relative; width:100%; height:250px; margin-top:12px;">
+          <canvas id="evolutionChart"></canvas>
+        </div>
+      </section>
     </div>
 
     <div id="view-path" class="view" role="tabpanel" aria-labelledby="tab-path">
@@ -157,7 +163,7 @@
 
           <div class="field-group">
             <label for="actionDesc">¿Qué acción específica tomarás?</label>
-            <textarea id="actionDesc" rows="3" placeholder="Ej: Llamar a mi hermana el martes por la tarde."></textarea>
+            <textarea id="actionDesc" rows="3" placeholder="Ej: Llamar a mi hermana el martes por la tarde." maxlength="200"></textarea>
           </div>
 
           <div class="form-row two">
@@ -231,7 +237,7 @@
           <div class="field-group">
             <label>Barreras internas (pensamientos, emociones o impulsos)</label>
             <div class="form-row two">
-              <input id="internalBarrier" type="text" placeholder="Ej: autocrítica, ansiedad, pereza" />
+              <input id="internalBarrier" type="text" placeholder="Ej: autocrítica, ansiedad, pereza" maxlength="200" />
               <select id="mindfulnessSkill">
                 <option value="Defusión">Defusión (desengancharse)</option>
                 <option value="Expansión">Expansión (hacer espacio)</option>
@@ -253,8 +259,8 @@
           <div class="field-group">
             <label>Barreras externas y plan de contingencia</label>
             <div class="form-row two">
-              <input id="externalBarrier" type="text" placeholder="Ej: falta de transporte, agenda apretada" />
-              <input id="externalPlan" type="text" placeholder="Plan: pedir ayuda, cambiar horario, etc." />
+              <input id="externalBarrier" type="text" placeholder="Ej: falta de transporte, agenda apretada" maxlength="200" />
+              <input id="externalPlan" type="text" placeholder="Plan: pedir ayuda, cambiar horario, etc." maxlength="200" />
             </div>
             <div class="inline-actions">
               <button class="btn primary" type="button" id="addExternalBarrier">Agregar barrera</button>
@@ -278,6 +284,7 @@
           <div class="inline-actions">
             <button class="btn primary" type="button" id="declareCommitment">Declaro mi compromiso</button>
             <button class="btn" type="button" id="shareCommitment">Compartir</button>
+            <button class="btn danger" type="button" id="discardCommitment">Descartar</button>
           </div>
         </div>
       </section>
@@ -508,6 +515,7 @@
 
   <!-- Avatar Container (Hidden until loaded) -->
   <div id="avatarRoot" class="avatar-float" hidden>
+    <button class="avatar-toggle-btn" id="toggleAvatarBtn" title="Minimizar Brújula" aria-label="Minimizar Brújula">✕</button>
     <div class="avatar-bubble" id="avatarBubble">
       <strong style="display:block; margin-bottom:4px;">Brújula</strong>
       <span id="avatarText">Hola, estoy aquí para guiarte.</span>
