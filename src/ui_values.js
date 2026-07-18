@@ -3,8 +3,8 @@
 import { el } from './dom.js';
 import { valuesData, getActiveValues, setActiveValues, MAX_VALUES, computeNextCustomId } from './values.js';
 import { SoundFX } from './audio.js';
-import { escapeHTML, toast, LS, safeJSONParse } from './utils.js';
-import { renderActionValueOptions } from './ui_path.js';
+import { escapeHTML, toast, LS, safeJSONParse, showPromptModal, showConfirmModal } from './utils.js';
+import { renderActionValueOptions, renderActionsList } from './ui_path.js';
 import { getDomainForValue } from './illustrations.js';
 
 export function initValuesModule() {
@@ -134,7 +134,14 @@ export function renderCards() {
     el.cards.appendChild(card);
 
     // Premium entry animation (reduced delay for fast UI)
-    gsap.from(card, { opacity: 0, scale: 0.9, y: 15, duration: 0.3, delay: Math.min(i * 0.02, 0.4) });
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    gsap.from(card, { 
+      opacity: 0, 
+      scale: reduced ? 1 : 0.9, 
+      y: reduced ? 0 : 15, 
+      duration: reduced ? 0 : 0.3, 
+      delay: reduced ? 0 : Math.min(i * 0.02, 0.4) 
+    });
   });
 }
 
@@ -177,7 +184,14 @@ export function toggleValue(id) {
   }
 
   setActiveValues(active);
-  updateSingleCardState(id, isSelected);
+  
+  const onlySelectedFilter = document.getElementById("deckOnlySelected");
+  if (onlySelectedFilter && onlySelectedFilter.checked) {
+    renderCards();
+  } else {
+    updateSingleCardState(id, isSelected);
+  }
+  
   renderActiveList();
   renderActionValueOptions();
 
@@ -186,11 +200,11 @@ export function toggleValue(id) {
   });
 }
 
-function editCustomValue(id) {
+async function editCustomValue(id) {
   const val = valuesData.find(v => v.id === id);
   if (!val) return;
 
-  const newName = prompt("Editar nombre del valor:", val.name);
+  const newName = await showPromptModal("Editar nombre del valor:", val.name);
   if (newName === null) return;
   const trimmedName = newName.trim();
   if (!trimmedName) {
@@ -198,7 +212,7 @@ function editCustomValue(id) {
     return;
   }
 
-  const newDef = prompt("Editar definición:", val.def);
+  const newDef = await showPromptModal("Editar definición:", val.def);
   if (newDef === null) return;
   const trimmedDef = newDef.trim();
   if (!trimmedDef) {
@@ -213,6 +227,7 @@ function editCustomValue(id) {
   }
 
   const scrollPos = window.scrollY;
+  const oldName = val.name;
   val.name = trimmedName;
   val.def = trimmedDef;
 
@@ -222,6 +237,26 @@ function editCustomValue(id) {
     customVal.name = trimmedName;
     customVal.def = trimmedDef;
     localStorage.setItem(LS.customValues, JSON.stringify(customValues));
+  }
+
+  // Sincronizar con los compromisos existentes en localStorage (B7)
+  if (trimmedName !== oldName) {
+    const actions = safeJSONParse(localStorage.getItem(LS.actions), []);
+    let updated = false;
+    actions.forEach(a => {
+      if (a.value === oldName) {
+        a.value = trimmedName;
+        updated = true;
+      }
+    });
+    if (updated) {
+      localStorage.setItem(LS.actions, JSON.stringify(actions));
+      try {
+        renderActionsList();
+      } catch (err) {
+        console.error("No se pudo refrescar el listado de compromisos:", err);
+      }
+    }
   }
 
   renderCards();
@@ -234,8 +269,9 @@ function editCustomValue(id) {
   });
 }
 
-function deleteCustomValue(id) {
-  if (!confirm("¿Seguro que deseas eliminar permanentemente este valor del mazo?")) return;
+async function deleteCustomValue(id) {
+  const confirmResult = await showConfirmModal("¿Eliminar valor?", "¿Seguro que deseas eliminar permanentemente este valor del mazo?");
+  if (!confirmResult) return;
 
   const scrollPos = window.scrollY;
   const idx = valuesData.findIndex(v => v.id === id);
@@ -274,7 +310,7 @@ export function renderActiveList() {
     li.dataset.index = i;
     li.innerHTML = `
       <span class="rank-num">${i + 1}</span>
-      <div class="grab" title="Arrastrar para reordenar">≡</div>
+      <div class="grab" title="Arrastrar para reordenar" aria-hidden="true">≡</div>
       <div class="rank-name">${escapeHTML(v.name)}</div>
       <div class="rank-arrows">
         ${i > 0 ? `<button class="arrow-btn" data-from="${i}" data-to="${i - 1}" title="Subir">▲</button>` : `<span class="arrow-placeholder"></span>`}
@@ -314,7 +350,13 @@ export function renderActiveList() {
 
     li.querySelector(".remove-btn").addEventListener("click", () => toggleValue(v.id));
     el.list.appendChild(li);
-    gsap.from(li, { x: -20, opacity: 0, duration: 0.3, delay: i * 0.05 });
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    gsap.from(li, { 
+      x: reduced ? 0 : -20, 
+      opacity: 0, 
+      duration: reduced ? 0 : 0.3, 
+      delay: reduced ? 0 : i * 0.05 
+    });
   });
 
   // Touch drag-to-reorder (mobile)

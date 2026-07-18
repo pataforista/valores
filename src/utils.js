@@ -33,13 +33,118 @@ export function safeJSONParse(text, fallback) {
     }
 }
 
+let toastTimer = null;
+
 export function toast(msg) {
     const el = document.getElementById("toast");
     if (!el) return;
     el.textContent = msg;
     el.classList.add("show");
-    setTimeout(() => el.classList.remove("show"), 1200);
+    if (toastTimer) clearTimeout(toastTimer);
+    const duration = Math.min(Math.max(1200, msg.length * 50), 4000);
+    toastTimer = setTimeout(() => {
+        el.classList.remove("show");
+        toastTimer = null;
+    }, duration);
 }
+
+export function showPromptModal(title, defaultValue = "") {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'carousel-modal';
+        modal.style.cssText = `
+            display: flex;
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 9999;
+        `;
+        modal.innerHTML = `
+            <div class="carousel-wrap" style="text-align: left; padding: 24px; max-width: 400px; width: 90%;">
+                <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 12px;">${title}</h3>
+                <input type="text" id="promptInput" value="${defaultValue}" style="width: 100%; padding: 10px; margin-bottom: 16px; border: 1px solid var(--ring); border-radius: 8px; background: var(--bg); color: var(--text);" />
+                <div class="inline-actions" style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn" id="promptCancel">Cancelar</button>
+                    <button class="btn primary" id="promptConfirm">Aceptar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        const input = document.getElementById('promptInput');
+        input.focus();
+        input.select();
+
+        const cleanup = (value) => {
+            modal.remove();
+            resolve(value);
+        };
+
+        document.getElementById('promptConfirm').addEventListener('click', () => {
+            cleanup(input.value.trim());
+        });
+
+        document.getElementById('promptCancel').addEventListener('click', () => {
+            cleanup(null);
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                cleanup(input.value.trim());
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                cleanup(null);
+            }
+        });
+    });
+}
+
+export function showConfirmModal(title, text) {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'carousel-modal';
+        modal.style.cssText = `
+            display: flex;
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 9999;
+        `;
+        modal.innerHTML = `
+            <div class="carousel-wrap" style="text-align: left; padding: 24px; max-width: 400px; width: 90%;">
+                <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 12px;">${title}</h3>
+                <p style="margin-bottom: 20px; color: var(--muted); font-size: 0.95rem;">${text}</p>
+                <div class="inline-actions" style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn" id="confirmCancel">Cancelar</button>
+                    <button class="btn danger" id="confirmOk">Eliminar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        const cancelBtn = document.getElementById('confirmCancel');
+        cancelBtn.focus();
+
+        const cleanup = (value) => {
+            modal.remove();
+            resolve(value);
+        };
+
+        document.getElementById('confirmOk').addEventListener('click', () => {
+            cleanup(true);
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            cleanup(false);
+        });
+
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                cleanup(false);
+            }
+        });
+    });
+}
+
 
 export function escapeHTML(str) {
     return String(str)

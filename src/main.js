@@ -12,7 +12,7 @@ import { runExport } from './export.js';
 import { initNotifications } from './notifications.js';
 import { initAchievements } from './achievements.js';
 import { initOfflineIndicator } from './offlineIndicator.js';
-import { initOnboarding } from './onboarding.js';
+import { initOnboarding, showOnboarding } from './onboarding.js';
 import { initGlossaryButton } from './glossary.js';
 
 import { el } from './dom.js';
@@ -150,6 +150,56 @@ function initBackupSystem() {
         restoreInput?.click();
     });
 
+    function validateBackup(data) {
+        if (!data || typeof data !== 'object') return false;
+
+        let hasAnyValidKey = false;
+
+        if (data.values !== undefined) {
+            if (!Array.isArray(data.values)) return false;
+            for (const v of data.values) {
+                if (!v || typeof v.id !== 'number' || typeof v.name !== 'string') return false;
+            }
+            hasAnyValidKey = true;
+        }
+
+        if (data.customValues !== undefined) {
+            if (!Array.isArray(data.customValues)) return false;
+            for (const v of data.customValues) {
+                if (!v || typeof v.id !== 'number' || typeof v.name !== 'string' || typeof v.def !== 'string') return false;
+            }
+            hasAnyValidKey = true;
+        }
+
+        if (data.bullseye !== undefined) {
+            if (typeof data.bullseye !== 'object' || data.bullseye === null) return false;
+            const keys = ['work', 'rel', 'growth', 'leisure'];
+            for (const k of keys) {
+                const val = data.bullseye[k];
+                if (val !== undefined && (typeof val !== 'number' || val < 0 || val > 100)) return false;
+            }
+            hasAnyValidKey = true;
+        }
+
+        if (data.bullseyeHistory !== undefined) {
+            if (!Array.isArray(data.bullseyeHistory)) return false;
+            for (const h of data.bullseyeHistory) {
+                if (!h || typeof h.date !== 'string' || typeof h.work !== 'number' || typeof h.rel !== 'number' || typeof h.growth !== 'number' || typeof h.leisure !== 'number') return false;
+            }
+            hasAnyValidKey = true;
+        }
+
+        if (data.actions !== undefined) {
+            if (!Array.isArray(data.actions)) return false;
+            for (const a of data.actions) {
+                if (!a || typeof a.title !== 'string' || typeof a.area !== 'string' || typeof a.value !== 'string') return false;
+            }
+            hasAnyValidKey = true;
+        }
+
+        return hasAnyValidKey;
+    }
+
     restoreInput?.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -158,7 +208,7 @@ function initBackupSystem() {
         reader.onload = (event) => {
             try {
                 const data = JSON.parse(event.target.result);
-                if (data && (Array.isArray(data.values) || Array.isArray(data.customValues) || typeof data.bullseye === 'object' || Array.isArray(data.actions))) {
+                if (validateBackup(data)) {
                     if (data.values) localStorage.setItem(LS.values, JSON.stringify(data.values));
                     if (data.customValues) localStorage.setItem(LS.customValues, JSON.stringify(data.customValues));
                     if (data.bullseye) localStorage.setItem(LS.bullseye, JSON.stringify(data.bullseye));
@@ -172,7 +222,7 @@ function initBackupSystem() {
                         window.location.reload();
                     }, 1000);
                 } else {
-                    toast("❌ Formato inválido");
+                    toast("❌ Formato inválido o dañado");
                 }
             } catch (err) {
                 console.error("Error parsing backup:", err);
@@ -216,98 +266,9 @@ function initInstallPrompt() {
 }
 
 function initIntro() {
-    const modal = document.getElementById("introModal");
-    const closeBtn = document.getElementById("closeIntroBtn");
     const helpBtn = document.getElementById("helpBtn");
-
-    let introOpener = null;
-
-    const show = () => {
-        introOpener = document.activeElement;
-        modal.style.display = "flex";
-        requestAnimationFrame(() => {
-            modal.style.opacity = 1;
-            modal.style.pointerEvents = "auto";
-            (document.getElementById("introNextBtn") || closeBtn)?.focus();
-        });
-    };
-
-    const hide = () => {
-        modal.style.opacity = 0;
-        modal.style.pointerEvents = "none";
-        setTimeout(() => modal.style.display = "none", 400);
-        localStorage.setItem(LS.seenIntro, "true");
-        introOpener?.focus?.();
-    };
-
-    helpBtn?.addEventListener("click", show);
-    closeBtn?.addEventListener("click", hide);
-    attachModalKeyboard(modal, hide);
-
-    const slides = [
-        { t: "¡Bienvenido! 🌟", d: "Esta es tu brújula personal para vivir una vida con propósito basándonos en ACT y DBT." },
-        { t: "Define tus Valores 🌲", d: "Elige lo que realmente te importa. Tus valores son direcciones, no metas." },
-        { t: "La Diana 🎯", d: "Mide qué tan cerca estás de tus valores en las áreas clave de tu vida." },
-        { t: "El Sendero 👣", d: "Convierte tus valores en pasos pequeños y acciones comprometidas." },
-        { t: "Botón SOS 🌊", d: "Cuando las emociones te desborden, usa estas técnicas para volver al presente." }
-    ];
-
-    const track = document.getElementById("carouselTrack");
-    const dots = document.getElementById("carouselDots");
-    const nextBtn = document.getElementById("introNextBtn");
-    const prevBtn = document.getElementById("introPrevBtn");
-    let currentSlide = 0;
-
-    const renderSlide = () => {
-        if (!track || !dots) return;
-        track.style.transform = `translateX(-${currentSlide * 100}%)`;
-        Array.from(dots.children).forEach((d, i) => d.classList.toggle("active", i === currentSlide));
-        if (prevBtn) prevBtn.disabled = currentSlide === 0;
-        if (nextBtn) {
-            nextBtn.textContent = currentSlide === slides.length - 1 ? "Comenzar" : "Siguiente";
-            nextBtn.setAttribute("aria-label", nextBtn.textContent);
-        }
-    };
-
-    if (track) {
-        track.innerHTML = slides.map(s => `
-            <div class="intro-slide">
-                <h2>${s.t}</h2>
-                <p>${s.d}</p>
-            </div>
-        `).join("");
-    }
-    if (dots) {
-        dots.innerHTML = slides.map((_, i) => `<button class="dot ${i === 0 ? 'active' : ''}" aria-label="Ver diapositiva ${i + 1}"></button>`).join("");
-    }
-
-    if (localStorage.getItem(LS.seenIntro) !== "true") {
-        setTimeout(show, 1000);
-    }
-
-    renderSlide();
-
-    nextBtn?.addEventListener("click", () => {
-        if (currentSlide >= slides.length - 1) {
-            hide();
-            return;
-        }
-        currentSlide++;
-        renderSlide();
-    });
-
-    prevBtn?.addEventListener("click", () => {
-        if (currentSlide === 0) return;
-        currentSlide--;
-        renderSlide();
-    });
-
-    // Dot navigation
-    dots?.addEventListener("click", (e) => {
-        if (e.target.classList.contains("dot")) {
-            currentSlide = Array.from(dots.children).indexOf(e.target);
-            renderSlide();
-        }
+    helpBtn?.addEventListener("click", () => {
+        showOnboarding();
     });
 }
 
@@ -433,21 +394,34 @@ function initTabs() {
 function initTheme() {
     const savedTheme = localStorage.getItem(LS.theme);
     const isDark = savedTheme === "dark";
+    
+    const updateThemeBtn = (dark) => {
+        if (!el.themeBtn) return;
+        el.themeBtn.textContent = dark ? "☀️" : "🌙";
+        el.themeBtn.setAttribute("aria-label", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+        el.themeBtn.setAttribute("aria-pressed", dark ? "true" : "false");
+    };
+
     if (isDark) {
         document.body.classList.add("dark-theme");
-        if (el.themeBtn) el.themeBtn.textContent = "☀️";
     }
+    updateThemeBtn(isDark);
 
     el.themeBtn?.addEventListener("click", () => {
         const isDarkNow = document.body.classList.toggle("dark-theme");
         localStorage.setItem(LS.theme, isDarkNow ? "dark" : "light");
-        el.themeBtn.textContent = isDarkNow ? "☀️" : "🌙";
+        updateThemeBtn(isDarkNow);
         if (isSoundEnabled()) SoundFX.click();
     });
 }
 
 function initSoundToggle() {
-    const updateIcon = (enabled) => el.soundBtn.textContent = enabled ? "🔊" : "🔈";
+    const updateIcon = (enabled) => {
+        if (!el.soundBtn) return;
+        el.soundBtn.textContent = enabled ? "🔊" : "🔈";
+        el.soundBtn.setAttribute("aria-label", enabled ? "Silenciar sonido" : "Activar sonido");
+        el.soundBtn.setAttribute("aria-pressed", enabled ? "true" : "false");
+    };
     updateIcon(isSoundEnabled());
 
     el.soundBtn?.addEventListener("click", () => {

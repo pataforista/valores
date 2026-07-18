@@ -4,6 +4,7 @@ import { LS, safeJSONParse, toast, AREA_LABELS } from './utils.js';
 import { SoundFX } from './audio.js';
 import { recordBullseyeUpdate } from './notifications.js';
 import { notifySaved } from './offlineIndicator.js';
+import { unlockAchievement } from './achievements.js';
 
 let bullseyeData = safeJSONParse(localStorage.getItem(LS.bullseye), {
     work: 50,
@@ -209,21 +210,7 @@ export async function initBullseye() {
         `;
     }
 
-    // Theme change listener for icons
-    const observer = new MutationObserver(async (mutations) => {
-        for (const mutation of mutations) {
-            if (mutation.attributeName === 'class') {
-                await preparePointImages();
-                if (chart) {
-                    chart.data.datasets[0].pointStyle = pointImages;
-                    chart.update('none');
-                }
-                injectIcons();
-                break;
-            }
-        }
-    });
-    observer.observe(document.body, { attributes: true });
+
 
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
     resizeHandler = () => {
@@ -295,6 +282,23 @@ export async function initBullseye() {
 
         recordBullseyeUpdate();
         notifySaved('🎯 Diana guardada');
+        
+        // Logros de Diana
+        try {
+            unlockAchievement('bullseye_first');
+            if (bullseyeHistory.length >= 2) {
+                const dates = bullseyeHistory.map(h => new Date(h.date).getTime());
+                const minDate = Math.min(...dates);
+                const maxDate = Math.max(...dates);
+                const diffDays = (maxDate - minDate) / (1000 * 60 * 60 * 24);
+                if (diffDays >= 7) {
+                    unlockAchievement('bullseye_week');
+                }
+            }
+        } catch (err) {
+            console.error("No se pudieron verificar los logros de la Diana:", err);
+        }
+
         toast('🎯 Diana guardada e historial actualizado');
         SoundFX.success();
         updateEvolutionChart();

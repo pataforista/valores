@@ -365,7 +365,7 @@ function downloadIcs(a) {
 function suggestMindfulnessSkill(text) {
     const map = {
         "ansiedad": "Expansión",
-        "miedo": "Coraje",
+        "miedo": "Aceptación",
         "pereza": "Contacto con valores",
         "estres": "Aceptación",
         "tristeza": "Autocompasión",
