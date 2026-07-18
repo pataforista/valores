@@ -43,6 +43,18 @@ body.dark-theme {
   --glass-border: rgba(255, 255, 255, 0.1);
 }
 
+body.dark-theme .btn.primary {
+  color: #1a202c;
+}
+body.dark-theme .status-pill,
+body.dark-theme .rank-num {
+  color: #f1f5f9;
+  background-color: #334155;
+}
+body.dark-theme .btn.danger {
+  color: #ffffff;
+}
+
 /* --- Base & Reset --- */
 * {
   box-sizing: border-box;
@@ -293,14 +305,16 @@ button:not(.tab-btn):not(.icon-btn):active {
 /* --- Cards Grid (Spotlight) --- */
 .values-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  /* Slightly wider */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
 }
 
 .card-container {
   perspective: 1200px;
-  height: 200px;
+  min-height: 180px;
+  height: auto;
+  isolation: isolate;
+  overflow: hidden;
 
   /* Spotlight & Tilt vars */
   --mouse-x: center;
@@ -698,43 +712,6 @@ select:focus {
   transform: translate(-50%, -50%);
 }
 
-.marker-circle {
-  border-radius: 50%;
-  background: var(--primary);
-}
-
-.marker-circle::before {
-  content: "🧸";
-}
-
-.marker-square {
-  border-radius: 12px;
-  background: var(--danger);
-}
-
-.marker-square::before {
-  content: "👫";
-}
-
-.marker-triangle {
-  border-radius: 12px;
-  background: var(--highlight);
-  color: #444;
-}
-
-.marker-triangle::before {
-  content: "🧘";
-}
-
-.marker-diamond {
-  border-radius: 12px;
-  background: #A78BFA;
-}
-
-.marker-diamond::before {
-  content: "🎨";
-}
-
 .slider-row {
   display: flex;
   justify-content: space-between;
@@ -826,11 +803,7 @@ select:focus {
   stroke-width: 3;
 }
 
-.compass-glass {
-  fill: rgba(255, 255, 255, 0.4);
-  stroke: rgba(255, 255, 255, 0.6);
-  stroke-width: 1;
-}
+
 
 .scarf-red {
   fill: #E07A5F;
@@ -840,11 +813,7 @@ select:focus {
   fill: #F4F1DE;
 }
 
-.character-body {
-  fill: #FFFFFF;
-  stroke: #CBD5E1;
-  stroke-width: 1.5;
-}
+
 
 .character-limb {
   stroke: #5D4037;
@@ -873,26 +842,11 @@ select:focus {
   animation: walkCycle 3s infinite ease-in-out;
 }
 
-.moomin-pupil,
-#shineL,
-#shineR {
-  transform: translate(var(--px, 0), var(--py, 0));
-  transition: transform 0.1s ease-out;
-}
 
-#compass.talking .moomin-mouth {
-  animation: talkMoomin 0.2s infinite alternate;
-}
 
-@keyframes talkMoomin {
-  from {
-    transform: scaleY(1);
-  }
 
-  to {
-    transform: scaleY(1.5);
-  }
-}
+
+
 
 body.dark-theme #galaxy-canvas {
   opacity: 0.8;
@@ -981,59 +935,9 @@ body.dark-theme #galaxy-canvas {
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.carousel-item {
-  min-width: 100%;
-  padding: 0 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-}
 
-.carousel-p {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: var(--muted);
-}
 
-.carousel-dots {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 16px;
-}
 
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ring);
-  opacity: 0.4;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.dot.active {
-  opacity: 1;
-  transform: scale(1.4);
-  background: var(--primary);
-}
-
-.intro-controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 16px;
-  position: sticky;
-  bottom: 0;
-  background: linear-gradient(to top, var(--card) 75%, rgba(0, 0, 0, 0));
-  padding-top: 10px;
-}
-
-.intro-controls .btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
 
 /* --- Delete Modal --- */
 .delete-modal-content {
@@ -1285,7 +1189,7 @@ body.dark-theme #galaxy-canvas {
   padding: 4px 12px;
   border-radius: 20px;
   background: var(--ring);
-  color: #fff;
+  color: #1e293b;
   font-weight: 600;
   letter-spacing: 0.5px;
 }
@@ -1294,116 +1198,6 @@ body.dark-theme #galaxy-canvas {
   background: var(--primary);
   box-shadow: 0 2px 8px rgba(129, 230, 217, 0.4);
 }
-
-/* --- Cards Grid (Premium Depth) --- */
-.values-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  /* Slightly wider */
-  gap: 20px;
-}
-
-.card-container {
-  perspective: 1200px;
-  height: 200px;
-
-  /* Spotlight & Tilt vars */
-  --mouse-x: center;
-  --mouse-y: center;
-  --spotlight-color: rgba(115, 155, 163, 0.4);
-  --rotate-x: 0deg;
-  --rotate-y: 0deg;
-  --scale: 1;
-
-  border-radius: 20px;
-  box-shadow:
-    0 10px 20px -5px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-
-  border: 1px solid rgba(0, 0, 0, 0.08);
-
-  background: var(--card);
-  background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
-      rgba(255, 255, 255, 0.2),
-      transparent 80%);
-  padding: 4px;
-  position: relative;
-
-  transform-origin: center center;
-  transform:
-    rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale3d(var(--scale), var(--scale), 1);
-
-  transition: transform 0.1s ease-out, box-shadow 0.3s;
-  will-change: transform;
-}
-
-.card-container:hover {
-  box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.2);
-  /* Stronger hover shadow */
-  z-index: 20;
-  border-color: rgba(0, 0, 0, 0.0);
-  /* Let spotlight take over */
-}
-
-body.dark-theme .card-container {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Tooltip (Caption) */
-.card-tooltip {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(0, 0, 0, 0.75);
-  color: #fff;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.3s ease;
-  pointer-events: none;
-  z-index: 10;
-  backdrop-filter: blur(4px);
-}
-
-.card-container:hover .card-tooltip {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-body.dark-theme .card-tooltip {
-  background: rgba(255, 255, 255, 0.9);
-  color: #000;
-}
-
-.card-container::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--card);
-  border-radius: 18px;
-  z-index: 0;
-}
-
-.card {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  z-index: 1;
-  transform-style: preserve-3d;
-  transform-origin: center center;
-  /* Explicit center */
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 20px;
-}
-
-.card.flipped {
-  transform: rotateY(180deg);
-}
-
 
 /* Utilities */
 .card-title {
@@ -1470,27 +1264,6 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
-/* --- Firefox Fixes & Card Styling --- */
-.card-container {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform-style: preserve-3d;
-  -webkit-transform-style: preserve-3d;
-}
-
-.card-face {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  /* Fluid font for small screens */
-  font-size: clamp(0.85rem, 2vw, 1.1rem);
-}
-
-.card-title {
-  /* Fluid typography to prevent clipping */
-  font-size: clamp(1.1rem, 3vw, 1.4rem) !important;
-  line-height: 1.2;
-}
-
 /* --- SOS Module Styles (Steam Out) --- */
 .hero-sos {
   border: 2px solid var(--danger);
@@ -1529,23 +1302,9 @@ textarea:focus-visible {
   overflow: hidden;
 }
 
-.breath-circle {
-  width: 60px;
-  height: 60px;
-  background: var(--primary);
-  opacity: 0.15;
-  border-radius: 50%;
-  transition: transform 3.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
-.breath-circle-inner {
-  position: absolute;
-  width: 60px;
-  height: 60px;
-  border: 2px solid var(--primary);
-  border-radius: 50%;
-  transition: transform 3.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
+
+
 
 .timer {
   font-variant-numeric: tabular-nums;
@@ -1613,31 +1372,6 @@ textarea:focus-visible {
 .sos-placeholder-icon {
   font-size: 4rem;
   margin: 20px 0;
-}
-
-.sos-tap-area {
-  height: 180px;
-  background: var(--bg);
-  border-radius: 20px;
-  border: 2px dashed var(--ring);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin: 20px 0;
-  cursor: pointer;
-  user-select: none;
-  transition: background 0.1s;
-}
-
-.sos-tap-area:active {
-  background: var(--ring);
-}
-
-.sos-tap-count {
-  font-size: 4rem;
-  font-weight: 900;
-  color: var(--primary);
 }
 
 .sos-countdown {
@@ -1930,53 +1664,6 @@ textarea:focus-visible {
   }
 }
 
-/* --- Responsive & usability hardening --- */
-.values-grid {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-}
-
-.card-container,
-.card,
-.card-face {
-  background-clip: padding-box;
-}
-
-.card-container {
-  isolation: isolate;
-  overflow: hidden;
-  min-height: 180px;
-  height: auto;
-}
-
-.card {
-  isolation: isolate;
-  transform: translateZ(0);
-}
-
-.card-face {
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  min-height: 100%;
-}
-
-.card-front .card-title {
-  -webkit-line-clamp: unset;
-  line-clamp: unset;
-  overflow: visible;
-}
-
-.card-back {
-  gap: 8px;
-}
-
-.card-back .def {
-  align-items: flex-start;
-  justify-content: flex-start;
-  text-align: left;
-  width: 100%;
-  padding-right: 2px;
-}
-
 
 
 .slider-row {
@@ -2050,9 +1737,7 @@ textarea:focus-visible {
     aspect-ratio: 3 / 4;
   }
 
-  .card-face {
-    padding: 16px 14px;
-  }
+  
 
   .row-actions {
     display: grid;
@@ -2108,69 +1793,11 @@ textarea:focus-visible {
 }
 
 /* --- Fixes: valores cards contrast + diana simplificada --- */
-.card-face,
-.card-front,
-.card-back {
-  background: var(--card) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
 
-.card-front {
-  justify-content: center;
-  align-items: center;
-}
+
+
 
 /* Bullet-proof centering applied in main block */
-
-/* --- Accessibility & responsive card sizing overrides --- */
-/* Allow cards to size to content and avoid excessive empty space */
-.card-container {
-  height: auto !important;
-min-height: 100px !important;
-/* remove forced aspect-ratio where present */
-aspect-ratio: auto !important;
-}
-
-.card {
-height: auto !important;
-align-items: flex-start !important;
-}
-
-.card-content {
-  /* Let content stack from top so short text doesn't vertically center */
-  justify-content: flex-start !important;
-  padding: 16px !important;
-}
-
-.card-def {
-  /* Remove forced centering so multiline text wraps naturally */
-  display: block !important;
-  flex-grow: 0 !important;
-  align-items: stretch !important;
-  text-align: left !important;
-/* cap visible height on small screens to avoid very tall cards */
-max-height: 6.5rem;
-overflow: auto;
-}
-
-.values-grid {
-  /* prefer auto-fit for responsive columns */
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
-gap: 12px !important;
-}
-
-@media (max-width: 768px) {
-  .card-title { font-size: 1.05rem !important; }
-  .card-content { padding: 12px !important; }
-}
-
-@media (max-width: 480px) {
-.card-title { font-size: 0.98rem !important; }
-.card-def { max-height: 5.5rem !important; }
-.values-grid { gap: 10px !important; }
-}
-
 
 /* --- Overflow + alignment hardening --- */
 .rank-item {
@@ -2185,7 +1812,7 @@ gap: 12px !important;
   place-items: center;
   flex: 0 0 28px;
   background: var(--ring);
-  color: #fff;
+  color: #1e293b;
   font-weight: 700;
   font-size: 0.78rem;
 }
@@ -2197,11 +1824,7 @@ gap: 12px !important;
 }
 
 .card-title,
-.card-back .def {
-  overflow-wrap: normal;
-  word-break: normal;
-  hyphens: auto;
-}
+
 
 .hint,
 label,
@@ -2209,9 +1832,7 @@ button {
   overflow-wrap: anywhere;
 }
 
-.card-back .def {
-  text-wrap: pretty;
-}
+
 
 .card-actions .btn {
   max-width: 100%;
@@ -2241,21 +1862,6 @@ button {
   }
 
 }
-/* --- WCAG Contrast & Themecolor hardeners --- */
-.status-pill, .rank-num {
-  color: #1e293b !important;
-}
-.dark-theme .btn.primary {
-  color: #1a202c !important;
-}
-.dark-theme .status-pill, .dark-theme .rank-num {
-  color: #f1f5f9 !important;
-  background-color: #334155 !important;
-}
-.dark-theme .btn.danger {
-  color: #ffffff !important;
-}
-
 /* Footer & legal disclaimers styles */
 .app-footer {
   padding: 24px 16px;
