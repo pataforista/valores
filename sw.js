@@ -51,6 +51,15 @@ self.addEventListener("activate", (event) => {
     )
   );
   self.clients.claim();
+
+  // Notify open clients that a new service worker version activated
+  self.clients.matchAll({ type: 'window' }).then(clients => {
+    for (const c of clients) {
+      try {
+        c.postMessage({ type: 'SW_UPDATED', version: CACHE_NAME });
+      } catch (e) { /* ignore */ }
+    }
+  });
 });
 
 self.addEventListener("fetch", (event) => {
