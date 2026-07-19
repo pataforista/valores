@@ -448,7 +448,6 @@ function initTheme() {
     
     const updateThemeBtn = (dark) => {
         if (!el.themeBtn) return;
-        el.themeBtn.textContent = dark ? "☀️" : "🌙";
         el.themeBtn.setAttribute("aria-label", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
         el.themeBtn.setAttribute("aria-pressed", dark ? "true" : "false");
     };
@@ -469,7 +468,7 @@ function initTheme() {
 function initSoundToggle() {
     const updateIcon = (enabled) => {
         if (!el.soundBtn) return;
-        el.soundBtn.textContent = enabled ? "🔊" : "🔈";
+        el.soundBtn.classList.toggle("muted", !enabled);
         el.soundBtn.setAttribute("aria-label", enabled ? "Silenciar sonido" : "Activar sonido");
         el.soundBtn.setAttribute("aria-pressed", enabled ? "true" : "false");
     };

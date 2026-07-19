@@ -17,7 +17,13 @@ if (canvas) {
         const WAVE_AMPLITUDE = 10;
         const LERP_SPEED = 0.08;
         const PARTICLE_SIZE = 2;
-        const PARTICLE_COLOR = '#FF9FFC';
+        let particleColor = '#5B8C96';
+        function updateParticleColor() {
+            const primary = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+            if (primary) {
+                particleColor = primary;
+            }
+        }
         const AUTO_ANIMATE = true;
 
         let mouseX = -1000, mouseY = -1000;
@@ -29,6 +35,13 @@ if (canvas) {
 
         function initAntigravity() {
             resize();
+            updateParticleColor();
+
+            const themeObserver = new MutationObserver(() => {
+                updateParticleColor();
+            });
+            themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
             window.addEventListener("resize", resize);
             window.addEventListener("mousemove", (e) => {
                 mouseX = e.clientX;
@@ -158,7 +171,7 @@ if (canvas) {
 
                 ctx.beginPath();
                 ctx.arc(p.cx, p.cy, PARTICLE_SIZE, 0, Math.PI * 2);
-                ctx.fillStyle = PARTICLE_COLOR;
+                ctx.fillStyle = particleColor;
                 ctx.globalAlpha = Math.max(0, opacity);
                 ctx.fill();
             });
