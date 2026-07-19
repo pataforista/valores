@@ -69,7 +69,7 @@ if (canvas) {
                 particles.forEach(p => {
                     ctx.beginPath();
                     ctx.arc(p.cx, p.cy, PARTICLE_SIZE, 0, Math.PI * 2);
-                    ctx.fillStyle = PARTICLE_COLOR;
+                    ctx.fillStyle = particleColor;
                     ctx.globalAlpha = 0.15;
                     ctx.fill();
                 });

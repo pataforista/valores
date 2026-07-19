@@ -1,6 +1,6 @@
 "use strict";
 
-import { safeJSONParse, LS } from './utils.js';
+import { safeJSONParse, LS } from "./utils.js";
 
 export const valuesData = [
     { id: 1, name: "Aceptación", def: "Estar abierto y aceptarme a mí mismo, a los demás, a la vida, etc." },

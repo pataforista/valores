@@ -1,9 +1,9 @@
 "use strict";
 
-import { el } from './dom.js';
-import { SoundFX, isSoundEnabled, initAudio } from './audio.js';
-import { CompassAvatar } from './avatar.js';
-import { toast, attachModalKeyboard } from './utils.js';
+import { el } from "./dom.js";
+import { SoundFX, isSoundEnabled, initAudio } from "./audio.js";
+import { CompassAvatar } from "./avatar.js";
+import { attachModalKeyboard } from "./utils.js";
 
 let breathing = false;
 let boxTimer;
@@ -24,7 +24,7 @@ export function clearAllTimers() {
             console.error("Failed to suspend noise context in clearAllTimers:", e);
         }
         noiseOn = false;
-        const noiseToggle = document.getElementById('noiseToggle');
+        const noiseToggle = document.getElementById("noiseToggle");
         if (noiseToggle) {
             noiseToggle.textContent = "Encender";
             noiseToggle.classList.remove("danger");
@@ -51,8 +51,8 @@ export function initSosModule() {
     if (!el.tabSos) return;
 
     // Brown Noise Logic
-    const noiseToggle = document.getElementById('noiseToggle');
-    const noiseVol = document.getElementById('noiseVol');
+    const noiseToggle = document.getElementById("noiseToggle");
+    const noiseVol = document.getElementById("noiseVol");
     const noiseTargetVol = () => (Number(noiseVol?.value ?? 25) / 100) * 0.1;
 
     noiseVol?.addEventListener("input", () => {

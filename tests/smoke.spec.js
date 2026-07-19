@@ -14,18 +14,17 @@ const PORT = 8080;
 test.beforeAll(() => {
   // Servidor web estático ligero y nativo de Node.js
   server = http.createServer((req, res) => {
-    // Eliminar query parameters de la URL para mapear a archivos físicos
     const urlPath = req.url.split('?')[0];
     const filePath = path.join(baseDir, urlPath === '/' ? 'index.html' : urlPath);
 
     fs.readFile(filePath, (err, data) => {
       if (err) {
+        console.log(`[HTTP SERV] 404: ${urlPath} -> ${filePath}`);
         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
         res.end(`Archivo no encontrado: ${urlPath}`);
         return;
       }
 
-      // Resolver MIME Type adecuado
       let contentType = 'text/plain';
       if (filePath.endsWith('.html')) contentType = 'text/html; charset=utf-8';
       else if (filePath.endsWith('.css')) contentType = 'text/css';
@@ -35,6 +34,7 @@ test.beforeAll(() => {
       else if (filePath.endsWith('.json')) contentType = 'application/json';
       else if (filePath.endsWith('.woff2')) contentType = 'font/woff2';
 
+      console.log(`[HTTP SERV] 200: ${urlPath} (${contentType})`);
       res.writeHead(200, { 'Content-Type': contentType });
       res.end(data);
     });
@@ -52,15 +52,36 @@ test.afterAll(() => {
 
 test.describe('Valores del Valle - Smoke Tests', () => {
   
+  test.beforeEach(async ({ page }) => {
+    // Inyectar localStorage antes de cargar para evitar diálogos de bienvenida y onboarding
+    await page.addInitScript(() => {
+      window.localStorage.setItem('vv_seenIntro_v1', 'true');
+      window.localStorage.setItem('vv_seenInfo_v1', 'true');
+      window.localStorage.setItem('vv_seen_onboarding_v1', 'true');
+    });
+  });
+
   test('debe cargar la app y navegar por las pestañas sin errores en consola', async ({ page }) => {
     const consoleErrors = [];
+    page.on('pageerror', exception => {
+      console.log(`[NAVEGADOR EXCEPCIÓN]: ${exception.message}\nStack:\n${exception.stack}`);
+      consoleErrors.push(exception.message);
+    });
     page.on('console', msg => {
+      console.log(`[NAVEGADOR LOG] ${msg.type().toUpperCase()}: ${msg.text()}`);
       if (msg.type() === 'error') {
         consoleErrors.push(msg.text());
       }
     });
 
     await page.goto('/');
+
+    // Esperar a que el Service Worker esté listo y activo para evitar recargas en medio de la prueba
+    await page.evaluate(async () => {
+      if ('serviceWorker' in navigator) {
+        await navigator.serviceWorker.ready;
+      }
+    });
     
     // Validar título de la aplicación
     await expect(page).toHaveTitle('Valores del Valle');
@@ -91,8 +112,10 @@ test.describe('Valores del Valle - Smoke Tests', () => {
     // 1. Cargar la app inicialmente en modo online
     await page.goto('/');
     
-    // Dar un tiempo para que el Service Worker se instale y active
-    await page.waitForTimeout(2000);
+    // Esperar a que el Service Worker esté listo y activo
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
 
     // 2. Cambiar el contexto de red a Offline
     await context.setOffline(true);
@@ -104,7 +127,6 @@ test.describe('Valores del Valle - Smoke Tests', () => {
     const brandHeader = page.locator('.brand h1');
     await expect(brandHeader).toHaveText('Valores del Valle 🌲');
 
-    // Probar que el indicador offline funciona si aplica
     // Restaurar red para los demás tests
     await context.setOffline(false);
   });

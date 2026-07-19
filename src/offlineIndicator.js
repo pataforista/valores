@@ -8,8 +8,8 @@ let timeoutId = null;
  */
 function createIndicator() {
     if (indicatorElement) return;
-    indicatorElement = document.createElement('div');
-    indicatorElement.id = 'offline-indicator';
+    indicatorElement = document.createElement("div");
+    indicatorElement.id = "offline-indicator";
     indicatorElement.style.cssText = `
         position: fixed;
         bottom: 80px;
@@ -41,19 +41,19 @@ function showIndicator(text) {
     if (!indicatorElement) createIndicator();
     if (!indicatorElement) return;
     indicatorElement.textContent = text;
-    indicatorElement.style.opacity = '1';
-    indicatorElement.style.transform = 'translateY(0)';
+    indicatorElement.style.opacity = "1";
+    indicatorElement.style.transform = "translateY(0)";
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
-        indicatorElement.style.opacity = '0';
-        indicatorElement.style.transform = 'translateY(10px)';
+        indicatorElement.style.opacity = "0";
+        indicatorElement.style.transform = "translateY(10px)";
     }, 3000);
 }
 
 /**
  * Notifica que los datos se han guardado.
  */
-export function notifySaved(message = '✅ Datos guardados') {
+export function notifySaved(message = "✅ Datos guardados") {
     showIndicator(message);
 }
 
@@ -64,13 +64,13 @@ export function initOfflineIndicator() {
     createIndicator();
 
     // Escuchar cambios en localStorage (solo para otras pestañas)
-    window.addEventListener('storage', (e) => {
-        if (e.key && e.key.startsWith('vv_')) {
-            notifySaved('🔄 Datos sincronizados (otra pestaña)');
+    window.addEventListener("storage", (e) => {
+        if (e.key && e.key.startsWith("vv_")) {
+            notifySaved("🔄 Datos sincronizados (otra pestaña)");
         }
     });
 
     setTimeout(() => {
-        notifySaved('💾 Todo listo, trabajando offline');
+        notifySaved("💾 Todo listo, trabajando offline");
     }, 500);
 }

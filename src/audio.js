@@ -1,6 +1,6 @@
 "use strict";
 
-import { LS } from './utils.js';
+import { LS } from "./utils.js";
 
 let soundEnabled = localStorage.getItem(LS.sound) !== "false";
 let audioCtx = null;
@@ -27,7 +27,7 @@ export function playSound(freqs = [800, 1200], type = "sine", duration = 0.1) {
     if (!isSoundEnabled()) return; // Use the function check for the latest state
 
     initAudio();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (audioCtx.state === "suspended") audioCtx.resume();
 
     const now = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();

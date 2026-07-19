@@ -1,11 +1,11 @@
 "use strict";
 
-import { SoundFX, isSoundEnabled } from './audio.js';
+import { SoundFX, isSoundEnabled } from "./audio.js";
 
 const STATES = ["neutral", "happy", "worried", "tired", "surprised"];
 
 function initBlinkEffect() {
-    const eyes = document.getElementById('eyes');
+    const eyes = document.getElementById("eyes");
     if (!eyes) return;
 
     const blink = () => {
@@ -31,20 +31,20 @@ export const CompassAvatar = (function () {
     let speakTimer;
 
     function init() {
-        box = document.getElementById('avatarBox');
-        const root = document.getElementById('avatarRoot');
+        box = document.getElementById("avatarBox");
+        const root = document.getElementById("avatarRoot");
         if (!box || !root) return;
 
         root.hidden = false;
         root.classList.add("walking");
-        compass = document.getElementById('compass');
+        compass = document.getElementById("compass");
         initBlinkEffect();
-        bubble = document.getElementById('avatarBubble');
-        bubbleText = document.getElementById('avatarText');
-        pupilL = document.getElementById('pupilL');
-        pupilR = document.getElementById('pupilR');
-        shineL = document.getElementById('shineL');
-        shineR = document.getElementById('shineR');
+        bubble = document.getElementById("avatarBubble");
+        bubbleText = document.getElementById("avatarText");
+        pupilL = document.getElementById("pupilL");
+        pupilR = document.getElementById("pupilR");
+        shineL = document.getElementById("shineL");
+        shineR = document.getElementById("shineR");
 
         setState("neutral");
 
@@ -54,7 +54,7 @@ export const CompassAvatar = (function () {
         }
 
         // Minimization logic
-        const toggleBtn = document.getElementById('toggleAvatarBtn');
+        const toggleBtn = document.getElementById("toggleAvatarBtn");
         const isMinimized = localStorage.getItem("vv_avatar_minimized") === "true";
         if (isMinimized) {
             root.classList.add("minimized");

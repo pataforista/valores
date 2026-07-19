@@ -10,11 +10,11 @@ export const LS = {
     seenIntro: "vv_seenIntro_v1",
     seenInfoCard: "vv_seenInfo_v1",
     sound: "vv_sound_enabled",
-    notificationConfig: 'vv_notification_config_v1',
-    lastBullseyeUpdate: 'vv_last_bullseye_update_v1',
-    achievements: 'vv_achievements_v1',
-    totalActionsDone: 'vv_total_actions_done_v1',
-    seenOnboarding: 'vv_seen_onboarding_v1'
+    notificationConfig: "vv_notification_config_v1",
+    lastBullseyeUpdate: "vv_last_bullseye_update_v1",
+    achievements: "vv_achievements_v1",
+    totalActionsDone: "vv_total_actions_done_v1",
+    seenOnboarding: "vv_seen_onboarding_v1"
 };
 
 export const AREA_LABELS = {
@@ -50,8 +50,8 @@ export function toast(msg) {
 
 export function showPromptModal(title, defaultValue = "") {
     return new Promise((resolve) => {
-        const modal = document.createElement('div');
-        modal.className = 'carousel-modal';
+        const modal = document.createElement("div");
+        modal.className = "carousel-modal";
         modal.style.cssText = `
             display: flex;
             opacity: 1;
@@ -69,7 +69,7 @@ export function showPromptModal(title, defaultValue = "") {
             </div>
         `;
         document.body.appendChild(modal);
-        const input = document.getElementById('promptInput');
+        const input = document.getElementById("promptInput");
         input.focus();
         input.select();
 
@@ -78,19 +78,19 @@ export function showPromptModal(title, defaultValue = "") {
             resolve(value);
         };
 
-        document.getElementById('promptConfirm').addEventListener('click', () => {
+        document.getElementById("promptConfirm").addEventListener("click", () => {
             cleanup(input.value.trim());
         });
 
-        document.getElementById('promptCancel').addEventListener('click', () => {
+        document.getElementById("promptCancel").addEventListener("click", () => {
             cleanup(null);
         });
 
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
                 e.preventDefault();
                 cleanup(input.value.trim());
-            } else if (e.key === 'Escape') {
+            } else if (e.key === "Escape") {
                 e.preventDefault();
                 cleanup(null);
             }
@@ -100,8 +100,8 @@ export function showPromptModal(title, defaultValue = "") {
 
 export function showConfirmModal(title, text) {
     return new Promise((resolve) => {
-        const modal = document.createElement('div');
-        modal.className = 'carousel-modal';
+        const modal = document.createElement("div");
+        modal.className = "carousel-modal";
         modal.style.cssText = `
             display: flex;
             opacity: 1;
@@ -120,7 +120,7 @@ export function showConfirmModal(title, text) {
         `;
         document.body.appendChild(modal);
         
-        const cancelBtn = document.getElementById('confirmCancel');
+        const cancelBtn = document.getElementById("confirmCancel");
         cancelBtn.focus();
 
         const cleanup = (value) => {
@@ -128,16 +128,16 @@ export function showConfirmModal(title, text) {
             resolve(value);
         };
 
-        document.getElementById('confirmOk').addEventListener('click', () => {
+        document.getElementById("confirmOk").addEventListener("click", () => {
             cleanup(true);
         });
 
-        cancelBtn.addEventListener('click', () => {
+        cancelBtn.addEventListener("click", () => {
             cleanup(false);
         });
 
-        modal.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
+        modal.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
                 e.preventDefault();
                 cleanup(false);
             }

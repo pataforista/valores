@@ -1,11 +1,11 @@
 "use strict";
 
-import { el } from './dom.js';
-import { valuesData, getActiveValues, setActiveValues, MAX_VALUES, computeNextCustomId } from './values.js';
-import { SoundFX } from './audio.js';
-import { escapeHTML, toast, LS, safeJSONParse, showPromptModal, showConfirmModal } from './utils.js';
-import { renderActionValueOptions, renderActionsList } from './ui_path.js';
-import { getDomainForValue } from './illustrations.js';
+import { el } from "./dom.js";
+import { valuesData, getActiveValues, setActiveValues, MAX_VALUES, computeNextCustomId } from "./values.js";
+import { SoundFX } from "./audio.js";
+import { escapeHTML, toast, LS, safeJSONParse, showPromptModal, showConfirmModal } from "./utils.js";
+import { renderActionValueOptions, renderActionsList } from "./ui_path.js";
+import { getDomainForValue } from "./illustrations.js";
 
 export function initValuesModule() {
   initCustomValueForm();
@@ -85,7 +85,7 @@ export function renderCards() {
   });
 
   if (filteredValues.length === 0) {
-    el.cards.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px; font-size: 0.95rem;">No se encontraron valores con los filtros aplicados.</div>`;
+    el.cards.innerHTML = "<div style=\"grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px; font-size: 0.95rem;\">No se encontraron valores con los filtros aplicados.</div>";
     return;
   }
 
@@ -95,37 +95,37 @@ export function renderCards() {
 
     const card = document.createElement("div");
     card.className = "card-container";
-    card.setAttribute('role', 'article');
-    card.setAttribute('aria-label', `Valor ${v.name}`);
+    card.setAttribute("role", "article");
+    card.setAttribute("aria-label", `Valor ${v.name}`);
     card.innerHTML = `
       <div class="card ${isSelected ? "selected" : ""}">
         <div class="card-content">
           <h3 class="card-title">${escapeHTML(v.name)}</h3>
           <p class="card-def">${escapeHTML(v.def)}</p>
           <div class="card-actions" style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <button class="btn btn-sm ${isSelected ? 'danger' : 'secondary'} select-btn" data-id="${v.id}">
-              ${isSelected ? 'Quitar' : 'Agregar'}
+            <button class="btn btn-sm ${isSelected ? "danger" : "secondary"} select-btn" data-id="${v.id}">
+              ${isSelected ? "Quitar" : "Agregar"}
             </button>
             ${isCustom ? `
               <button class="btn btn-sm secondary edit-btn" data-id="${v.id}" title="Editar">✏️</button>
               <button class="btn btn-sm danger delete-btn" data-id="${v.id}" title="Eliminar">🗑️</button>
-            ` : ''}
+            ` : ""}
           </div>
         </div>
       </div>
     `;
 
-    card.querySelector('.select-btn').addEventListener('click', (e) => {
+    card.querySelector(".select-btn").addEventListener("click", (e) => {
       e.stopPropagation();
       toggleValue(v.id);
     });
 
     if (isCustom) {
-      card.querySelector('.edit-btn').addEventListener('click', (e) => {
+      card.querySelector(".edit-btn").addEventListener("click", (e) => {
         e.stopPropagation();
         editCustomValue(v.id);
       });
-      card.querySelector('.delete-btn').addEventListener('click', (e) => {
+      card.querySelector(".delete-btn").addEventListener("click", (e) => {
         e.stopPropagation();
         deleteCustomValue(v.id);
       });
@@ -313,8 +313,8 @@ export function renderActiveList() {
       <div class="grab" title="Arrastrar para reordenar" aria-hidden="true">≡</div>
       <div class="rank-name">${escapeHTML(v.name)}</div>
       <div class="rank-arrows">
-        ${i > 0 ? `<button class="arrow-btn" data-from="${i}" data-to="${i - 1}" title="Subir">▲</button>` : `<span class="arrow-placeholder"></span>`}
-        ${i < active.length - 1 ? `<button class="arrow-btn" data-from="${i}" data-to="${i + 1}" title="Bajar">▼</button>` : `<span class="arrow-placeholder"></span>`}
+        ${i > 0 ? `<button class="arrow-btn" data-from="${i}" data-to="${i - 1}" title="Subir">▲</button>` : "<span class=\"arrow-placeholder\"></span>"}
+        ${i < active.length - 1 ? `<button class="arrow-btn" data-from="${i}" data-to="${i + 1}" title="Bajar">▼</button>` : "<span class=\"arrow-placeholder\"></span>"}
       </div>
       <button class="mini-btn remove-btn" data-id="${v.id}">✕</button>
     `;

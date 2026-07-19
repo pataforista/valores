@@ -1,19 +1,18 @@
 "use strict";
 
-import { LS, toast, safeJSONParse } from './utils.js';
-import { SoundFX, isSoundEnabled } from './audio.js';
+import { LS, toast, safeJSONParse } from "./utils.js";
+import { SoundFX, isSoundEnabled } from "./audio.js";
 
 // Definición de logros
 const ACHIEVEMENTS = [
-    { id: 'first_action', label: 'Primer paso', desc: 'Completaste tu primera acción comprometida.', icon: '👣' },
-    { id: 'five_actions', label: 'Camino recorrido', desc: 'Has completado 5 acciones.', icon: '🌟' },
-    { id: 'ten_actions', label: 'Compromiso firme', desc: 'Has completado 10 acciones.', icon: '🏆' },
-    { id: 'bullseye_first', label: 'Primera diana', desc: 'Guardaste tu primera evaluación de la diana.', icon: '🎯' },
-    { id: 'bullseye_week', label: 'Constancia', desc: 'Has actualizado la diana durante 2 semanas seguidas.', icon: '📅' },
+    { id: "first_action", label: "Primer paso", desc: "Completaste tu primera acción comprometida.", icon: "👣" },
+    { id: "five_actions", label: "Camino recorrido", desc: "Has completado 5 acciones.", icon: "🌟" },
+    { id: "ten_actions", label: "Compromiso firme", desc: "Has completado 10 acciones.", icon: "🏆" },
+    { id: "bullseye_first", label: "Primera diana", desc: "Guardaste tu primera evaluación de la diana.", icon: "🎯" },
+    { id: "bullseye_week", label: "Constancia", desc: "Has actualizado la diana durante 2 semanas seguidas.", icon: "📅" },
 ];
 
 let achieved = safeJSONParse(localStorage.getItem(LS.achievements), []);
-let totalActionsDone = 0;
 let confettiActive = false;
 
 /**
@@ -26,7 +25,7 @@ export function isAchieved(id) {
 /**
  * Desbloquea un logro, muestra celebración y guarda.
  */
-function unlockAchievement(id) {
+export function unlockAchievement(id) {
     if (achieved.includes(id)) return;
     const ach = ACHIEVEMENTS.find(a => a.id === id);
     if (!ach) return;
@@ -50,10 +49,10 @@ function celebrate(ach) {
     launchConfetti();
 
     // Mostrar notificación nativa si está disponible
-    if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('🎉 Logro desbloqueado', {
+    if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("🎉 Logro desbloqueado", {
             body: `${ach.icon} ${ach.label}\n${ach.desc}`,
-            icon: './icons/icon-192.png',
+            icon: "./icons/icon-192.png",
         });
     }
 }
@@ -65,8 +64,8 @@ function launchConfetti() {
     if (confettiActive) return;
     confettiActive = true;
 
-    const canvas = document.createElement('canvas');
-    canvas.id = 'confetti-canvas';
+    const canvas = document.createElement("canvas");
+    canvas.id = "confetti-canvas";
     canvas.style.cssText = `
         position: fixed;
         top: 0;
@@ -78,9 +77,9 @@ function launchConfetti() {
     `;
     document.body.appendChild(canvas);
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     const particles = [];
-    const colors = ['#f44336', '#e91e63', '#9c27b0', '#3f51b5', '#4caf50', '#ffeb3b', '#ff9800', '#ffffff'];
+    const colors = ["#f44336", "#e91e63", "#9c27b0", "#3f51b5", "#4caf50", "#ffeb3b", "#ff9800", "#ffffff"];
     const count = 150;
 
     for (let i = 0; i < count; i++) {
@@ -142,11 +141,10 @@ function launchConfetti() {
  */
 export function updateAchievements(actions) {
     const done = actions.filter(a => a.done).length;
-    totalActionsDone = done;
 
-    if (done >= 1) unlockAchievement('first_action');
-    if (done >= 5) unlockAchievement('five_actions');
-    if (done >= 10) unlockAchievement('ten_actions');
+    if (done >= 1) unlockAchievement("first_action");
+    if (done >= 5) unlockAchievement("five_actions");
+    if (done >= 10) unlockAchievement("ten_actions");
 
     // Guardar conteo actual
     localStorage.setItem(LS.totalActionsDone, String(done));
@@ -156,10 +154,6 @@ export function updateAchievements(actions) {
  * Inicializa el módulo de logros.
  */
 export function initAchievements() {
-    // Recuperar conteo guardado
-    const saved = parseInt(localStorage.getItem(LS.totalActionsDone) || '0', 10);
-    totalActionsDone = saved;
-
     // Verificar logros al inicio
     const actions = safeJSONParse(localStorage.getItem(LS.actions), []);
     updateAchievements(actions);

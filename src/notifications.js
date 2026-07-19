@@ -1,7 +1,7 @@
 "use strict";
 
-import { LS, toast } from './utils.js';
-import { getCommittedActions } from './ui_path.js';
+import { LS, toast } from "./utils.js";
+import { getCommittedActions } from "./ui_path.js";
 
 // Configuración por defecto
 const DEFAULTS = {
@@ -17,30 +17,30 @@ let reminderIntervalId = null;
  * Solicita permiso para notificaciones y devuelve el estado.
  */
 export async function requestNotificationPermission() {
-    if (!('Notification' in window)) {
-        console.warn('Este navegador no soporta notificaciones.');
+    if (!("Notification" in window)) {
+        console.warn("Este navegador no soporta notificaciones.");
         return false;
     }
-    if (Notification.permission === 'granted') return true;
-    if (Notification.permission === 'denied') return false;
+    if (Notification.permission === "granted") return true;
+    if (Notification.permission === "denied") return false;
 
     const result = await Notification.requestPermission();
-    return result === 'granted';
+    return result === "granted";
 }
 
 /**
  * Envía una notificación nativa si hay permiso.
  */
 function sendNativeNotification(title, body) {
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
     try {
         new Notification(title, {
             body,
-            icon: './icons/icon-192.png',
+            icon: "./icons/icon-192.png",
             silent: false,
         });
     } catch (e) {
-        console.warn('Error al mostrar notificación nativa:', e);
+        console.warn("Error al mostrar notificación nativa:", e);
     }
 }
 
@@ -68,7 +68,7 @@ function checkActions() {
         if (diff > 0 && diff < threshold) {
             const hours = Math.ceil(diff / (60 * 60 * 1000));
             notifyUser(
-                '⏳ Acción próxima',
+                "⏳ Acción próxima",
                 `"${a.title}" está programada para dentro de ${hours} horas.`
             );
         }
@@ -87,8 +87,8 @@ function checkBullseyeUpdate() {
         const week = 7 * 24 * 60 * 60 * 1000;
         if (diff > week) {
             notifyUser(
-                '🎯 Actualiza tu Diana',
-                'Ha pasado más de una semana desde tu última evaluación. ¿Cómo te sientes hoy?'
+                "🎯 Actualiza tu Diana",
+                "Ha pasado más de una semana desde tu última evaluación. ¿Cómo te sientes hoy?"
             );
         }
     } else {
@@ -101,7 +101,7 @@ function checkBullseyeUpdate() {
  * Ejecuta un recordatorio de respiración (opcional).
  */
 function remindBreathing() {
-    notifyUser('🌬️ Pausa de respiración', 'Tómate 1 minuto para respirar conscientemente.');
+    notifyUser("🌬️ Pausa de respiración", "Tómate 1 minuto para respirar conscientemente.");
 }
 
 /**
@@ -173,9 +173,9 @@ export function updateReminderConfig(config) {
 export function initNotifications() {
     requestNotificationPermission().then(granted => {
         if (granted) {
-            console.log('Notificaciones permitidas.');
+            console.log("Notificaciones permitidas.");
         } else {
-            console.log('Notificaciones no permitidas, se usarán toasts.');
+            console.log("Notificaciones no permitidas, se usarán toasts.");
         }
     });
     startReminders();

@@ -1,12 +1,12 @@
 "use strict";
 
-import { el } from './dom.js';
-import { getActiveValues } from './values.js';
-import { LS, safeJSONParse, toast, escapeHTML, copyToClipboard, AREA_LABELS } from './utils.js';
-import { SoundFX, isSoundEnabled } from './audio.js';
-import { CompassAvatar } from './avatar.js';
-import { updateAchievements } from './achievements.js';
-import { notifySaved } from './offlineIndicator.js';
+import { el } from "./dom.js";
+import { getActiveValues } from "./values.js";
+import { LS, safeJSONParse, toast, escapeHTML, copyToClipboard, AREA_LABELS } from "./utils.js";
+import { SoundFX, isSoundEnabled } from "./audio.js";
+import { CompassAvatar } from "./avatar.js";
+import { updateAchievements } from "./achievements.js";
+import { notifySaved } from "./offlineIndicator.js";
 
 let committedActions = safeJSONParse(localStorage.getItem(LS.actions), []);
 let internalBarriers = [];
@@ -183,7 +183,7 @@ function showCommitmentPanel(action) {
     if (!panel || !summary || !status) return;
 
     const areaText = AREA_LABELS[action.area] || action.area;
-    const dateText = action.date ? new Date(action.date).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) : 'No definida';
+    const dateText = action.date ? new Date(action.date).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }) : "No definida";
     summary.textContent = `Acción: ${action.title} · Valor: ${action.value} · Área: ${areaText} · Fecha: ${dateText}`;
     status.textContent = "Pendiente";
     panel.hidden = false;
@@ -200,7 +200,7 @@ function declareCommitment() {
     localStorage.removeItem("vv_pending_action_v1");
     renderActionsList();
     updateAchievements(committedActions);
-    notifySaved('👣 Compromiso guardado');
+    notifySaved("👣 Compromiso guardado");
 
     el.actionForm.reset();
     internalBarriers = [];
@@ -225,7 +225,7 @@ function shareCommitment() {
     }
     if (navigator.share) {
         navigator.share({
-            title: 'Mi Compromiso — Valores del Valle',
+            title: "Mi Compromiso — Valores del Valle",
             text: summary
         }).catch(() => {
             fallbackShare(summary);
@@ -283,33 +283,33 @@ export function renderActionsList() {
     list.innerHTML = "";
     committedActions.forEach(a => {
         const li = document.createElement("li");
-        li.className = `action-item ${a.done ? 'done' : ''}`;
+        li.className = `action-item ${a.done ? "done" : ""}`;
         const areaText = AREA_LABELS[a.area] || a.area;
-        const dateText = a.date ? new Date(a.date).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) : 'No definida';
+        const dateText = a.date ? new Date(a.date).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }) : "No definida";
         li.innerHTML = `
       <div style="flex:1">
         <strong>${escapeHTML(a.title)}</strong>
         <p class="hint">${escapeHTML(a.value)} · ${escapeHTML(areaText)}<br>📅 ${escapeHTML(dateText)}</p>
       </div>
       <button class="mini-btn download-ics" title="Descargar recordatorio de calendario (.ics)" aria-label="Descargar recordatorio de calendario">📅</button>
-      <button class="mini-btn toggle-action" title="${a.done ? 'Marcar como pendiente' : 'Marcar como hecha'}" aria-label="Marcar como hecha">${a.done ? '✓' : '○'}</button>
+      <button class="mini-btn toggle-action" title="${a.done ? "Marcar como pendiente" : "Marcar como hecha"}" aria-label="Marcar como hecha">${a.done ? "✓" : "○"}</button>
       <button class="mini-btn remove-action" title="Eliminar acción" aria-label="Eliminar acción">🗑️</button>
     `;
-        li.querySelector('.download-ics').onclick = () => downloadIcs(a);
-        li.querySelector('.toggle-action').onclick = () => {
+        li.querySelector(".download-ics").onclick = () => downloadIcs(a);
+        li.querySelector(".toggle-action").onclick = () => {
             a.done = !a.done;
             localStorage.setItem(LS.actions, JSON.stringify(committedActions));
             renderActionsList();
             updateAchievements(committedActions);
-            notifySaved('✅ Estado de acción actualizado');
+            notifySaved("✅ Estado de acción actualizado");
         };
-        li.querySelector('.remove-action').onclick = () => {
+        li.querySelector(".remove-action").onclick = () => {
             const idx = committedActions.indexOf(a);
             if (idx > -1) committedActions.splice(idx, 1);
             localStorage.setItem(LS.actions, JSON.stringify(committedActions));
             renderActionsList();
             updateAchievements(committedActions);
-            notifySaved('🗑️ Acción eliminada');
+            notifySaved("🗑️ Acción eliminada");
         };
         list.appendChild(li);
     });
@@ -317,10 +317,10 @@ export function renderActionsList() {
 
 function escapeICS(text) {
     return String(text || "")
-        .replace(/\\/g, '\\\\')
-        .replace(/;/g, '\\;')
-        .replace(/,/g, '\\,')
-        .replace(/\n/g, '\\n');
+        .replace(/\\/g, "\\\\")
+        .replace(/;/g, "\\;")
+        .replace(/,/g, "\\,")
+        .replace(/\n/g, "\\n");
 }
 
 function downloadIcs(a) {

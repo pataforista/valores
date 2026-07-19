@@ -1,55 +1,71 @@
 "use strict";
 
-import { LS, toast, safeJSONParse, attachModalKeyboard } from './utils.js';
-import { valuesData, getActiveValues, setActiveValues } from './values.js';
-import { initAudio, SoundFX, toggleSound, isSoundEnabled } from './audio.js';
-import { initBullseye, refreshChart } from './bullseye.js';
-import { CompassAvatar } from './avatar.js';
-import { initValuesModule } from './ui_values.js';
-import { initSosModule, clearAllTimers } from './sos.js';
-import { initPathModule } from './ui_path.js';
-import { runExport } from './export.js';
-import { initNotifications } from './notifications.js';
-import { initAchievements } from './achievements.js';
-import { initOfflineIndicator } from './offlineIndicator.js';
-import { initOnboarding, showOnboarding } from './onboarding.js';
-import { initGlossaryButton } from './glossary.js';
+import { LS, toast, safeJSONParse, attachModalKeyboard } from "./utils.js";
+import { initAudio, SoundFX, toggleSound, isSoundEnabled } from "./audio.js";
+import { initBullseye, refreshChart } from "./bullseye.js";
+import { CompassAvatar } from "./avatar.js";
+import { initValuesModule } from "./ui_values.js";
+import { initSosModule, clearAllTimers } from "./sos.js";
+import { initPathModule } from "./ui_path.js";
+import { runExport } from "./export.js";
+import { initNotifications } from "./notifications.js";
+import { initAchievements } from "./achievements.js";
+import { initOfflineIndicator } from "./offlineIndicator.js";
+import { initOnboarding, showOnboarding } from "./onboarding.js";
+import { initGlossaryButton } from "./glossary.js";
 
-import { el } from './dom.js';
+import { el } from "./dom.js";
 
-// Initialize App
-document.addEventListener("DOMContentLoaded", async () => {
-    ensureGsapFallback();
-    initTabs();
-    initTheme();
-    initAudio();
-    initSoundToggle();
-    // La diana depende de Chart.js; si falla (p. ej. sin librería), no debe
-    // impedir que se inicialice el resto de la app (sobre todo SOS).
+async function init() {
+    console.log("[INIT] Iniciando carga de la aplicación...");
+    const runSafe = (name, fn) => {
+        try {
+            console.log(`[INIT] Cargando ${name}...`);
+            fn();
+        } catch (err) {
+            console.error(`[INIT] Error en ${name}:`, err);
+        }
+    };
+
+    runSafe("GSAP Fallback", ensureGsapFallback);
+    runSafe("Tabs", initTabs);
+    runSafe("Theme", initTheme);
+    runSafe("Audio", initAudio);
+    runSafe("Sound Toggle", initSoundToggle);
+    
+    // Diana (radar chart)
     try {
+        console.log("[INIT] Cargando Diana...");
         await initBullseye();
     } catch (err) {
-        console.error("No se pudo inicializar la diana:", err);
+        console.error("[INIT] Error en Diana:", err);
     }
-    CompassAvatar.init();
-    initValuesModule();
-    initPathModule();
-    initSosModule();
-    initResetAll();
-    initExport();
-    initBackupSystem();
-    initInstallPrompt();
-    initIntro();
-    initInfoCard();
-    initHeaderMenu();
-    registerSW();
+    
+    runSafe("Compass Avatar", () => CompassAvatar.init());
+    runSafe("Values Module", initValuesModule);
+    runSafe("Path Module", initPathModule);
+    runSafe("SOS Module", initSosModule);
+    runSafe("Reset All", initResetAll);
+    runSafe("Export Module", initExport);
+    runSafe("Backup System", initBackupSystem);
+    runSafe("Install Prompt", initInstallPrompt);
+    runSafe("Intro Module", initIntro);
+    runSafe("Info Card", initInfoCard);
+    runSafe("Header Menu", initHeaderMenu);
+    runSafe("Service Worker Registration", registerSW);
+    runSafe("Notifications", initNotifications);
+    runSafe("Achievements", initAchievements);
+    runSafe("Offline Indicator", initOfflineIndicator);
+    runSafe("Onboarding", initOnboarding);
+    runSafe("Glossary Button", initGlossaryButton);
+    console.log("[INIT] Aplicación cargada exitosamente.");
+}
 
-    initNotifications();
-    initAchievements();
-    initOfflineIndicator();
-    initOnboarding();
-    initGlossaryButton();
-});
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+} else {
+    init();
+}
 
 function initHeaderMenu() {
     const toggleBtn = el.menuToggleBtn;
@@ -184,7 +200,7 @@ function initBackupSystem() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `Valores_Respaldo_${new Date().toISOString().split('T')[0]}.json`;
+        a.download = `Valores_Respaldo_${new Date().toISOString().split("T")[0]}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -202,14 +218,14 @@ function initBackupSystem() {
     });
 
     function validateBackup(data) {
-        if (!data || typeof data !== 'object') return false;
+        if (!data || typeof data !== "object") return false;
 
         let hasAnyValidKey = false;
 
         if (data.values !== undefined) {
             if (!Array.isArray(data.values)) return false;
             for (const v of data.values) {
-                if (!v || typeof v.id !== 'number' || typeof v.name !== 'string') return false;
+                if (!v || typeof v.id !== "number" || typeof v.name !== "string") return false;
             }
             hasAnyValidKey = true;
         }
@@ -217,17 +233,17 @@ function initBackupSystem() {
         if (data.customValues !== undefined) {
             if (!Array.isArray(data.customValues)) return false;
             for (const v of data.customValues) {
-                if (!v || typeof v.id !== 'number' || typeof v.name !== 'string' || typeof v.def !== 'string') return false;
+                if (!v || typeof v.id !== "number" || typeof v.name !== "string" || typeof v.def !== "string") return false;
             }
             hasAnyValidKey = true;
         }
 
         if (data.bullseye !== undefined) {
-            if (typeof data.bullseye !== 'object' || data.bullseye === null) return false;
-            const keys = ['work', 'rel', 'growth', 'leisure'];
+            if (typeof data.bullseye !== "object" || data.bullseye === null) return false;
+            const keys = ["work", "rel", "growth", "leisure"];
             for (const k of keys) {
                 const val = data.bullseye[k];
-                if (val !== undefined && (typeof val !== 'number' || val < 0 || val > 100)) return false;
+                if (val !== undefined && (typeof val !== "number" || val < 0 || val > 100)) return false;
             }
             hasAnyValidKey = true;
         }
@@ -235,7 +251,7 @@ function initBackupSystem() {
         if (data.bullseyeHistory !== undefined) {
             if (!Array.isArray(data.bullseyeHistory)) return false;
             for (const h of data.bullseyeHistory) {
-                if (!h || typeof h.date !== 'string' || typeof h.work !== 'number' || typeof h.rel !== 'number' || typeof h.growth !== 'number' || typeof h.leisure !== 'number') return false;
+                if (!h || typeof h.date !== "string" || typeof h.work !== "number" || typeof h.rel !== "number" || typeof h.growth !== "number" || typeof h.leisure !== "number") return false;
             }
             hasAnyValidKey = true;
         }
@@ -243,7 +259,7 @@ function initBackupSystem() {
         if (data.actions !== undefined) {
             if (!Array.isArray(data.actions)) return false;
             for (const a of data.actions) {
-                if (!a || typeof a.title !== 'string' || typeof a.area !== 'string' || typeof a.value !== 'string') return false;
+                if (!a || typeof a.title !== "string" || typeof a.area !== "string" || typeof a.value !== "string") return false;
             }
             hasAnyValidKey = true;
         }
@@ -303,7 +319,7 @@ function initInstallPrompt() {
         deferredPrompt.prompt();
         // Wait for the user to respond to the prompt
         const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
+        if (outcome === "accepted") {
             installBtn.style.display = "none";
         }
         deferredPrompt = null;
@@ -344,14 +360,14 @@ function registerSW() {
         // Listen for messages from the SW (e.g., activation of a new version)
         navigator.serviceWorker.addEventListener("message", (e) => {
             try {
-                if (e.data && e.data.type === 'SW_UPDATED') {
-                    toast('Nueva versión disponible — recargando...');
+                if (e.data && e.data.type === "SW_UPDATED") {
+                    toast("Nueva versión disponible — recargando...");
                     // If a waiting worker exists, request it to skip waiting (defensive)
                     if (navigator.serviceWorker.controller) {
-                        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+                        navigator.serviceWorker.controller.postMessage({ type: "SKIP_WAITING" });
                     }
                 }
-            } catch (err) { /* noop */ }
+            } catch { /* noop */ }
         });
 
         let refreshing = false;
@@ -407,7 +423,7 @@ function initTabs() {
         views.forEach((v, j) => v?.classList.toggle("active", j === i));
         if (setFocus) tabs[i]?.focus();
 
-        if (views[i] && views[i].id !== 'view-sos') {
+        if (views[i] && views[i].id !== "view-sos") {
             clearAllTimers();
         }
 
@@ -420,7 +436,7 @@ function initTabs() {
                 duration: reduced ? 0 : 0.4,
                 ease: "power2.out",
                 onComplete: () => {
-                    if (tabs[i]?.id === 'tab-bullseye') refreshChart();
+                    if (tabs[i]?.id === "tab-bullseye") refreshChart();
                 }
             });
         }
