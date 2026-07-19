@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self';">
+    content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self';">
   <title>Valores del Valle</title>
 
   <link rel="manifest" href="manifest.json" />
@@ -90,36 +90,36 @@
       <section class="card-panel">
         <div class="panel-title">
           <span>Mis Top 10</span>
-          <span id="counter" style="font-size:0.9rem;color:var(--muted)">0/10</span>
+          <span id="counter" class="counter-info">0/10</span>
         </div>
         <p class="hint">Arrastra usando el botón ≡ para reordenar. Agrega o quita valores usando sus respectivos botones.</p>
         <ul id="active-list"></ul>
 
         <div class="inline-form">
           <div class="field">
-            <label for="customName" style="font-weight:900;">Agregar valor personal</label>
+            <label for="customName" class="label-strong">Agregar valor personal</label>
             <input id="customName" type="text" placeholder="Nombre del valor (p. ej., 'Curiosidad científica')" />
           </div>
           <div class="field">
             <textarea id="customDef" placeholder="Definición breve (¿cómo se ve en acciones concretas?)"></textarea>
           </div>
-          <div style="display:flex;justify-content:flex-end;">
+          <div class="flex-end-row">
             <button class="btn primary" id="addCustomBtn" type="button">Agregar</button>
           </div>
         </div>
       </section>
 
-      <div class="deck-filters" style="display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; align-items:center;">
-        <input type="text" id="deckSearch" placeholder="🔍 Buscar valor..." style="flex:1; min-width:200px; padding:10px 14px; border-radius:10px; border:1px solid var(--ring); background:var(--card); color:var(--text); font-family:inherit; font-size:0.95rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" />
-        <select id="deckFilterDomain" style="padding:10px 14px; border-radius:10px; border:1px solid var(--ring); background:var(--card); color:var(--text); font-family:inherit; font-size:0.95rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor:pointer;">
+      <div class="deck-filters">
+        <input type="text" id="deckSearch" placeholder="🔍 Buscar valor..." class="deck-search-input" />
+        <select id="deckFilterDomain" class="deck-filter-select">
           <option value="all">Todos los dominios</option>
           <option value="work">Trabajo / Educación</option>
           <option value="rel">Relaciones</option>
           <option value="growth">Crecimiento / Salud</option>
           <option value="leisure">Ocio / Tiempo libre</option>
         </select>
-        <label style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-size:0.95rem; font-weight:600; padding:10px 14px; background:var(--card); border-radius:10px; border:1px solid var(--ring); box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-          <input type="checkbox" id="deckOnlySelected" style="cursor:pointer;" />
+        <label class="deck-checkbox-label">
+          <input type="checkbox" id="deckOnlySelected" class="cursor-pointer" />
           <span>Solo Top 10</span>
         </label>
       </div>
@@ -144,7 +144,7 @@
             <div class="bullseye-center-dot"></div>
           </div>
 
-          <div style="margin-top:14px; display:grid; gap:12px;">
+          <div class="diana-sliders-container">
             <div class="slider-row">
               <label>Trabajo / Educación <span id="num-work">50</span></label>
               <input id="input-work" type="range" min="0" max="100" value="50" />
@@ -169,10 +169,10 @@
           </div>
         </section>
       </div>
-      <section class="card-panel" id="evolutionSection" style="margin-top:16px;">
+      <section class="card-panel mt-16" id="evolutionSection">
         <div class="panel-title"><span>Historial de Evolución</span></div>
         <p class="hint">Evolución en el tiempo de tu satisfacción por cada área vital (basado en tus guardados).</p>
-        <div class="chart-container-line" style="position:relative; width:100%; height:250px; margin-top:12px;">
+        <div class="chart-container-line">
           <canvas id="evolutionChart"></canvas>
         </div>
       </section>
@@ -242,7 +242,7 @@
             <div class="section-divider"></div>
             <div class="field-group">
               <strong>R — Recursos disponibles (Realistic)</strong>
-              <span class="callout-desc" style="font-size:0.85rem;">¿Tienes lo necesario para realizarla?</span>
+              <span class="callout-desc font-85">¿Tienes lo necesario para realizarla?</span>
               <div class="smart-grid">
                 <label class="smart-card">
                   <input type="checkbox" id="resTime" />
@@ -300,7 +300,7 @@
             <ul class="list-clean" id="externalList"></ul>
           </div>
 
-          <div class="inline-actions" style="justify-content:flex-end;">
+          <div class="inline-actions justify-end">
             <button class="btn primary" type="submit">Preparar compromiso</button>
           </div>
         </form>
@@ -321,7 +321,7 @@
         </div>
       </section>
 
-      <section class="card-panel" style="margin-top:16px;">
+      <section class="card-panel mt-16">
         <div class="panel-title">
           <span>Acciones comprometidas</span>
         </div>
@@ -337,28 +337,27 @@
           <span class="badge-danger">Urgente</span>
         </div>
         <p class="hint">Técnicas para recuperar el control cuando la emoción te abruma.</p>
-        <div class="sos-main-actions" style="display:grid; gap:12px;">
-          <button class="btn danger large" id="sos54321Btn" style="width:100%; padding:16px; font-size:1rem;">
+        <div class="sos-main-actions">
+          <button class="btn danger large sos-action-large" id="sos54321Btn">
             🌊 Técnica 5-4-3-2-1 (Sensorial)
           </button>
-          <button class="btn primary large" id="sosCategoriesBtn" style="width:100%; padding:16px; font-size:1rem;">
+          <button class="btn primary large sos-action-large" id="sosCategoriesBtn">
             🧩 Categorías (Cognitivo)
           </button>
-          <button class="btn secondary large" id="sosHeelsBtn" style="width:100%; padding:16px; font-size:1rem;">
+          <button class="btn secondary large sos-action-large" id="sosHeelsBtn">
             🦶 Anclaje de Talones (Somático)
           </button>
         </div>
       </section>
 
-      <div class="sos-grid" style="display:grid; gap:16px; margin-top:16px;">
+      <div class="sos-grid">
         <section class="card-panel">
           <div class="panel-title"><span>Respiración Cuadrada (Box)</span></div>
           <p class="hint">Inhalar, Retener, Exhalar, Retener (4s cada uno)</p>
-          <div class="sos-row" style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+          <div class="sos-row mb-16">
             <button class="btn primary" id="breathToggle">Iniciar</button>
             <div class="pill" id="breathPhase">Listo</div>
-            <div class="timer" id="breathTimer" style="font-family:monospace; font-weight:700; color:var(--primary)">0s
-            </div>
+            <div class="timer timer-monospace" id="breathTimer">0s</div>
           </div>
           <div class="breath-box-container">
             <div class="breath-square" id="breathSquare"></div>
@@ -369,11 +368,11 @@
         <section class="card-panel">
           <div class="panel-title"><span>Ruido Marrón</span></div>
           <p class="hint">Procedural · No loop (calma mental)</p>
-          <div class="sos-row" style="display:flex; align-items:center; gap:12px;">
+          <div class="sos-row">
             <button class="btn" id="noiseToggle">Encender</button>
-            <label style="flex:1; display:flex; align-items:center; gap:8px;">
-              <span class="hint" style="margin:0; white-space:nowrap; min-width:fit-content;">Vol.</span>
-              <input id="noiseVol" type="range" min="0" max="100" value="25" style="margin:0;" />
+            <label class="vol-slider-label">
+              <span class="hint vol-span">Vol.</span>
+              <input id="noiseVol" type="range" min="0" max="100" value="25" class="noise-input" />
             </label>
           </div>
         </section>
@@ -381,20 +380,20 @@
         <section class="card-panel">
           <div class="panel-title"><span>Cierre Cognitivo</span></div>
           <p class="hint">Intervenciones breves para salir del bucle mental</p>
-          <div style="display:grid; gap:10px;">
+          <div class="cognitive-buttons-container">
             <button class="btn sos-action-btn" id="actSosBtn">
-              <span style="display:block; font-weight:700;">Tomar Distancia (ACT)</span>
-              <span style="display:block; font-size:0.8rem; opacity:0.8;">Observar el pensamiento · 60s</span>
+              <span class="btn-title-block">Tomar Distancia (ACT)</span>
+              <span class="btn-desc-block">Observar el pensamiento · 60s</span>
             </button>
             <button class="btn sos-action-btn" id="dbtSosBtn">
-              <span style="display:block; font-weight:700;">Cambio de Estado (DBT)</span>
-              <span style="display:block; font-size:0.8rem; opacity:0.8;">Fisiología y enfoque · 90s</span>
+              <span class="btn-title-block">Cambio de Estado (DBT)</span>
+              <span class="btn-desc-block">Fisiología y enfoque · 90s</span>
             </button>
           </div>
         </section>
       </div>
 
-      <section class="card-panel tip-panel" style="margin-top:16px;">
+      <section class="card-panel tip-panel mt-16">
         <div class="panel-title"><span>Habilidades TIP · DBT</span></div>
         <p class="hint">Un botón de pánico fisiológico: baja la intensidad corporal para recuperar claridad.</p>
         <div class="tip-grid">
@@ -459,7 +458,7 @@
     <div class="footer-disclaimers">
       <p><strong>👨‍💻 Autor:</strong> César Celada</p>
       <p>📧 <strong>Contacto:</strong> Para aclaraciones, mejoras o sugerencias, escribe a
-        <a href="mailto:drceladapsiquiatria@gmail.com" style="color: var(--primary); text-decoration: underline;">drceladapsiquiatria@gmail.com</a>.
+        <a href="mailto:drceladapsiquiatria@gmail.com" class="primary-underline-link">drceladapsiquiatria@gmail.com</a>.
       </p>
 
       <p><strong>💎 Proyecto sin fines de lucro:</strong> Esta herramienta es gratuita y de
@@ -499,7 +498,7 @@
       <h3 id="deleteModalTitle">¿Borrar todo?</h3>
       <p>Esto eliminará tus valores, diana y compromisos. No se puede deshacer.</p>
       <div class="delete-timer" id="deleteTimer">3</div>
-      <div class="inline-actions" style="justify-content:center; gap:8px;">
+      <div class="inline-actions justify-center gap-8">
         <button class="btn" id="cancelDeleteBtn">Cancelar</button>
         <button class="btn danger" id="confirmDeleteBtn" disabled>Sí, borrar todo</button>
       </div>
@@ -507,24 +506,23 @@
   </div>
 
   <div id="appInfoModal" class="carousel-modal" role="dialog" aria-modal="true" aria-labelledby="appInfoTitle">
-    <div class="carousel-wrap" style="text-align: left; padding: 24px;">
-      <button class="icon-btn close-card-btn" id="hideInfoModalBtn" aria-label="Cerrar introducción"
-        style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
-      <h3 id="appInfoTitle" style="color: var(--primary); font-size: 1.2rem; margin-top: 0; margin-bottom: 12px;">🧭 Sobre esta brújula
+    <div class="carousel-wrap text-left p-24">
+      <button class="icon-btn close-card-btn close-btn-absolute" id="hideInfoModalBtn" aria-label="Cerrar introducción">✕</button>
+      <h3 id="appInfoTitle" class="primary-title-modal">🧭 Sobre esta brújula
       </h3>
-      <div style="overflow-y: auto; max-height: 60vh; padding-right: 8px;">
-        <p style="margin-top: 0;"><strong>Objetivo:</strong> Valores del Valle es una herramienta para ayudarte a
+      <div class="modal-scroll-body">
+        <p class="mt-0"><strong>Objetivo:</strong> Valores del Valle es una herramienta para ayudarte a
           clarificar qué te importa en la vida y comprometerte con acciones alineadas a esos principios.</p>
         <p><strong>¿Qué es ACT?</strong> La Terapia de Aceptación y Compromiso (ACT) nos enseña a aceptar lo que no
           podemos controlar y a comprometernos a actuar de una manera que mejore y enriquezca nuestras vidas.</p>
         <p><strong>¿Cómo usarla?</strong>
-          <br>1️⃣ <strong style="color:var(--primary)">Valores:</strong> Selecciona de la baraja qué principios son
+          <br>1️⃣ <strong class="text-primary">Valores:</strong> Selecciona de la baraja qué principios son
           innegociables para ti y ordénalos en tu <em>Top 10</em>.
-          <br>2️⃣ <strong style="color:var(--primary)">Diana:</strong> Evalúa constantemente qué tan cerca o lejos vives
+          <br>2️⃣ <strong class="text-primary">Diana:</strong> Evalúa constantemente qué tan cerca o lejos vives
           de esos valores en 4 áreas de tu vida.
-          <br>3️⃣ <strong style="color:var(--primary)">Sendero:</strong> Crea planes de acción específicos e identifica
+          <br>3️⃣ <strong class="text-primary">Sendero:</strong> Crea planes de acción específicos e identifica
           barreras internas y externas.
-          <br>4️⃣ <strong style="color:var(--primary)">SOS:</strong> Si la emoción te desborda, usa las herramientas de
+          <br>4️⃣ <strong class="text-primary">SOS:</strong> Si la emoción te desborda, usa las herramientas de
           emergencia para regular tu cuerpo.
         </p>
       </div>
@@ -538,11 +536,11 @@
   <div id="avatarRoot" class="avatar-float" hidden>
     <button class="avatar-toggle-btn" id="toggleAvatarBtn" title="Minimizar Brújula" aria-label="Minimizar Brújula">✕</button>
     <div class="avatar-bubble" id="avatarBubble">
-      <strong style="display:block; margin-bottom:4px;">Brújula</strong>
+      <strong class="avatar-title">Brújula</strong>
       <span id="avatarText">Hola, estoy aquí para guiarte.</span>
     </div>
     <div class="avatar-container" id="avatarBox" aria-label="Avatar Brújula">
-      <svg viewBox="0 0 240 280" role="img" style="width:100%; height:100%;">
+      <svg viewBox="0 0 240 280" role="img" class="full-svg">
         <g id="compass" class="state-neutral">
           <!-- Limbs (Background) -->
           <path class="character-limb" d="M80 220 L60 250" /> <!-- Left Leg -->
@@ -612,7 +610,7 @@
         <button class="mini-btn" id="closeSosOverlay">✕</button>
       </div>
       <div class="sos-modal-content">
-        <div id="sosIllustration" style="display:none; text-align:center; margin-bottom:12px;">
+        <div id="sosIllustration" class="sos-illustration-panel" style="display:none;">
           <div class="sos-placeholder-icon" id="sosIcon">🧘</div>
         </div>
 
@@ -650,10 +648,10 @@
           <div class="sos-countdown-label">Tiempo restante</div>
           <div class="sos-countdown-value" id="sosCountdownValue">0s</div>
         </div>
-        <div class="progress-bar-wrap" style="margin:20px 0;">
+        <div class="progress-bar-wrap mv-20">
           <div class="progress-bar" id="sosProgressBar" style="width:0%;"></div>
         </div>
-        <div style="display:flex; justify-content:flex-end; gap: 8px;">
+        <div class="inline-actions justify-end gap-8">
           <button class="btn primary" id="sosNextBtn" disabled>Siguiente</button>
         </div>
       </div>
