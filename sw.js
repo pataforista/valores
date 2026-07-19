@@ -1,7 +1,7 @@
 /* Valores del Valle CACB — SW (cache simple) */
 
 // Cambio versión para forzar actualización
-const CACHE_NAME = "valores-del-valle-v11";
+const CACHE_NAME = "valores-del-valle-v12";
 const ASSETS = [
   "./",
   "./index.html",
@@ -24,6 +24,11 @@ const ASSETS = [
   "./src/sos.js",
   "./src/ui_path.js",
   "./src/export.js",
+  "./src/achievements.js",
+  "./src/glossary.js",
+  "./src/notifications.js",
+  "./src/offlineIndicator.js",
+  "./src/onboarding.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
