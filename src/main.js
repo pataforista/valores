@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     initInstallPrompt();
     initIntro();
     initInfoCard();
+    initHeaderMenu();
     registerSW();
 
     initNotifications();
@@ -49,6 +50,56 @@ document.addEventListener("DOMContentLoaded", async () => {
     initOnboarding();
     initGlossaryButton();
 });
+
+function initHeaderMenu() {
+    const toggleBtn = el.menuToggleBtn;
+    const menu = el.secondaryMenu;
+
+    if (!toggleBtn || !menu) return;
+
+    const showMenu = () => {
+        menu.classList.add("active");
+        toggleBtn.setAttribute("aria-expanded", "true");
+        const firstItem = menu.querySelector(".menu-item");
+        firstItem?.focus();
+    };
+
+    const hideMenu = () => {
+        menu.classList.remove("active");
+        toggleBtn.setAttribute("aria-expanded", "false");
+    };
+
+    const toggleMenu = (e) => {
+        e.stopPropagation();
+        const isOpen = menu.classList.contains("active");
+        if (isOpen) {
+            hideMenu();
+        } else {
+            showMenu();
+        }
+    };
+
+    toggleBtn.addEventListener("click", toggleMenu);
+
+    document.addEventListener("click", (e) => {
+        if (!menu.contains(e.target) && e.target !== toggleBtn) {
+            hideMenu();
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            hideMenu();
+            toggleBtn.focus();
+        }
+    });
+
+    menu.addEventListener("click", (e) => {
+        if (e.target.classList.contains("menu-item") || e.target.closest(".menu-item")) {
+            hideMenu();
+        }
+    });
+}
 
 // Si GSAP no llegó a cargar (red, bloqueo, etc.), define un sustituto sin
 // animaciones para que las decenas de llamadas a `gsap.*` no lancen errores y

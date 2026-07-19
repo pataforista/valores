@@ -1,0 +1,23 @@
+{
+  "name": "valores-del-valle",
+  "version": "1.0.0",
+  "description": "Aplicación web de exploración de valores y regulación emocional basada en ACT y DBT",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint src/**/*.js",
+    "test": "playwright test"
+  },
+  "keywords": [
+    "act",
+    "dbt",
+    "pwa",
+    "mindfulness"
+  ],
+  "author": "pataforista",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "eslint": "^9.16.0"
+  }
+}

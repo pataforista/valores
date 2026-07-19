@@ -2114,3 +2114,102 @@ button {
   border: 1px solid var(--ring);
   background: var(--card);
 }
+
+/* --- Cabecera / Menú Desplegable Responsivo (Opción 1) --- */
+.menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.toggle-menu-btn {
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 4px 12px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.secondary-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: var(--card);
+  border: 1px solid var(--ring);
+  border-radius: 16px;
+  box-shadow: var(--shadow2);
+  z-index: 1000;
+  min-width: 210px;
+  flex-direction: column;
+  padding: 8px;
+  gap: 4px;
+}
+
+.secondary-menu.active {
+  display: flex;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.menu-item:hover,
+.menu-item:focus {
+  background: var(--bg);
+  color: var(--primary);
+}
+
+/* En resoluciones de escritorio (>768px), el menú se expande horizontalmente en línea */
+@media (min-width: 769px) {
+  .toggle-menu-btn {
+    display: none;
+  }
+
+  .secondary-menu {
+    display: flex !important;
+    position: static;
+    flex-direction: row;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    min-width: auto;
+    gap: 8px;
+  }
+
+  .menu-item {
+    width: auto;
+    padding: 8px 12px;
+    background: var(--card);
+    border: 1px solid var(--ring);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    box-shadow: var(--shadow);
+  }
+
+  .menu-item:hover,
+  .menu-item:focus {
+    background: var(--bg);
+    border-color: var(--primary);
+  }
+}

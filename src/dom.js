@@ -19,6 +19,8 @@ export const el = {
     exportBtn: document.getElementById("exportBtn"),
     manualSaveBtn: document.getElementById("manualSaveBtn"),
     resetBtn: document.getElementById("resetBtn"),
+    menuToggleBtn: document.getElementById("menuToggleBtn"),
+    secondaryMenu: document.getElementById("secondaryMenu"),
 
     // Bullseye inputs
     inWork: document.getElementById("input-work"),

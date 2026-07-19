@@ -34,14 +34,22 @@
     <div class="top-actions">
       <button class="icon-btn" id="installPwaBtn" title="Instalar App" aria-label="Instalar App"
         style="display:none; color: var(--primary); font-weight: bold;">📲</button>
-      <button class="icon-btn" id="manualSaveBtn" title="Descargar Respaldo" aria-label="Descargar Respaldo">📥</button>
-      <button class="icon-btn" id="restoreBackupBtn" title="Restaurar Respaldo" aria-label="Restaurar Respaldo">📤</button>
+      
+      <div class="menu-container">
+        <button class="icon-btn toggle-menu-btn" id="menuToggleBtn" title="Más opciones" aria-label="Más opciones" aria-expanded="false" aria-controls="secondaryMenu">⋯</button>
+        
+        <div class="secondary-menu" id="secondaryMenu" role="menu" aria-label="Opciones adicionales">
+          <button class="menu-item" id="manualSaveBtn" role="menuitem" title="Descargar Respaldo">📥 Descargar Respaldo</button>
+          <button class="menu-item" id="restoreBackupBtn" role="menuitem" title="Restaurar Respaldo">📤 Restaurar Respaldo</button>
+          <button class="menu-item" id="exportBtn" role="menuitem" title="Copiar Resumen para Terapeuta">📋 Copiar Resumen</button>
+          <button class="menu-item" id="soundBtn" role="menuitem" title="Activar/Desactivar Sonido">🔊 Sonido</button>
+          <button class="menu-item" id="themeBtn" role="menuitem" title="Tema">🌙 Tema</button>
+          <button class="menu-item" id="helpBtn" role="menuitem" title="Ayuda / Intro">❓ Ayuda</button>
+          <button class="menu-item" id="showInfoModalBtn" role="menuitem" title="Acerca de">ℹ️ Acerca de</button>
+        </div>
+      </div>
+      
       <input type="file" id="restoreBackupInput" style="display:none;" accept=".json" />
-      <button class="icon-btn" id="exportBtn" title="Copiar Resumen para Terapeuta" aria-label="Copiar Resumen para Terapeuta">📋</button>
-      <button class="icon-btn" id="showInfoModalBtn" title="Acerca de" aria-label="Acerca de">ℹ️</button>
-      <button class="icon-btn" id="helpBtn" title="Ayuda / Intro" aria-label="Ayuda / Intro">❓</button>
-      <button class="icon-btn" id="soundBtn" title="Activar/Desactivar Sonido" aria-label="Activar/Desactivar Sonido">🔊</button>
-      <button class="icon-btn" id="themeBtn" title="Tema" aria-label="Tema">🌙</button>
     </div>
   </header>
 
