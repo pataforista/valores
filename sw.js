@@ -46,7 +46,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => { })
   );
-  self.skipWaiting();
+  // Eliminado self.skipWaiting() para permitir el patrón de actualización mediante banner (esperar a que el usuario confirme)
 });
 
 self.addEventListener("activate", (event) => {

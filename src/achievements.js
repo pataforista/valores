@@ -10,6 +10,7 @@ const ACHIEVEMENTS = [
     { id: "ten_actions", label: "Compromiso firme", desc: "Has completado 10 acciones.", icon: "🏆" },
     { id: "bullseye_first", label: "Primera diana", desc: "Guardaste tu primera evaluación de la diana.", icon: "🎯" },
     { id: "bullseye_week", label: "Constancia", desc: "Has actualizado la diana durante 2 semanas seguidas.", icon: "📅" },
+    { id: "bullseye_100", label: "¡En el centro!", desc: "Alcanzaste el 100% de satisfacción en un área.", icon: "💯" },
 ];
 
 let achieved = safeJSONParse(localStorage.getItem(LS.achievements), []);

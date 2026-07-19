@@ -256,6 +256,7 @@ export async function initBullseye() {
                 const container = document.querySelector(".bullseye-visual");
                 container?.classList.add("bullseye-success");
                 setTimeout(() => container?.classList.remove("bullseye-success"), 1000);
+                try { unlockAchievement("bullseye_100"); } catch { /* ignore */ }
             }
         });
     });
