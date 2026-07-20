@@ -288,8 +288,8 @@ export function renderActionsList() {
         const dateText = formatDateText(a.date);
         
         const isExactDate = a.date && !isNaN(new Date(a.date)) && (a.date.includes("-") || a.date.includes("/"));
-        const icsBtnHTML = isExactDate 
-            ? `<button class="mini-btn download-ics" title="Descargar recordatorio de calendario (.ics)" aria-label="Descargar recordatorio de calendario">📅</button>` 
+        const icsBtnHTML = isExactDate
+            ? '<button class="mini-btn download-ics" title="Descargar recordatorio de calendario (.ics)" aria-label="Descargar recordatorio de calendario">📅</button>'
             : "";
 
         li.innerHTML = `

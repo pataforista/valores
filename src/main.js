@@ -1,7 +1,7 @@
 "use strict";
 
 import { LS, toast, safeJSONParse, attachModalKeyboard } from "./utils.js";
-import { initAudio, SoundFX, toggleSound, isSoundEnabled } from "./audio.js";
+import { SoundFX, toggleSound, isSoundEnabled } from "./audio.js";
 import { initBullseye, refreshChart } from "./bullseye.js";
 import { CompassAvatar } from "./avatar.js";
 import { initValuesModule } from "./ui_values.js";

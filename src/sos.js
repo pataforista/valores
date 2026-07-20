@@ -171,7 +171,6 @@ export function initSosModule() {
         el.sosNextBtn.disabled = false;
         el.sosNextBtn.textContent = "Siguiente";
         el.sosNextBtn.onclick = null;
-        el.sosBackBtn.style.display = "none";
         el.sosProgressBar.style.width = "0%";
 
         // Hide all steps

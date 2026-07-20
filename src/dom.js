@@ -39,7 +39,6 @@ export const el = {
     sosIllustration: document.getElementById("sosIllustration"),
     sosProgressBar: document.getElementById("sosProgressBar"),
     sosNextBtn: document.getElementById("sosNextBtn"),
-    sosBackBtn: document.getElementById("sosBackBtn"),
     sosCountdown: document.getElementById("sosCountdown"),
     sosCountdownValue: document.getElementById("sosCountdownValue"),
     sosTapArea: document.getElementById("sosTapArea"),
