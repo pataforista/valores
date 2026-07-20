@@ -2,7 +2,7 @@
 
 import { el } from "./dom.js";
 import { getActiveValues } from "./values.js";
-import { LS, safeJSONParse, toast, escapeHTML, copyToClipboard, AREA_LABELS } from "./utils.js";
+import { LS, safeJSONParse, toast, escapeHTML, copyToClipboard, AREA_LABELS, formatDateText } from "./utils.js";
 import { SoundFX, isSoundEnabled } from "./audio.js";
 import { CompassAvatar } from "./avatar.js";
 import { updateAchievements } from "./achievements.js";
@@ -183,8 +183,8 @@ function showCommitmentPanel(action) {
     if (!panel || !summary || !status) return;
 
     const areaText = AREA_LABELS[action.area] || action.area;
-    const dateText = action.date ? new Date(action.date).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }) : "No definida";
-    summary.textContent = `Acción: ${action.title} · Valor: ${action.value} · Área: ${areaText} · Fecha: ${dateText}`;
+    const dateText = formatDateText(action.date);
+    summary.textContent = `Acción: ${action.title} — Valor: ${action.value} — Área: ${areaText} — Fecha: ${dateText}`;
     status.textContent = "Pendiente";
     panel.hidden = false;
 }
@@ -285,17 +285,25 @@ export function renderActionsList() {
         const li = document.createElement("li");
         li.className = `action-item ${a.done ? "done" : ""}`;
         const areaText = AREA_LABELS[a.area] || a.area;
-        const dateText = a.date ? new Date(a.date).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }) : "No definida";
+        const dateText = formatDateText(a.date);
+        
+        const isExactDate = a.date && !isNaN(new Date(a.date)) && (a.date.includes("-") || a.date.includes("/"));
+        const icsBtnHTML = isExactDate 
+            ? `<button class="mini-btn download-ics" title="Descargar recordatorio de calendario (.ics)" aria-label="Descargar recordatorio de calendario">📅</button>` 
+            : "";
+
         li.innerHTML = `
-      <div style="flex:1">
-        <strong>${escapeHTML(a.title)}</strong>
-        <p class="hint">${escapeHTML(a.value)} · ${escapeHTML(areaText)}<br>📅 ${escapeHTML(dateText)}</p>
-      </div>
-      <button class="mini-btn download-ics" title="Descargar recordatorio de calendario (.ics)" aria-label="Descargar recordatorio de calendario">📅</button>
-      <button class="mini-btn toggle-action" title="${a.done ? "Marcar como pendiente" : "Marcar como hecha"}" aria-label="Marcar como hecha">${a.done ? "✓" : "○"}</button>
-      <button class="mini-btn remove-action" title="Eliminar acción" aria-label="Eliminar acción">🗑️</button>
-    `;
-        li.querySelector(".download-ics").onclick = () => downloadIcs(a);
+        <div style="flex:1">
+          <strong>${escapeHTML(a.title)}</strong>
+          <p class="hint">${escapeHTML(a.value)} · ${escapeHTML(areaText)}<br>📅 ${escapeHTML(dateText)}</p>
+        </div>
+        ${icsBtnHTML}
+        <button class="mini-btn toggle-action" title="${a.done ? "Marcar como pendiente" : "Marcar como hecha"}" aria-label="Marcar como hecha">${a.done ? "↩" : "✓"}</button>
+        <button class="mini-btn remove-action" title="Eliminar acción" aria-label="Eliminar acción">🗑️</button>
+      `;
+        if (isExactDate) {
+            li.querySelector(".download-ics").onclick = () => downloadIcs(a);
+        }
         li.querySelector(".toggle-action").onclick = () => {
             a.done = !a.done;
             localStorage.setItem(LS.actions, JSON.stringify(committedActions));

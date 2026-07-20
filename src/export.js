@@ -3,7 +3,7 @@
 import { getActiveValues } from "./values.js";
 import { getBullseye } from "./bullseye.js";
 import { getCommittedActions } from "./ui_path.js";
-import { copyToClipboard, toast, AREA_LABELS } from "./utils.js";
+import { copyToClipboard, toast, AREA_LABELS, formatDateText } from "./utils.js";
 import { SoundFX } from "./audio.js";
 
 export function runExport() {
@@ -31,12 +31,11 @@ export function runExport() {
     if (actions.length > 0) {
         text += "\n🚀 Mis Compromisos:\n";
         actions.forEach((a, i) => {
-            const areaText = AREA_LABELS[a.area] || a.area;
-            const dateText = a.date ? new Date(a.date).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }) : "No definida";
-            text += `${i + 1}. [${a.done ? "X" : " "}] ${a.title}\n`;
-            text += `   · Área: ${areaText}\n`;
-            text += `   · Valor relacionado: ${a.value}\n`;
-            text += `   · Fecha/Hora límite: ${dateText}\n`;
+            text += `\n${i + 1}. [${a.done ? 'x' : ' '}] ${a.title}\n`;
+            text += `   • Área: ${AREA_LABELS[a.area] || a.area}\n`;
+            text += `   • Valor asociado: ${a.value}\n`;
+            const dateText = formatDateText(a.date);
+            text += `   • Fecha límite: ${dateText}\n`;
             if (a.internal && a.internal.length > 0) {
                 text += "   · Obstáculos Internos (Mente):\n";
                 a.internal.forEach(obs => {

@@ -2505,6 +2505,7 @@ body.dark-theme #themeBtn .svg-sun {
   gap: 8px;
   cursor: pointer;
   font-size: 0.95rem;
+  white-space: nowrap;
   font-weight: 600;
   padding: 10px 14px;
   background: var(--card);

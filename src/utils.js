@@ -48,6 +48,29 @@ export function toast(msg) {
     }, duration);
 }
 
+export function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+export function formatDateText(d) {
+    if (!d) return "No definida";
+    const parsed = new Date(d);
+    // Si es una fecha válida y parece ser un formato ISO o numérico, la localizamos
+    if (!isNaN(parsed) && (d.includes("-") || d.includes("/"))) {
+        try {
+            return parsed.toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
+        } catch {
+            return d;
+        }
+    }
+    // Si es un texto libre ("en dos semanas", "mañana"), lo devolvemos tal cual
+    return d;
+}
+
 export function showPromptModal(title, defaultValue = "") {
     return new Promise((resolve) => {
         const modal = document.createElement("div");
