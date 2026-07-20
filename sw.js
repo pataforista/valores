@@ -1,7 +1,7 @@
 /* Valores del Valle CACB — SW (cache simple) */
 
 // Cambio versión para forzar actualización
-const CACHE_NAME = "valores-del-valle-v12";
+const CACHE_NAME = "valores-del-valle-v13";
 const ASSETS = [
   "./",
   "./index.html",
@@ -43,10 +43,10 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting(); // Fuerza la instalación inmediata del nuevo SW
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => { })
   );
-  // Eliminado self.skipWaiting() para permitir el patrón de actualización mediante banner (esperar a que el usuario confirme)
 });
 
 self.addEventListener("activate", (event) => {
@@ -55,60 +55,35 @@ self.addEventListener("activate", (event) => {
       Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : null)))
     )
   );
-  self.clients.claim();
-
-  // Notify open clients that a new service worker version activated
-  self.clients.matchAll({ type: 'window' }).then(clients => {
-    for (const c of clients) {
-      try {
-        c.postMessage({ type: 'SW_UPDATED', version: CACHE_NAME });
-      } catch (e) { /* ignore */ }
-    }
-  });
+  self.clients.claim(); // Toma el control de inmediato
 });
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
-  if (req.method !== "GET") return;
-  if (!req.url.startsWith("http")) return;
+  if (req.method !== "GET" || !req.url.startsWith("http")) return;
 
-  // Network-first for navigation requests (prevents permanent cache lock)
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          if (res && res.status === 200) {
-            const copy = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => { });
-          }
-          return res;
-        })
-        .catch(() => {
-          return caches.match("./index.html");
-        })
-    );
-    return;
-  }
-
-  // Cache-first with network fallback for other resources
+  // Estrategia Global: Network First (Prioridad Red, respaldo Caché)
+  // Garantiza que siempre se obtenga la versión más reciente si hay internet,
+  // y que siga funcionando offline si no hay conexión.
   event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(req)
-        .then((res) => {
-          if (!res || res.status !== 200 || res.type === "error") return res;
-
-          if (new URL(req.url).origin === self.location.origin) {
-            const copy = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => { });
-          }
-          return res;
-        })
-        .catch(() => {
-          return cached;
+    fetch(req)
+      .then((res) => {
+        // Guardamos copia en caché de respuestas válidas de nuestro dominio
+        if (res && res.status === 200 && new URL(req.url).origin === self.location.origin) {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => { });
+        }
+        return res;
+      })
+      .catch(() => {
+        // Si falla la red (offline), intentamos buscar en la caché
+        return caches.match(req).then((cached) => {
+          if (cached) return cached;
+          // Fallback para navegación offline si no se encuentra la ruta exacta
+          if (req.mode === "navigate") return caches.match("./index.html");
+          return null;
         });
-    })
+      })
   );
 });
 
