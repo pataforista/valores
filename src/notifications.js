@@ -171,13 +171,9 @@ export function updateReminderConfig(config) {
  * Inicializa el módulo de notificaciones (solicita permiso y arranca).
  */
 export function initNotifications() {
-    requestNotificationPermission().then(granted => {
-        if (granted) {
-            console.log("Notificaciones permitidas.");
-        } else {
-            console.log("Notificaciones no permitidas, se usarán toasts.");
-        }
-    });
+    if ("Notification" in window && Notification.permission === "granted") {
+        console.log("Notificaciones previamente permitidas.");
+    }
     startReminders();
 }
 

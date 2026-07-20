@@ -30,7 +30,7 @@ async function init() {
     runSafe("GSAP Fallback", ensureGsapFallback);
     runSafe("Tabs", initTabs);
     runSafe("Theme", initTheme);
-    runSafe("Audio", initAudio);
+    // Audio context is initialized lazily inside audio.js to respect user-gesture policies
     runSafe("Sound Toggle", initSoundToggle);
     
     // Diana (radar chart)

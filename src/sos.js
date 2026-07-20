@@ -162,7 +162,9 @@ export function initSosModule() {
         clearAllTimers();
         if (el.sosOverlay.hidden) sosOpener = document.activeElement;
         el.sosOverlay.hidden = false;
-        el.sosTapArea.style.display = "none";
+        
+        if (el.sosTapArea) el.sosTapArea.style.display = "none";
+        
         el.sosIllustration.style.display = "none";
         el.sosCountdown.style.display = "none";
         el.sosNextBtn.style.display = "block";
