@@ -31,7 +31,7 @@ export function runExport() {
     if (actions.length > 0) {
         text += "\n🚀 Mis Compromisos:\n";
         actions.forEach((a, i) => {
-            text += `\n${i + 1}. [${a.done ? 'x' : ' '}] ${a.title}\n`;
+            text += `\n${i + 1}. [${a.done ? "x" : " "}] ${a.title}\n`;
             text += `   • Área: ${AREA_LABELS[a.area] || a.area}\n`;
             text += `   • Valor asociado: ${a.value}\n`;
             const dateText = formatDateText(a.date);
