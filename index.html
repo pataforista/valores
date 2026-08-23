@@ -70,6 +70,14 @@
             <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
             <span>Acerca de</span>
           </button>
+          <button class="menu-item" id="glossaryMenuBtn" role="menuitem" title="Glosario ACT/DBT">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <span>Glosario ACT/DBT</span>
+          </button>
+          <button class="menu-item" id="toggleAvatarVisibilityBtn" role="menuitem" title="Mostrar/Ocultar Brújula">
+            <svg class="icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+            <span id="avatarVisibilityText">Ocultar Brújula</span>
+          </button>
         </div>
       </div>
       
@@ -130,7 +138,13 @@
     <div id="view-bullseye" class="view" role="tabpanel" aria-labelledby="tab-bullseye">
       <div class="bullseye-wrap">
         <section class="card-panel">
-          <div class="panel-title"><span>La Diana</span></div>
+          <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <span>La Diana</span>
+            <label style="font-size:0.8rem; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" id="showNumbersToggle" checked />
+              Mostrar números
+            </label>
+          </div>
           <p class="hint">
             100 = más cerca del centro (más en línea con tus valores). 0 = más lejos. Ajusta cada área según tu última
             semana.
@@ -210,7 +224,7 @@
             </div>
               <div class="field-group">
                 <label for="actionDate">¿Cuándo lo harás?</label>
-                <input id="actionDate" type="text" placeholder="Ej: Mañana a las 5pm, En 2 semanas, 2026-10-15..." />
+                <input id="actionDate" type="datetime-local" />
               </div>
           </div>
 
@@ -331,6 +345,11 @@
 
     <!-- SOS View (Steam Out) -->
     <div id="view-sos" class="view" role="tabpanel" aria-labelledby="tab-sos">
+      <section class="card-panel" style="border:2px solid var(--danger); background:rgba(224,122,95,0.05); margin-bottom:16px;">
+        <p style="margin:0; font-size:0.9rem; line-height:1.5;">
+          <strong>¿Te sientes en crisis?</strong> Si sientes que puedes hacerte daño, sal de esta app y contacta a emergencias o una línea de crisis de tu país. Estas herramientas complementan, pero no sustituyen, la atención profesional inmediata.
+        </p>
+      </section>
       <section class="card-panel hero-sos">
         <div class="panel-title">
           <span>SOS · Enfoque</span>
@@ -396,6 +415,9 @@
       <section class="card-panel tip-panel mt-16">
         <div class="panel-title"><span>Habilidades TIP · DBT</span></div>
         <p class="hint">Un botón de pánico fisiológico: baja la intensidad corporal para recuperar claridad.</p>
+        <p class="hint" style="font-size:0.78rem; margin-bottom:12px; color: var(--danger);">
+          ⚠️ Si tienes problemas de corazón, presión arterial baja o trastornos alimentarios, consulta a tu terapeuta antes de usar agua fría intensa o ejercicio vigoroso.
+        </p>
         <div class="tip-grid">
           <article class="tip-card">
             <div class="tip-card-header">
@@ -444,9 +466,7 @@
 
   <footer class="app-footer">
     <div class="footer-privacy-box">
-      <p class="footer-privacy-text">
-        🔒 <strong>Privacidad:</strong> Tus datos se guardan automáticamente en este dispositivo.
-      </p>
+      <p class="footer-privacy-text">🔒 <strong>Privacidad:</strong> Esta app no envía información a internet. Tus datos viven solo en este dispositivo.</p>
     </div>
 
     <div class="footer-actions-row">
@@ -455,7 +475,12 @@
       </button>
     </div>
 
-    <div class="footer-disclaimers">
+    <p class="medical-warning" style="margin-top: 12px; margin-bottom: 8px;">
+      ⚠️ <strong>AVISO MÉDICO:</strong> Esta aplicación es una herramienta de autoayuda. <strong>No sustituye</strong> el diagnóstico o tratamiento de un profesional.
+    </p>
+
+    <details class="footer-disclaimers">
+      <summary style="cursor:pointer; color:var(--primary); font-weight:600; margin:12px 0; outline:none; font-size:0.9rem;">ℹ️ Información legal, contacto y apoyo al proyecto</summary>
       <p><strong>👨‍💻 Autor:</strong> César Celada</p>
       <p>📧 <strong>Contacto:</strong> Para aclaraciones, mejoras o sugerencias, escribe a
         <a href="mailto:drceladapsiquiatria@gmail.com" class="primary-underline-link">drceladapsiquiatria@gmail.com</a>.
@@ -474,18 +499,15 @@
       <hr class="footer-hr">
 
       <p class="medical-warning">
-        ⚠️ <strong>AVISO MÉDICO:</strong> Esta aplicación es una herramienta de autoayuda basada en Terapia de
-        Aceptación y Compromiso (ACT) y Terapia Dialéctica Conductual (DBT). <strong>No sustituye</strong> el
-        diagnóstico, tratamiento o seguimiento de un profesional de la salud mental.
+        ⚠️ Esta aplicación está basada en Terapia de Aceptación y Compromiso (ACT) y Terapia Dialéctica Conductual (DBT).
       </p>
-      <p class="medical-warning">
-        🚨 <strong>EMERGENCIAS:</strong> Si te encuentras en una situación de crisis o riesgo inminente, por favor acude
-        al servicio de urgencias más cercano o llama a las líneas de crisis de tu país.
+      <p class="medical-warning" style="border:1px solid var(--danger); padding:8px; border-radius:8px; background:rgba(224,122,95,0.05); margin-top:8px;">
+        🚨 <strong>EMERGENCIAS:</strong> Si te encuentras en una situación de crisis o riesgo inminente, por favor acude al servicio de urgencias más cercano o llama a las líneas de crisis de tu país.
       </p>
-      <p class="medical-warning">
+      <p class="medical-warning" style="margin-top:8px;">
         <em>Basado en los marcos teóricos de Russ Harris y Steven Hayes.</em>
       </p>
-    </div>
+    </details>
   </footer>
 
 

@@ -83,16 +83,19 @@ export function showPromptModal(title, defaultValue = "") {
         `;
         modal.innerHTML = `
             <div class="carousel-wrap" style="text-align: left; padding: 24px; max-width: 400px; width: 90%;">
-                <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 12px;">${title}</h3>
-                <input type="text" id="promptInput" value="${defaultValue}" style="width: 100%; padding: 10px; margin-bottom: 16px; border: 1px solid var(--ring); border-radius: 8px; background: var(--bg); color: var(--text);" />
+                <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 12px;"></h3>
+                <input type="text" id="promptInput" style="width: 100%; padding: 10px; margin-bottom: 16px; border: 1px solid var(--ring); border-radius: 8px; background: var(--bg); color: var(--text);" />
                 <div class="inline-actions" style="display: flex; justify-content: flex-end; gap: 8px;">
                     <button class="btn" id="promptCancel">Cancelar</button>
                     <button class="btn primary" id="promptConfirm">Aceptar</button>
                 </div>
             </div>
         `;
+        modal.querySelector("h3").textContent = title;
+        const input = modal.querySelector("#promptInput");
+        input.value = defaultValue;
+
         document.body.appendChild(modal);
-        const input = document.getElementById("promptInput");
         input.focus();
         input.select();
 
@@ -101,11 +104,11 @@ export function showPromptModal(title, defaultValue = "") {
             resolve(value);
         };
 
-        document.getElementById("promptConfirm").addEventListener("click", () => {
+        modal.querySelector("#promptConfirm").addEventListener("click", () => {
             cleanup(input.value.trim());
         });
 
-        document.getElementById("promptCancel").addEventListener("click", () => {
+        modal.querySelector("#promptCancel").addEventListener("click", () => {
             cleanup(null);
         });
 
@@ -133,17 +136,20 @@ export function showConfirmModal(title, text) {
         `;
         modal.innerHTML = `
             <div class="carousel-wrap" style="text-align: left; padding: 24px; max-width: 400px; width: 90%;">
-                <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 12px;">${title}</h3>
-                <p style="margin-bottom: 20px; color: var(--muted); font-size: 0.95rem;">${text}</p>
+                <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 12px;"></h3>
+                <p style="margin-bottom: 20px; color: var(--muted); font-size: 0.95rem;"></p>
                 <div class="inline-actions" style="display: flex; justify-content: flex-end; gap: 8px;">
                     <button class="btn" id="confirmCancel">Cancelar</button>
                     <button class="btn danger" id="confirmOk">Eliminar</button>
                 </div>
             </div>
         `;
+        modal.querySelector("h3").textContent = title;
+        modal.querySelector("p").textContent = text;
+
         document.body.appendChild(modal);
         
-        const cancelBtn = document.getElementById("confirmCancel");
+        const cancelBtn = modal.querySelector("#confirmCancel");
         cancelBtn.focus();
 
         const cleanup = (value) => {
@@ -151,7 +157,7 @@ export function showConfirmModal(title, text) {
             resolve(value);
         };
 
-        document.getElementById("confirmOk").addEventListener("click", () => {
+        modal.querySelector("#confirmOk").addEventListener("click", () => {
             cleanup(true);
         });
 

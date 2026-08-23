@@ -154,10 +154,7 @@ export async function initBullseye() {
                         }
                     }
                 },
-                layout: {
-                    padding: 15
-                },
-                animation: {
+                animation: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? false : {
                     duration: 600,
                     easing: "easeOutQuart"
                 },
@@ -317,8 +314,24 @@ export async function initBullseye() {
         bullseyeHistory = [];
         localStorage.removeItem(LS.bullseyeHistory);
         updateEvolutionChart();
-        
         toast("Reiniciado");
+    });
+
+    // Toggle score numbers visibility
+    const toggleNumbersBtn = document.getElementById("showNumbersToggle");
+    const updateNumbersVisibility = () => {
+        const show = localStorage.getItem("vv_show_bullseye_numbers") !== "false";
+        if (toggleNumbersBtn) toggleNumbersBtn.checked = show;
+        document.querySelectorAll(".slider-row label span[id^='num-']").forEach(el => {
+            el.style.visibility = show ? "visible" : "hidden";
+        });
+    };
+
+    updateNumbersVisibility();
+
+    toggleNumbersBtn?.addEventListener("change", (e) => {
+        localStorage.setItem("vv_show_bullseye_numbers", e.target.checked ? "true" : "false");
+        updateNumbersVisibility();
     });
 }
 
@@ -452,7 +465,8 @@ function updateEvolutionChart() {
                         display: true,
                         labels: { color: textColor, boxWidth: 12, font: { size: 10 } }
                     }
-                }
+                },
+                animation: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? false : undefined
             }
         });
     } catch (e) {

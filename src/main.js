@@ -187,6 +187,9 @@ function initInfoCard() {
 
 function initBackupSystem() {
     el.manualSaveBtn?.addEventListener("click", () => {
+        const confirmed = confirm("Este archivo se guardará en tu dispositivo como cualquier documento. Guárdalo en un lugar seguro y evita compartirlo por mensajería o correo. ¿Deseas continuar con la descarga?");
+        if (!confirmed) return;
+
         const fullData = {
             values: safeJSONParse(localStorage.getItem(LS.values), []),
             customValues: safeJSONParse(localStorage.getItem(LS.customValues), []),
@@ -224,8 +227,12 @@ function initBackupSystem() {
 
         if (data.values !== undefined) {
             if (!Array.isArray(data.values)) return false;
-            for (const v of data.values) {
-                if (!v || typeof v.id !== "number" || typeof v.name !== "string") return false;
+            const isIdArray = data.values.every(v => typeof v === "number");
+            if (!isIdArray) {
+                // Fallback: formato antiguo de objetos completos
+                for (const v of data.values) {
+                    if (!v || typeof v.id !== "number") return false;
+                }
             }
             hasAnyValidKey = true;
         }
@@ -339,6 +346,8 @@ function initIntro() {
     });
 }
 
+let waitingWorker = null;
+
 function registerSW() {
     if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("./sw.js").then((reg) => {
@@ -347,12 +356,14 @@ function registerSW() {
                 if (!newWorker) return;
                 newWorker.addEventListener("statechange", () => {
                     if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                        waitingWorker = newWorker;
                         showUpdateBanner(newWorker);
                     }
                 });
             });
             // Check if there is already a waiting worker on page load
             if (reg.waiting && navigator.serviceWorker.controller) {
+                waitingWorker = reg.waiting;
                 showUpdateBanner(reg.waiting);
             }
         }).catch(() => { });
@@ -363,7 +374,9 @@ function registerSW() {
                 if (e.data && e.data.type === "SW_UPDATED") {
                     toast("Nueva versión disponible — recargando...");
                     // If a waiting worker exists, request it to skip waiting (defensive)
-                    if (navigator.serviceWorker.controller) {
+                    if (waitingWorker) {
+                        waitingWorker.postMessage({ type: "SKIP_WAITING" });
+                    } else if (navigator.serviceWorker.controller) {
                         navigator.serviceWorker.controller.postMessage({ type: "SKIP_WAITING" });
                     }
                 }
@@ -403,7 +416,7 @@ function showUpdateBanner(worker) {
     `;
     
     document.getElementById("swUpdateBtn")?.addEventListener("click", () => {
-        worker.postMessage({ type: "SKIP_WAITING" });
+        (waitingWorker || worker).postMessage({ type: "SKIP_WAITING" });
         banner.remove();
     });
 }
@@ -423,22 +436,31 @@ function initTabs() {
         views.forEach((v, j) => v?.classList.toggle("active", j === i));
         if (setFocus) tabs[i]?.focus();
 
-        if (views[i] && views[i].id !== "view-sos") {
-            clearAllTimers();
+        if (views[i]) {
+            if (views[i].id === "view-sos") {
+                window.galaxyPaused = true;
+            } else {
+                window.galaxyPaused = false;
+                clearAllTimers();
+            }
         }
 
         // Premium transition using GSAP
         if (views[i]) {
             const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-            gsap.fromTo(views[i], { opacity: 0, y: reduced ? 0 : 10 }, {
-                opacity: 1,
-                y: 0,
-                duration: reduced ? 0 : 0.4,
-                ease: "power2.out",
-                onComplete: () => {
-                    if (tabs[i]?.id === "tab-bullseye") refreshChart();
+            gsap.fromTo(views[i], 
+                { opacity: 0, y: reduced ? 0 : 16, scale: reduced ? 1 : 0.98 }, 
+                { 
+                    opacity: 1, 
+                    y: 0, 
+                    scale: 1,
+                    duration: reduced ? 0 : 0.35, 
+                    ease: "power3.out",
+                    onComplete: () => {
+                        if (tabs[i]?.id === "tab-bullseye") refreshChart();
+                    }
                 }
-            });
+            );
         }
     };
 

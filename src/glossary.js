@@ -105,31 +105,6 @@ export function showGlossary() {
  * Agrega un botón de glosario en la interfaz (por ejemplo, en el header o en la pestaña de valores).
  */
 export function initGlossaryButton() {
-    const btn = document.createElement("button");
-    btn.id = "glossaryBtn";
-    btn.className = "icon-btn";
-    btn.innerHTML = "📖";
-    btn.title = "Glosario ACT/DBT";
-    btn.style.cssText = `
-        position: fixed;
-        bottom: 140px;
-        right: 20px;
-        background: var(--card);
-        border-radius: 50%;
-        width: 48px;
-        height: 48px;
-        box-shadow: var(--shadow2);
-        font-size: 1.4rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 400;
-        border: 1px solid var(--ring);
-        cursor: pointer;
-        transition: transform 0.2s;
-    `;
-    btn.addEventListener("mouseenter", () => { btn.style.transform = "scale(1.1)"; });
-    btn.addEventListener("mouseleave", () => { btn.style.transform = "scale(1)"; });
-    btn.addEventListener("click", showGlossary);
-    document.body.appendChild(btn);
+    const btn = document.getElementById("glossaryMenuBtn");
+    btn?.addEventListener("click", showGlossary);
 }

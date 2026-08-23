@@ -97,13 +97,13 @@ export function initPathModule() {
         }
 
         if (!action.date) {
-            toast("Selecciona fecha y hora exactas");
+            toast("Selecciona una fecha y hora válidas");
             return;
         }
 
         const inputDate = new Date(action.date);
         if (isNaN(inputDate.getTime())) {
-            toast("Fecha inválida");
+            toast("Selecciona una fecha y hora válidas");
             return;
         }
 

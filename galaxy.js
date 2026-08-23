@@ -125,6 +125,11 @@ if (canvas) {
 
         function animate() {
             rafId = null;
+            if (window.galaxyPaused) {
+                ctx.clearRect(0, 0, width, height);
+                if (!prefersReducedMotion) rafId = requestAnimationFrame(animate);
+                return;
+            }
             ctx.clearRect(0, 0, width, height);
 
             let destX = mouseX;

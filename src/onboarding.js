@@ -9,6 +9,11 @@ const ONBOARDING_STEPS = [
         icon: "🧭",
     },
     {
+        title: "🔒 Tus datos se quedan aquí contigo",
+        text: "Esta herramienta guarda todo en tu dispositivo: tu navegador o tu teléfono. No hay servidor, no hay cuenta de usuario y nada se sube a internet.\n\nEsto tiene dos caras:\n• Lo bueno: nadie más puede acceder a tu información por la red. Tú tienes el control total.\n• Lo importante: si borras los datos del navegador o desinstalas la app, tu información se perderá. Si compartes este dispositivo con otras personas, considera usar el modo privado de tu navegador.\n\nPuedes descargar un respaldo en cualquier momento desde el menú (⋯) para guardar tu progreso en un archivo seguro.",
+        icon: "🔒",
+    },
+    {
         title: "1️⃣ Elige tus Valores",
         text: 'Los valores son direcciones, no metas. ¿Qué cualidades quieres cultivar?\n\nEjemplo: "Ser una persona compasiva" o "Vivir con autenticidad".\n\n👉 En la pestaña "Valores", explora el mazo y selecciona tus 10 valores principales.',
         icon: "🌱",

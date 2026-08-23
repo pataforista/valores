@@ -200,11 +200,11 @@ export function initSosModule() {
         document.getElementById("sensoryStep").style.display = "block";
 
         const steps = [
-            { n: 5, title: "5 Cosas que veas", hint: "Toca cada círculo al identificar un objeto.", icon: "👁️" },
-            { n: 4, title: "4 Cosas que toques", hint: "Siente la textura de cada objeto.", icon: "🤚" },
-            { n: 3, title: "3 Sonidos", hint: "Presta atención al entorno.", icon: "👂" },
-            { n: 2, title: "2 Olores", hint: "Identifica aromas cercanos.", icon: "👃" },
-            { n: 1, title: "1 Sabor", hint: "Algo que puedas saborear.", icon: "👅" }
+            { n: 5, title: "5 Cosas que veas", hint: "Levanta la vista de la pantalla. Menciona 5 objetos que veas ahora, luego toca un círculo.", icon: "👁️" },
+            { n: 4, title: "4 Cosas que toques", hint: "Siente 4 texturas con tus manos en tu entorno físico, luego toca una mano por cada una.", icon: "🤚" },
+            { n: 3, title: "3 Sonidos", hint: "Presta atención a tu entorno. Identifica 3 sonidos reales en este momento, luego toca un oído por cada uno.", icon: "👂" },
+            { n: 2, title: "2 Olores", hint: "Respira profundamente. Identifica 2 olores en tu entorno, luego toca una nariz por cada uno.", icon: "👃" },
+            { n: 1, title: "1 Sabor", hint: "Concéntrate en tu boca. Identifica 1 sabor o sensación física de gusto actual, luego toca una lengua.", icon: "👅" }
         ];
 
         let idx = 0;

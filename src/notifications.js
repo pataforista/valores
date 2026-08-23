@@ -69,7 +69,7 @@ function checkActions() {
             const hours = Math.ceil(diff / (60 * 60 * 1000));
             notifyUser(
                 "⏳ Acción próxima",
-                `"${a.title}" está programada para dentro de ${hours} horas.`
+                `Tienes una acción programada para dentro de ${hours} horas.`
             );
         }
     });

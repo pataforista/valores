@@ -52,6 +52,9 @@ export function runExport() {
         });
     }
 
+    const confirmed = confirm("El texto se copiará al portapapeles de tu dispositivo. Ten en cuenta que otros teclados o apps podrían tener acceso a él.\n\n¿Deseas continuar?");
+    if (!confirmed) return;
+
     copyToClipboard(text).then(ok => {
         if (ok) {
             toast("📋 ¡Resumen completo copiado!");

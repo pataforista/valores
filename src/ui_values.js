@@ -301,7 +301,11 @@ export function renderActiveList() {
   if (!el.list) return;
   el.list.innerHTML = "";
   const active = getActiveValues();
-  el.counter.textContent = `${active.length}/${MAX_VALUES}`;
+  
+  const count = active.length;
+  el.counter.textContent = count === 0 
+      ? "Selecciona hasta 10 valores" 
+      : `${count}/10 seleccionados`;
 
   active.forEach((v, i) => {
     const li = document.createElement("li");
@@ -411,6 +415,13 @@ function addTouchReorder(list) {
     }
     dragEl = null;
     fromIdx = -1;
+  });
+
+  list.addEventListener("touchcancel", () => {
+    if (ghost) { ghost.remove(); ghost = null; }
+    if (dragEl) { dragEl.classList.remove("dragging"); dragEl = null; }
+    fromIdx = -1;
+    list.querySelectorAll(".rank-item").forEach(i => i.classList.remove("drop-target"));
   });
 }
 

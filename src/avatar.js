@@ -35,7 +35,6 @@ export const CompassAvatar = (function () {
         const root = document.getElementById("avatarRoot");
         if (!box || !root) return;
 
-        root.hidden = false;
         root.classList.add("walking");
         compass = document.getElementById("compass");
         initBlinkEffect();
@@ -47,6 +46,27 @@ export const CompassAvatar = (function () {
         shineR = document.getElementById("shineR");
 
         setState("neutral");
+
+        // Toggle avatar complete visibility
+        const visibilityBtn = document.getElementById("toggleAvatarVisibilityBtn");
+        const visibilityText = document.getElementById("avatarVisibilityText");
+        
+        const updateVisibility = () => {
+            const isHidden = localStorage.getItem("vv_avatar_hidden") === "true";
+            root.hidden = isHidden;
+            if (visibilityText) {
+                visibilityText.textContent = isHidden ? "Mostrar Brújula" : "Ocultar Brújula";
+            }
+        };
+
+        updateVisibility();
+
+        visibilityBtn?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const isHidden = localStorage.getItem("vv_avatar_hidden") === "true";
+            localStorage.setItem("vv_avatar_hidden", isHidden ? "false" : "true");
+            updateVisibility();
+        });
 
         // Add micro-animation with GSAP (disabled if reduced motion preferred)
         if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
