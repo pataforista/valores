@@ -350,6 +350,12 @@ let waitingWorker = null;
 
 function registerSW() {
     if ("serviceWorker" in navigator) {
+        // Un cambio de controller solo debe recargar la página cuando reemplaza
+        // a una versión anterior ya activa. En la primera visita no hay controller
+        // previo: clients.claim() dispara "controllerchange" igualmente, y sin esta
+        // marca la app se recargaría sola segundos después de abrirse por primera vez.
+        const isRealUpdate = !!navigator.serviceWorker.controller;
+
         navigator.serviceWorker.register("./sw.js").then((reg) => {
             reg.addEventListener("updatefound", () => {
                 const newWorker = reg.installing;
@@ -385,6 +391,7 @@ function registerSW() {
 
         let refreshing = false;
         navigator.serviceWorker.addEventListener("controllerchange", () => {
+            if (!isRealUpdate) return;
             if (!refreshing) {
                 refreshing = true;
                 window.location.reload();
