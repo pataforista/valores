@@ -133,14 +133,13 @@ export function renderCards() {
 
     el.cards.appendChild(card);
 
-    // Premium entry animation (reduced delay for fast UI)
+    // Premium entry animation (smooth fade without scale blur)
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     gsap.from(card, { 
       opacity: 0, 
-      scale: reduced ? 1 : 0.9, 
-      y: reduced ? 0 : 15, 
-      duration: reduced ? 0 : 0.3, 
-      delay: reduced ? 0 : Math.min(i * 0.02, 0.4) 
+      y: reduced ? 0 : 8, 
+      duration: reduced ? 0 : 0.2, 
+      delay: reduced ? 0 : Math.min(i * 0.015, 0.25) 
     });
   });
 }

@@ -13,6 +13,7 @@ import { initAchievements } from "./achievements.js";
 import { initOfflineIndicator } from "./offlineIndicator.js";
 import { initOnboarding, showOnboarding } from "./onboarding.js";
 import { initGlossaryButton } from "./glossary.js";
+import { initLeavesModule } from "./leaves.js";
 
 import { el } from "./dom.js";
 
@@ -58,6 +59,7 @@ async function init() {
     runSafe("Offline Indicator", initOfflineIndicator);
     runSafe("Onboarding", initOnboarding);
     runSafe("Glossary Button", initGlossaryButton);
+    runSafe("Leaves Module", initLeavesModule);
     console.log("[INIT] Aplicación cargada exitosamente.");
 }
 
@@ -429,8 +431,8 @@ function showUpdateBanner(worker) {
 }
 
 function initTabs() {
-    const tabs = [el.tabValues, el.tabBull, el.tabPath, el.tabSos];
-    const views = [el.viewValues, el.viewBull, el.viewPath, el.viewSos];
+    const tabs = [el.tabValues, el.tabBull, el.tabPath, el.tabLeaves, el.tabSos];
+    const views = [el.viewValues, el.viewBull, el.viewPath, el.viewLeaves, el.viewSos];
 
     const activateTab = (i, setFocus = false) => {
         tabs.forEach((t, j) => {

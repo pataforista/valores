@@ -14,7 +14,8 @@ export const LS = {
     lastBullseyeUpdate: "vv_last_bullseye_update_v1",
     achievements: "vv_achievements_v1",
     totalActionsDone: "vv_total_actions_done_v1",
-    seenOnboarding: "vv_seen_onboarding_v1"
+    seenOnboarding: "vv_seen_onboarding_v1",
+    leavesGrounding: "vv_hojas_grounding_v1"
 };
 
 export const AREA_LABELS = {

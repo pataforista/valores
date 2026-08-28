@@ -89,6 +89,7 @@
     <button class="tab-btn active" id="tab-values" role="tab" aria-selected="true" aria-controls="view-values" tabindex="0">Valores</button>
     <button class="tab-btn" id="tab-bullseye" role="tab" aria-selected="false" aria-controls="view-bullseye" tabindex="-1">Diana</button>
     <button class="tab-btn" id="tab-path" role="tab" aria-selected="false" aria-controls="view-path" tabindex="-1">Sendero</button>
+    <button class="tab-btn" id="tab-leaves" role="tab" aria-selected="false" aria-controls="view-leaves" tabindex="-1">Hojas</button>
     <button class="tab-btn" id="tab-sos" role="tab" aria-selected="false" aria-controls="view-sos" tabindex="-1">SOS</button>
   </div>
 
@@ -103,18 +104,22 @@
         <p class="hint">Arrastra usando el botón ≡ para reordenar. Agrega o quita valores usando sus respectivos botones.</p>
         <ul id="active-list"></ul>
 
-        <div class="inline-form">
-          <div class="field">
-            <label for="customName" class="label-strong">Agregar valor personal</label>
-            <input id="customName" type="text" placeholder="Nombre del valor (p. ej., 'Curiosidad científica')" />
+        <details class="custom-val-details">
+          <summary class="custom-value-summary">➕ Crear valor personalizado</summary>
+          <div class="inline-form" style="margin-top: 10px; padding: 0; background: transparent;">
+            <div class="field">
+              <label for="customName" class="label-strong font-85">Nombre del valor</label>
+              <input id="customName" type="text" placeholder="p. ej., 'Curiosidad científica'" />
+            </div>
+            <div class="field">
+              <label for="customDef" class="label-strong font-85">Definición (acciones concretas)</label>
+              <textarea id="customDef" placeholder="¿Cómo se traduce en acciones diarias?"></textarea>
+            </div>
+            <div class="flex-end-row">
+              <button class="btn btn-sm primary" id="addCustomBtn" type="button">Guardar valor</button>
+            </div>
           </div>
-          <div class="field">
-            <textarea id="customDef" placeholder="Definición breve (¿cómo se ve en acciones concretas?)"></textarea>
-          </div>
-          <div class="flex-end-row">
-            <button class="btn primary" id="addCustomBtn" type="button">Agregar</button>
-          </div>
-        </div>
+        </details>
       </section>
 
       <div class="deck-filters">
@@ -340,6 +345,85 @@
           <span>Acciones comprometidas</span>
         </div>
         <ul id="actionsList" class="list-clean"></ul>
+      </section>
+    </div>
+
+    <!-- Hojas View (Defusión ACT) -->
+    <div id="view-leaves" class="view" role="tabpanel" aria-labelledby="tab-leaves">
+      <section class="card-panel">
+        <div class="panel-title">
+          <span>🍃 Hojas en el Agua</span>
+          <span class="status-pill">Defusión ACT</span>
+        </div>
+        <p class="hint">
+          Práctica de desenganche cognitivo: coloca tus pensamientos difíciles sobre las hojas y míralos flotar por la corriente sin discutir con ellos ni retenerlos.
+        </p>
+
+        <!-- Botón y panel de Guía Clínica -->
+        <button class="guide-btn" id="toggleLeavesGuide" aria-expanded="false" type="button">
+          🧭 Guía clínica
+        </button>
+        <div class="guide-panel" id="leavesGuidePanel" style="display: none;">
+          <div style="display: grid; gap: 0.6rem;">
+            <div>
+              <span class="guide-tag">⚡ Cuándo usar (Trigger)</span>
+              <p>Te quedas atrapado en un pensamiento repetitivo o discutes con él. Útil cuando hay fusión cognitiva activa.</p>
+            </div>
+            <div>
+              <span class="guide-tag">💬 Metáfora introductoria</span>
+              <p style="font-style: italic;">"Imagina que estás sentado junto a un arroyo en calma. Cada vez que aparezca un pensamiento, lo ponemos sobre una hoja y lo dejamos flotar. No para que desaparezca, sino para verlo pasar sin engancharnos."</p>
+            </div>
+            <div>
+              <span class="guide-tag">❓ Preguntas clave</span>
+              <ul style="padding-left: 1.2rem; margin: 4px 0;">
+                <li>¿Qué notas al dejar que el pensamiento pase en lugar de agarrarlo?</li>
+                <li>¿El pensamiento desapareció o simplemente siguió su curso?</li>
+                <li>¿Qué pasa cuando intentas empujarlo o retenerlo?</li>
+              </ul>
+            </div>
+            <div>
+              <span class="guide-tag guide-abort">🛑 Señal de abortar</span>
+              <p>Si agregas pensamientos repetidamente intentando que "se vayan ya" (control encubierto: haz una pausa y explora la experiencia de aceptación).</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lienzo del Arroyo -->
+        <div class="stream-canvas" id="streamCanvas" aria-label="Arroyo fluyendo">
+          <div class="stream-flow"></div>
+          <div id="leavesContainer" class="leaves-container"></div>
+          <div class="watermark-text">Los pensamientos pasan. Tú sigues aquí.</div>
+        </div>
+
+        <!-- Entrada del Pensamiento -->
+        <div class="leaf-input-row" style="margin-top: 1rem; display: flex; gap: 8px;">
+          <input type="text" id="leafInput" class="input-field" placeholder="¿Qué pensamiento pones en la hoja? (Enter para lanzar)" maxlength="120" />
+          <button class="btn primary" id="addLeafBtn" type="button" style="white-space: nowrap;">
+            🍃 Lanzar
+          </button>
+        </div>
+      </section>
+
+      <!-- Aterrizaje Clínico -->
+      <section class="card-panel">
+        <div class="panel-title">
+          <span>Aterrizaje clínico</span>
+        </div>
+        <p class="hint">Reflexión posterior para anclar el aprendizaje tras la práctica:</p>
+        <div class="grid-inputs">
+          <div class="field">
+            <label for="hojas-contexto" class="label-strong font-85">¿En qué situación apareció este pensamiento?</label>
+            <input type="text" id="hojas-contexto" class="input-field" placeholder="Describe brevemente el contexto..." />
+          </div>
+          <div class="field">
+            <label for="hojas-aprendizaje" class="label-strong font-85">¿Qué notaste al observarlo en lugar de discutir con él?</label>
+            <input type="text" id="hojas-aprendizaje" class="input-field" placeholder="Tu observación de la experiencia..." />
+          </div>
+          <div class="field">
+            <label for="hojas-accion" class="label-strong font-85">Aunque ese pensamiento esté ahí, ¿qué podés hacer alineado a tus valores?</label>
+            <input type="text" id="hojas-accion" class="input-field" placeholder="Acción comprometida a realizar..." />
+          </div>
+        </div>
       </section>
     </div>
 

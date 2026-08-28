@@ -61,6 +61,18 @@ test.describe('Valores del Valle - Smoke Tests', () => {
     });
   });
 
+  async function preparePage(page) {
+    await page.goto('/');
+    await page.waitForSelector('#tab-values', { state: 'visible' });
+    await page.waitForSelector('.card-container', { state: 'visible' });
+    await page.evaluate(async () => {
+      if ('serviceWorker' in navigator) {
+        await navigator.serviceWorker.ready;
+      }
+    });
+    await page.waitForTimeout(250);
+  }
+
   test('debe cargar la app y navegar por las pestañas sin errores en consola', async ({ page }) => {
     const consoleErrors = [];
     page.on('pageerror', exception => {
@@ -74,14 +86,7 @@ test.describe('Valores del Valle - Smoke Tests', () => {
       }
     });
 
-    await page.goto('/');
-
-    // Esperar a que el Service Worker esté listo y activo para evitar recargas en medio de la prueba
-    await page.evaluate(async () => {
-      if ('serviceWorker' in navigator) {
-        await navigator.serviceWorker.ready;
-      }
-    });
+    await preparePage(page);
     
     // Validar título de la aplicación
     await expect(page).toHaveTitle('Valores del Valle');
@@ -95,6 +100,7 @@ test.describe('Valores del Valle - Smoke Tests', () => {
       { id: 'tab-values', view: 'view-values' },
       { id: 'tab-bullseye', view: 'view-bullseye' },
       { id: 'tab-path', view: 'view-path' },
+      { id: 'tab-leaves', view: 'view-leaves' },
       { id: 'tab-sos', view: 'view-sos' }
     ];
 
@@ -110,12 +116,7 @@ test.describe('Valores del Valle - Smoke Tests', () => {
 
   test('debe poder navegar offline con service worker activo', async ({ context, page }) => {
     // 1. Cargar la app inicialmente en modo online
-    await page.goto('/');
-    
-    // Esperar a que el Service Worker esté listo y activo
-    await page.evaluate(async () => {
-      await navigator.serviceWorker.ready;
-    });
+    await preparePage(page);
 
     // 2. Cambiar el contexto de red a Offline
     await context.setOffline(true);
@@ -129,5 +130,183 @@ test.describe('Valores del Valle - Smoke Tests', () => {
 
     // Restaurar red para los demás tests
     await context.setOffline(false);
+  });
+
+  test('debe permitir seleccionar más de 5 valores manteniendo la interfaz compacta y sin errores', async ({ page }) => {
+    await preparePage(page);
+
+    // Agregar 7 valores usando el botón 'Agregar'
+    for (let i = 0; i < 7; i++) {
+      const addBtn = page.locator('.select-btn:has-text("Agregar")').first();
+      await addBtn.click();
+      await page.waitForTimeout(60);
+    }
+
+    // Verificar contador y lista de seleccionados
+    const counter = page.locator('#counter');
+    await expect(counter).toHaveText('7/10 seleccionados');
+
+    const rankItems = page.locator('#active-list .rank-item');
+    await expect(rankItems).toHaveCount(7);
+
+    // Verificar que las tarjetas tienen una altura compacta razonable
+    const firstCard = page.locator('.card-container').first();
+    const box = await firstCard.boundingBox();
+    expect(box).not.toBeNull();
+    // La altura debe ser compacta (< 190px en lugar de los 240px+ gigantes)
+    expect(box.height).toBeLessThan(190);
+  });
+
+  test('debe abrir y operar la pestaña de defusión Hojas en el Agua correctamente', async ({ page }) => {
+    await preparePage(page);
+
+    // Navegar a la pestaña Hojas
+    await page.click('#tab-leaves');
+    const viewLeaves = page.locator('#view-leaves');
+    await expect(viewLeaves).toHaveClass(/active/);
+
+    // Alternar Guía Clínica
+    const guideBtn = page.locator('#toggleLeavesGuide');
+    const guidePanel = page.locator('#leavesGuidePanel');
+    await expect(guidePanel).toBeHidden();
+    await guideBtn.click();
+    await expect(guidePanel).toBeVisible();
+
+    // Lanzar pensamiento en la hoja
+    const leafInput = page.locator('#leafInput');
+    await leafInput.fill('Pensamiento de prueba: No soy suficiente');
+    await leafInput.press('Enter');
+
+    // Verificar que la hoja aparece flotando en el contenedor
+    const leafItem = page.locator('#leavesContainer .leaf-item');
+    await expect(leafItem.first()).toContainText('No soy suficiente');
+
+    // Completar campos de aterrizaje clínico
+    const contextoInput = page.locator('#hojas-contexto');
+    await contextoInput.fill('Trabajando en un proyecto nuevo');
+    
+    // Validar persistencia en localStorage
+    const savedData = await page.evaluate(() => {
+      return localStorage.getItem('vv_hojas_grounding_v1');
+    });
+    expect(savedData).toContain('Trabajando en un proyecto nuevo');
+  });
+
+  test('debe operar la Diana (Bullseye) y guardar evaluación sin errores', async ({ page }) => {
+    await preparePage(page);
+
+    await page.click('#tab-bullseye');
+    const viewBull = page.locator('#view-bullseye');
+    await expect(viewBull).toHaveClass(/active/);
+
+    // Mover sliders
+    const sliderWork = page.locator('#input-work');
+    await sliderWork.fill('80');
+    await sliderWork.dispatchEvent('input');
+
+    const saveBtn = page.locator('#bullseyeSaveBtn');
+    await expect(saveBtn).toBeVisible();
+    await saveBtn.click();
+
+    // Validar almacenamiento
+    const bullData = await page.evaluate(() => localStorage.getItem('vv_bullseye_v1'));
+    expect(bullData).toBeTruthy();
+  });
+
+  test('debe crear y gestionar un plan de acción en Sendero sin errores', async ({ page }) => {
+    await preparePage(page);
+
+    // Seleccionar al menos un valor primero
+    const firstSelectBtn = page.locator('.select-btn').first();
+    await firstSelectBtn.click();
+
+    // Ir a Sendero
+    await page.click('#tab-path');
+    const viewPath = page.locator('#view-path');
+    await expect(viewPath).toHaveClass(/active/);
+
+    // Llenar formulario de acción
+    await page.locator('#actionDesc').fill('Caminar 20 minutos escuchando música');
+    await page.locator('#actionDate').fill('2026-12-31T10:00');
+
+    // Marcar criterios SMART requeridos
+    await page.locator('#smartSpecific').check();
+    await page.locator('#smartMeaningful').check();
+    await page.locator('#smartAdaptive').check();
+    await page.locator('#smartTimebound').check();
+    await page.locator('#resTime').check();
+
+    // Enviar formulario para abrir panel de compromiso
+    const submitBtn = page.locator('#actionForm button[type="submit"]');
+    await submitBtn.click();
+
+    // Declarar compromiso
+    const declareBtn = page.locator('#declareCommitment');
+    await expect(declareBtn).toBeVisible();
+    await declareBtn.click();
+
+    // Validar que la acción aparece en la lista
+    const actionsList = page.locator('#actionsList li');
+    await expect(actionsList).toHaveCount(1);
+    await expect(actionsList.first()).toContainText('Caminar 20 minutos');
+  });
+
+  test('debe operar las herramientas SOS y controles de audio sin errores', async ({ page }) => {
+    await preparePage(page);
+
+    await page.click('#tab-sos');
+    const viewSos = page.locator('#view-sos');
+    await expect(viewSos).toHaveClass(/active/);
+
+    // Probar Respiración Box
+    const breathToggle = page.locator('#breathToggle');
+    await breathToggle.click();
+    await expect(breathToggle).toHaveText('Detener');
+    await breathToggle.click();
+    await expect(breathToggle).toHaveText('Iniciar');
+
+    // Probar Ruido Marrón
+    const noiseToggle = page.locator('#noiseToggle');
+    await noiseToggle.click();
+    await expect(noiseToggle).toHaveText('Apagar');
+    await noiseToggle.click();
+    await expect(noiseToggle).toHaveText('Encender');
+
+    // Probar Modal SOS 5-4-3-2-1
+    const sos54321Btn = page.locator('#sos54321Btn');
+    await sos54321Btn.click();
+    const sosOverlay = page.locator('#sosOverlay');
+    await expect(sosOverlay).toBeVisible();
+
+    const closeSosBtn = page.locator('#closeSosOverlay');
+    await closeSosBtn.click();
+    await expect(sosOverlay).toBeHidden();
+  });
+
+  test('debe abrir menú, glosario, cambiar tema y sonido sin errores', async ({ page }) => {
+    await preparePage(page);
+
+    // Alternar tema
+    const initialDark = await page.evaluate(() => document.body.classList.contains('dark-theme'));
+    const themeBtn = page.locator('#themeBtn');
+    await themeBtn.click();
+    const isDark = await page.evaluate(() => document.body.classList.contains('dark-theme'));
+    expect(isDark).toBe(!initialDark);
+
+    // Alternar sonido
+    const soundBtn = page.locator('#soundBtn');
+    await soundBtn.click();
+    const isMuted = await page.evaluate(() => document.getElementById('soundBtn').classList.contains('muted'));
+    expect(isMuted).toBe(true);
+
+    // Abrir Glosario
+    const glossaryBtn = page.locator('#glossaryMenuBtn');
+    await glossaryBtn.click();
+    const glossaryList = page.locator('#glossary-list');
+    await expect(glossaryList).toBeVisible();
+
+    const closeGlossary = page.locator('#closeGlossary');
+    await closeGlossary.click();
+    await expect(glossaryList).not.toBeAttached();
   });
 });
