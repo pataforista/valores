@@ -363,6 +363,11 @@ test.describe('Valores del Valle - Smoke Tests', () => {
     await page.selectOption('#exposureMetaphorSelect', 'bus');
     await expect(page.locator('#exposureMetaphorText')).toContainText('autobús');
 
+    // El botón de inicio requiere declarar disposición a sentir malestar (ACT)
+    await expect(page.locator('#exposureStartBtn')).toBeDisabled();
+    await page.check('#exposureWillingness');
+    await expect(page.locator('#exposureStartBtn')).toBeEnabled();
+
     await page.click('#exposureStartBtn');
     await expect(page.locator('#exposureDuringStage')).toBeVisible();
     await page.waitForTimeout(300);

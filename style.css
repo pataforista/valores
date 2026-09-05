@@ -1430,7 +1430,7 @@ body.dark-theme #galaxy-canvas {
   box-shadow: 0 2px 8px rgba(129, 230, 217, 0.4);
 }
 
-.suds-badge {
+.score-badge {
   display: inline-block;
   padding: 1px 8px;
   border-radius: 10px;
@@ -1438,6 +1438,31 @@ body.dark-theme #galaxy-canvas {
   color: var(--text);
   font-weight: 700;
   font-size: 0.8rem;
+}
+
+.willingness-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--ring);
+  border-radius: 10px;
+  background: var(--ring-soft, rgba(148, 163, 184, 0.12));
+  margin: 10px 0;
+}
+
+.willingness-check input[type="checkbox"] {
+  margin-top: 3px;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+.willingness-check label {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--text);
 }
 
 .exposure-timer-display {
