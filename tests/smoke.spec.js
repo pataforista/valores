@@ -347,6 +347,12 @@ test.describe('Valores del Valle - Smoke Tests', () => {
     await guideBtn.click();
     await expect(guidePanel).toBeVisible();
 
+    // El slider de interferencia debe traducir el número a una palabra
+    const interferenceSlider = page.locator('#exposureInterference');
+    await interferenceSlider.fill('90');
+    await interferenceSlider.dispatchEvent('input');
+    await expect(page.locator('#exposureInterferenceWord')).toHaveText('Mucho');
+
     // Agregar situación a la jerarquía
     await page.fill('#exposureSituation', 'Mirar fotos de aviones');
     await page.click('#exposureForm button[type=submit]');
@@ -354,6 +360,11 @@ test.describe('Valores del Valle - Smoke Tests', () => {
     const hierarchyItems = page.locator('#exposureHierarchyList .action-item');
     await expect(hierarchyItems).toHaveCount(1);
     await expect(hierarchyItems.first()).toContainText('Mirar fotos de aviones');
+
+    // El siguiente paso sugerido debe aparecer automáticamente
+    const nextStepBanner = page.locator('#exposureNextStepBanner');
+    await expect(nextStepBanner).toBeVisible();
+    await expect(nextStepBanner).toContainText('Mirar fotos de aviones');
 
     // Practicar la exposición de punta a punta
     await page.click('#exposureHierarchyList .practice-btn');
@@ -363,12 +374,23 @@ test.describe('Valores del Valle - Smoke Tests', () => {
     await page.selectOption('#exposureMetaphorSelect', 'bus');
     await expect(page.locator('#exposureMetaphorText')).toContainText('autobús');
 
+    // El botón de inicio requiere declarar disposición a sentir malestar (ACT)
+    await expect(page.locator('#exposureStartBtn')).toBeDisabled();
+    await page.check('#exposureWillingness');
+    await expect(page.locator('#exposureStartBtn')).toBeEnabled();
+
     await page.click('#exposureStartBtn');
     await expect(page.locator('#exposureDuringStage')).toBeVisible();
     await page.waitForTimeout(300);
 
     await page.click('#exposureFinishBtn');
     await expect(page.locator('#exposureAfterStage')).toBeVisible();
+
+    // Re-puntuar la interferencia más baja que al inicio (90) para comprobar
+    // que la jerarquía luego muestra el progreso, no solo la puntuación inicial
+    const interferenceAfterSlider = page.locator('#exposureInterferenceAfter');
+    await interferenceAfterSlider.fill('40');
+    await interferenceAfterSlider.dispatchEvent('input');
 
     await page.fill('#exposureReflection', 'Pude quedarme viendo las fotos.');
     await page.click('#exposureSaveBtn');
@@ -377,6 +399,10 @@ test.describe('Valores del Valle - Smoke Tests', () => {
     const logItems = page.locator('#exposureLogList .action-item');
     await expect(logItems).toHaveCount(1);
     await expect(logItems.first()).toContainText('Mirar fotos de aviones');
+
+    // La interferencia bajó a la que se registró al terminar (50 por defecto),
+    // así que la jerarquía debe reflejar el progreso, no la puntuación inicial
+    await expect(hierarchyItems.first()).toContainText('empezó en 90');
 
     // Validar persistencia y logro desbloqueado
     const savedLog = await page.evaluate(() => localStorage.getItem('vv_exposure_log_v1'));

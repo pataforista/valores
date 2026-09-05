@@ -32,14 +32,72 @@ const METAPHORS = {
     }
 };
 
-let hierarchyItems = safeJSONParse(localStorage.getItem(LS.exposureItems), []);
-let logEntries = safeJSONParse(localStorage.getItem(LS.exposureLog), []);
+let hierarchyItems = migrateHierarchyItems(safeJSONParse(localStorage.getItem(LS.exposureItems), []));
+let logEntries = migrateLogEntries(safeJSONParse(localStorage.getItem(LS.exposureLog), []));
+
+// Versiones anteriores puntuaban por malestar anticipado (SUDs, 0-10). El modelo
+// ACT puntúa por interferencia con el valor (0-100): convertimos lo antiguo una
+// sola vez para no perder el trabajo ya guardado por el usuario.
+function migrateHierarchyItems(items) {
+    let changed = false;
+    const migrated = items.map(item => {
+        if (item.interference !== undefined) return item;
+        changed = true;
+        return { ...item, interference: Math.round((item.sudsExpected ?? 5) * 10) };
+    });
+    if (changed) localStorage.setItem(LS.exposureItems, JSON.stringify(migrated));
+    return migrated;
+}
+
+function migrateLogEntries(entries) {
+    let changed = false;
+    const migrated = entries.map(entry => {
+        if (entry.interferenceBefore !== undefined) return entry;
+        changed = true;
+        return {
+            ...entry,
+            interferenceBefore: Math.round((entry.sudsBefore ?? 5) * 10),
+            interferenceAfter: Math.round((entry.sudsAfter ?? entry.sudsBefore ?? 5) * 10),
+            acceptance: null,
+            presence: null,
+            actionCompleted: null
+        };
+    });
+    if (changed) localStorage.setItem(LS.exposureLog, JSON.stringify(migrated));
+    return migrated;
+}
 
 let currentItem = null;
 let startTime = null;
 let elapsedTimerId = null;
 let reminderTimerId = null;
 let reminderIdx = 0;
+
+// Traduce el número del slider a una palabra, para no obligar al usuario a
+// interpretar una escala 0-100 sin ayuda.
+function wordForScore(value) {
+    if (value <= 15) return "Nada";
+    if (value <= 35) return "Un poco";
+    if (value <= 65) return "Algo";
+    if (value <= 85) return "Bastante";
+    return "Mucho";
+}
+
+// La interferencia "actual" de una situación es la del último registro
+// practicado (si existe), no la puntuación inicial: así la jerarquía
+// refleja el progreso real, no solo la primera estimación.
+function getCurrentInterference(item) {
+    const entriesForItem = logEntries.filter(e => e.itemId === item.id);
+    if (entriesForItem.length === 0) return item.interference;
+    return entriesForItem[entriesForItem.length - 1].interferenceAfter;
+}
+
+function getSuggestedItem() {
+    return [...hierarchyItems]
+        .map(item => ({ item, current: getCurrentInterference(item) }))
+        .filter(x => x.current > 10)
+        .sort((a, b) => a.current - b.current)[0]?.item ?? null;
+}
 
 export function initExposureModule() {
     const form = document.getElementById("exposureForm");
@@ -57,28 +115,35 @@ export function initExposureModule() {
         btn.setAttribute("aria-expanded", String(isHidden));
     });
 
-    const sudsExpected = document.getElementById("exposureSudsExpected");
-    sudsExpected?.addEventListener("input", () => {
-        document.getElementById("exposureSudsExpectedNum").textContent = sudsExpected.value;
+    ["exposureInterference", "exposureAcceptance", "exposurePresence", "exposureInterferenceAfter"].forEach(id => {
+        const input = document.getElementById(id);
+        const updateReadout = () => {
+            document.getElementById(`${id}Num`).textContent = input.value;
+            document.getElementById(`${id}Word`).textContent = wordForScore(Number(input.value));
+        };
+        input?.addEventListener("input", updateReadout);
+        if (input) updateReadout();
     });
 
-    const sudsAfter = document.getElementById("exposureSudsAfter");
-    sudsAfter?.addEventListener("input", () => {
-        document.getElementById("exposureSudsAfterNum").textContent = sudsAfter.value;
+    const interferenceInput = document.getElementById("exposureInterference");
+
+    document.getElementById("exposureWillingness")?.addEventListener("change", (e) => {
+        const startBtn = document.getElementById("exposureStartBtn");
+        if (startBtn) startBtn.disabled = !e.target.checked;
     });
 
     form.addEventListener("submit", (e) => {
         e.preventDefault();
         const value = document.getElementById("exposureValue").value;
         const situation = document.getElementById("exposureSituation").value.trim();
-        const sudsExpectedVal = Number(sudsExpected.value);
+        const interferenceVal = Number(interferenceInput.value);
 
         if (!value) {
             toast("Selecciona un valor priorizado");
             return;
         }
         if (!situation) {
-            toast("Describe la situación temida");
+            toast("Describe la situación evitada");
             return;
         }
 
@@ -86,13 +151,14 @@ export function initExposureModule() {
             id: Date.now(),
             value,
             situation,
-            sudsExpected: sudsExpectedVal
+            interference: interferenceVal
         });
         localStorage.setItem(LS.exposureItems, JSON.stringify(hierarchyItems));
+        localStorage.setItem(LS.exposureLastValue, value);
 
         document.getElementById("exposureSituation").value = "";
-        sudsExpected.value = 5;
-        document.getElementById("exposureSudsExpectedNum").textContent = "5";
+        interferenceInput.value = 50;
+        interferenceInput.dispatchEvent(new Event("input"));
 
         renderHierarchyList();
         toast("🪜 Agregado a tu jerarquía");
@@ -118,6 +184,10 @@ export function initExposureModule() {
     document.getElementById("exposureSaveBtn")?.addEventListener("click", saveExposureLog);
     document.getElementById("exposureCancelBtn1")?.addEventListener("click", cancelPractice);
     document.getElementById("exposureCancelBtn2")?.addEventListener("click", cancelPractice);
+    document.getElementById("exposureNextStepBtn")?.addEventListener("click", () => {
+        const suggested = getSuggestedItem();
+        if (suggested) startPractice(suggested);
+    });
 }
 
 function updateMetaphorText() {
@@ -145,6 +215,9 @@ export function renderExposureValueOptions() {
         opt.textContent = v.name;
         select.appendChild(opt);
     });
+
+    const lastValue = localStorage.getItem(LS.exposureLastValue);
+    if (lastValue && values.some(v => v.name === lastValue)) select.value = lastValue;
 }
 
 function renderHierarchyList() {
@@ -152,23 +225,36 @@ function renderHierarchyList() {
     if (!list) return;
     list.innerHTML = "";
 
-    const sorted = [...hierarchyItems].sort((a, b) => a.sudsExpected - b.sudsExpected);
+    renderNextStepBanner();
+
+    const suggested = getSuggestedItem();
+    const sorted = hierarchyItems
+        .map(item => ({ item, current: getCurrentInterference(item) }))
+        .sort((a, b) => a.current - b.current);
 
     if (sorted.length === 0) {
         const li = document.createElement("li");
         li.className = "hint";
-        li.textContent = "Todavía no agregaste ninguna situación. Empieza por una que te genere poco malestar.";
+        li.textContent = "Todavía no agregaste ninguna situación. Empieza por una que te aleje poco de tu valor.";
         list.appendChild(li);
         return;
     }
 
-    sorted.forEach(item => {
+    sorted.forEach(({ item, current }) => {
         const li = document.createElement("li");
-        li.className = "action-item";
+        const isMastered = current <= 10;
+        li.className = `action-item${isMastered ? " mastered" : ""}`;
+        const changed = current !== item.interference;
+        const scoreText = changed
+            ? `<span class="score-badge">${current}/100</span> <small>(empezó en ${item.interference})</small>`
+            : `<span class="score-badge">${current}/100</span>`;
+        const tag = isMastered
+            ? "<span class=\"mastered-tag\">✅ Lograda</span>"
+            : (suggested?.id === item.id ? "<span class=\"mastered-tag\" style=\"color:var(--primary)\">🎯 Próximo paso</span>" : "");
         li.innerHTML = `
             <div style="flex:1">
-                <strong>${escapeHTML(item.situation)}</strong>
-                <p class="hint">${escapeHTML(item.value)} · malestar anticipado <span class="suds-badge">${item.sudsExpected}/10</span></p>
+                <strong>${escapeHTML(item.situation)}</strong> ${tag}
+                <p class="hint">${escapeHTML(item.value)} · interferencia con el valor ${scoreText}</p>
             </div>
             <button class="btn btn-sm primary practice-btn" type="button">Practicar</button>
             <button class="mini-btn remove-item" title="Eliminar de la jerarquía" aria-label="Eliminar de la jerarquía">🗑️</button>
@@ -185,6 +271,18 @@ function renderHierarchyList() {
     });
 }
 
+function renderNextStepBanner() {
+    const banner = document.getElementById("exposureNextStepBanner");
+    if (!banner) return;
+    const suggested = getSuggestedItem();
+    if (!suggested) {
+        banner.hidden = true;
+        return;
+    }
+    banner.hidden = false;
+    document.getElementById("exposureNextStepText").textContent = `${suggested.situation} — hacia tu valor de ${suggested.value}`;
+}
+
 function renderLogList() {
     const list = document.getElementById("exposureLogList");
     if (!list) return;
@@ -198,14 +296,20 @@ function renderLogList() {
         return;
     }
 
+    const actionLabels = { yes: "✅ acción completa", partial: "🔄 acción a medias", no: "⛔ se retiró" };
+
     [...logEntries].reverse().forEach(entry => {
         const li = document.createElement("li");
         li.className = "action-item";
         const dateText = new Date(entry.date).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
+        const actionText = actionLabels[entry.actionCompleted] || "";
+        const actMeasures = (entry.acceptance !== null && entry.acceptance !== undefined)
+            ? `<br>aceptación <span class="score-badge">${entry.acceptance}/100</span> · presencia <span class="score-badge">${entry.presence}/100</span>${actionText ? ` · ${actionText}` : ""}`
+            : "";
         li.innerHTML = `
             <div style="flex:1">
                 <strong>${escapeHTML(entry.situation)}</strong>
-                <p class="hint">${escapeHTML(entry.value)} · malestar <span class="suds-badge">${entry.sudsBefore}→${entry.sudsAfter}/10</span><br>
+                <p class="hint">${escapeHTML(entry.value)} · interferencia <span class="score-badge">${entry.interferenceBefore}→${entry.interferenceAfter}/100</span>${actMeasures}<br>
                 📅 ${escapeHTML(dateText)}${entry.reflection ? `<br>💭 ${escapeHTML(entry.reflection)}` : ""}</p>
             </div>
             <button class="mini-btn remove-log" title="Eliminar registro" aria-label="Eliminar registro">🗑️</button>
@@ -234,8 +338,13 @@ function startPractice(item) {
     document.getElementById("exposureDuringStage").hidden = true;
     document.getElementById("exposureAfterStage").hidden = true;
 
+    const willingness = document.getElementById("exposureWillingness");
+    if (willingness) willingness.checked = false;
+    const startBtn = document.getElementById("exposureStartBtn");
+    if (startBtn) startBtn.disabled = true;
+
     updateMetaphorText();
-    CompassAvatar.speak("Vas a tu ritmo. No hace falta que el malestar baje a cero para seguir.", "neutral");
+    CompassAvatar.speak(`Vas a tu ritmo. No hace falta que el malestar baje a cero para acercarte a tu valor de ${item.value}.`, "neutral");
 }
 
 function beginExposure() {
@@ -276,9 +385,16 @@ function finishDuringStage() {
     document.getElementById("exposureDuringStage").hidden = true;
     document.getElementById("exposureAfterStage").hidden = false;
 
-    const sudsAfter = document.getElementById("exposureSudsAfter");
-    sudsAfter.value = currentItem.sudsExpected;
-    document.getElementById("exposureSudsAfterNum").textContent = sudsAfter.value;
+    const acceptance = document.getElementById("exposureAcceptance");
+    const presence = document.getElementById("exposurePresence");
+    const interferenceAfter = document.getElementById("exposureInterferenceAfter");
+    acceptance.value = 50;
+    acceptance.dispatchEvent(new Event("input"));
+    presence.value = 50;
+    presence.dispatchEvent(new Event("input"));
+    document.getElementById("exposureActionCompleted").value = "yes";
+    interferenceAfter.value = currentItem.interference;
+    interferenceAfter.dispatchEvent(new Event("input"));
     document.getElementById("exposureReflection").value = "";
 }
 
@@ -296,8 +412,11 @@ function saveExposureLog() {
         itemId: currentItem.id,
         situation: currentItem.situation,
         value: currentItem.value,
-        sudsBefore: currentItem.sudsExpected,
-        sudsAfter: Number(document.getElementById("exposureSudsAfter").value),
+        interferenceBefore: currentItem.interference,
+        interferenceAfter: Number(document.getElementById("exposureInterferenceAfter").value),
+        acceptance: Number(document.getElementById("exposureAcceptance").value),
+        presence: Number(document.getElementById("exposurePresence").value),
+        actionCompleted: document.getElementById("exposureActionCompleted").value,
         reflection: document.getElementById("exposureReflection").value.trim(),
         date: new Date().toISOString()
     };
@@ -310,8 +429,16 @@ function saveExposureLog() {
     currentItem = null;
 
     renderLogList();
+    renderHierarchyList();
     toast("🌉 Exposición registrada");
     notifySaved("🌉 Exposición registrada");
     if (isSoundEnabled()) SoundFX.success();
     CompassAvatar.speak("Actuaste según lo que te importa, con el malestar presente. Eso es lo que cuenta.", "happy");
+
+    const next = getSuggestedItem();
+    if (next) {
+        setTimeout(() => {
+            CompassAvatar.speak(`No se trata de que el miedo desaparezca, sino de seguir avanzando hacia tu valor. ¿Te comprometes a intentar "${next.situation}" en los próximos días?`, "neutral");
+        }, 3500);
+    }
 }
