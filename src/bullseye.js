@@ -391,7 +391,7 @@ function updateEvolutionChart() {
         });
     }
 
-    const labels = dataPoints.map(h => new Date(h.date).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" }));
+    const labels = dataPoints.map(h => new Date(h.date).toLocaleDateString("es-MX", { day: "2-digit", month: "2-digit" }));
     const datasetWork = dataPoints.map(h => h.work);
     const datasetRel = dataPoints.map(h => h.rel);
     const datasetGrowth = dataPoints.map(h => h.growth);
