@@ -5,6 +5,7 @@ import { valuesData, getActiveValues, setActiveValues, MAX_VALUES, computeNextCu
 import { SoundFX } from "./audio.js";
 import { escapeHTML, toast, LS, safeJSONParse, showPromptModal, showConfirmModal } from "./utils.js";
 import { renderActionValueOptions, renderActionsList } from "./ui_path.js";
+import { renderExposureValueOptions } from "./exposure.js";
 import { getDomainForValue } from "./illustrations.js";
 
 export function initValuesModule() {
@@ -193,6 +194,7 @@ export function toggleValue(id) {
   
   renderActiveList();
   renderActionValueOptions();
+  renderExposureValueOptions();
 
   requestAnimationFrame(() => {
     window.scrollTo(0, scrollPos);
@@ -261,6 +263,7 @@ async function editCustomValue(id) {
   renderCards();
   renderActiveList();
   renderActionValueOptions();
+  renderExposureValueOptions();
   toast("Valor editado");
 
   requestAnimationFrame(() => {
@@ -289,6 +292,7 @@ async function deleteCustomValue(id) {
   renderCards();
   renderActiveList();
   renderActionValueOptions();
+  renderExposureValueOptions();
   toast("Valor eliminado");
 
   requestAnimationFrame(() => {
@@ -431,6 +435,7 @@ function reorderValues(from, to) {
   setActiveValues(active);
   renderActiveList();
   renderActionValueOptions();
+  renderExposureValueOptions();
   SoundFX.click();
 }
 

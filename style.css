@@ -1429,6 +1429,36 @@ body.dark-theme #galaxy-canvas {
   box-shadow: 0 2px 8px rgba(129, 230, 217, 0.4);
 }
 
+.suds-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--ring);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.exposure-timer-display {
+  font-size: 2.4rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--primary);
+  margin: 8px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.metaphor-text {
+  font-style: italic;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--ring);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
 /* Utilities */
 .card-title {
   font-weight: 800;
@@ -2827,6 +2857,17 @@ body.dark-theme .tabs {
   .avatar-container {
     width: 60px;
     height: 60px;
+  }
+
+  /* Con 6 pestañas (incluida la crítica SOS), hay que ajustar más para que
+     todas quepan sin depender de que el usuario descubra el scroll táctil. */
+  .tabs {
+    gap: 4px;
+  }
+
+  .tab-btn {
+    padding: 8px 9px;
+    font-size: 0.7rem;
   }
 }
 

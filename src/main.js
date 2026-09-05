@@ -7,6 +7,7 @@ import { CompassAvatar } from "./avatar.js";
 import { initValuesModule } from "./ui_values.js";
 import { initSosModule, clearAllTimers } from "./sos.js";
 import { initPathModule } from "./ui_path.js";
+import { initExposureModule } from "./exposure.js";
 import { runExport } from "./export.js";
 import { initNotifications } from "./notifications.js";
 import { initAchievements } from "./achievements.js";
@@ -45,6 +46,7 @@ async function init() {
     runSafe("Compass Avatar", () => CompassAvatar.init());
     runSafe("Values Module", initValuesModule);
     runSafe("Path Module", initPathModule);
+    runSafe("Exposure Module", initExposureModule);
     runSafe("SOS Module", initSosModule);
     runSafe("Reset All", initResetAll);
     runSafe("Export Module", initExport);
@@ -431,8 +433,8 @@ function showUpdateBanner(worker) {
 }
 
 function initTabs() {
-    const tabs = [el.tabValues, el.tabBull, el.tabPath, el.tabLeaves, el.tabSos];
-    const views = [el.viewValues, el.viewBull, el.viewPath, el.viewLeaves, el.viewSos];
+    const tabs = [el.tabValues, el.tabBull, el.tabPath, el.tabLeaves, el.tabExposure, el.tabSos];
+    const views = [el.viewValues, el.viewBull, el.viewPath, el.viewLeaves, el.viewExposure, el.viewSos];
 
     const activateTab = (i, setFocus = false) => {
         tabs.forEach((t, j) => {

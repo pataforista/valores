@@ -313,4 +313,61 @@ test.describe('Valores del Valle - Smoke Tests', () => {
     await closeGlossary.click();
     await expect(glossaryList).not.toBeAttached();
   });
+
+  test('debe crear una jerarquía de exposición y completar una práctica sin errores', async ({ page }) => {
+    await preparePage(page);
+
+    // Seleccionar un valor para que el select de Exposición tenga opciones
+    const addBtn = page.locator('.select-btn:has-text("Agregar")').first();
+    await addBtn.click();
+    await page.waitForTimeout(150);
+
+    await page.click('#tab-exposure');
+    const viewExposure = page.locator('#view-exposure');
+    await expect(viewExposure).toHaveClass(/active/);
+
+    // Alternar guía clínica
+    const guideBtn = page.locator('#toggleExposureGuide');
+    const guidePanel = page.locator('#exposureGuidePanel');
+    await expect(guidePanel).toBeHidden();
+    await guideBtn.click();
+    await expect(guidePanel).toBeVisible();
+
+    // Agregar situación a la jerarquía
+    await page.fill('#exposureSituation', 'Mirar fotos de aviones');
+    await page.click('#exposureForm button[type=submit]');
+
+    const hierarchyItems = page.locator('#exposureHierarchyList .action-item');
+    await expect(hierarchyItems).toHaveCount(1);
+    await expect(hierarchyItems.first()).toContainText('Mirar fotos de aviones');
+
+    // Practicar la exposición de punta a punta
+    await page.click('#exposureHierarchyList .practice-btn');
+    const practicePanel = page.locator('#exposurePracticePanel');
+    await expect(practicePanel).toBeVisible();
+
+    await page.selectOption('#exposureMetaphorSelect', 'bus');
+    await expect(page.locator('#exposureMetaphorText')).toContainText('autobús');
+
+    await page.click('#exposureStartBtn');
+    await expect(page.locator('#exposureDuringStage')).toBeVisible();
+    await page.waitForTimeout(300);
+
+    await page.click('#exposureFinishBtn');
+    await expect(page.locator('#exposureAfterStage')).toBeVisible();
+
+    await page.fill('#exposureReflection', 'Pude quedarme viendo las fotos.');
+    await page.click('#exposureSaveBtn');
+    await expect(practicePanel).toBeHidden();
+
+    const logItems = page.locator('#exposureLogList .action-item');
+    await expect(logItems).toHaveCount(1);
+    await expect(logItems.first()).toContainText('Mirar fotos de aviones');
+
+    // Validar persistencia y logro desbloqueado
+    const savedLog = await page.evaluate(() => localStorage.getItem('vv_exposure_log_v1'));
+    expect(savedLog).toContain('Mirar fotos de aviones');
+    const achievements = await page.evaluate(() => localStorage.getItem('vv_achievements_v1'));
+    expect(achievements).toContain('first_exposure');
+  });
 });

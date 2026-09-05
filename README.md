@@ -28,7 +28,12 @@ La aplicación funciona 100% offline, permitiendo al usuario explorar sus valore
    - Herramientas interactivas para situaciones de desborde emocional.
    - Técnicas paso a paso que incluyen respiración guiada (ejercicio de la caja), atención plena (5-4-3-2-1) y grounding físico (talones).
 
-6. **Logros y Diccionario:**
+6. **Miedos y Exposición (Exposición basada en valores):**
+   - Construye tu propia jerarquía de exposición vinculando cada situación temida con el valor que defiendes al enfrentarla, y ordénala por nivel de malestar anticipado (0-10).
+   - Practica cada exposición en tres fases (preparación, durante y después) acompañado de metáforas de ACT ("El Forcejeo con el Monstruo", "Pasajeros en el Autobús") y recordatorios de defusión.
+   - Registra tu progreso con el malestar antes/después y una reflexión enfocada en la acción según valores, no en la ausencia de ansiedad.
+
+7. **Logros y Diccionario:**
    - Desbloquea logros interactivos a medida que progresas y accedes a un glosario integrado de conceptos clave.
 
 ---
@@ -43,6 +48,7 @@ graph TD
     src/main.js --> src/onboarding.js
     src/main.js --> src/ui_values.js
     src/main.js --> src/ui_path.js
+    src/main.js --> src/exposure.js
     src/main.js --> src/bullseye.js
     src/main.js --> src/sos.js
     src/main.js --> src/audio.js

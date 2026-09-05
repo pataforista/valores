@@ -90,6 +90,7 @@
     <button class="tab-btn" id="tab-bullseye" role="tab" aria-selected="false" aria-controls="view-bullseye" tabindex="-1">Diana</button>
     <button class="tab-btn" id="tab-path" role="tab" aria-selected="false" aria-controls="view-path" tabindex="-1">Sendero</button>
     <button class="tab-btn" id="tab-leaves" role="tab" aria-selected="false" aria-controls="view-leaves" tabindex="-1">Hojas</button>
+    <button class="tab-btn" id="tab-exposure" role="tab" aria-selected="false" aria-controls="view-exposure" tabindex="-1">Miedos</button>
     <button class="tab-btn" id="tab-sos" role="tab" aria-selected="false" aria-controls="view-sos" tabindex="-1">SOS</button>
   </div>
 
@@ -424,6 +425,129 @@
             <input type="text" id="hojas-accion" class="input-field" placeholder="Acción comprometida a realizar..." />
           </div>
         </div>
+      </section>
+    </div>
+
+    <!-- Exposición View (Exposición basada en valores, ACT) -->
+    <div id="view-exposure" class="view" role="tabpanel" aria-labelledby="tab-exposure">
+      <section class="card-panel">
+        <div class="panel-title">
+          <span>🌉 Miedos y Exposición</span>
+          <span class="status-pill">Exposición ACT</span>
+        </div>
+        <p class="hint">
+          El objetivo no es que el miedo desaparezca, sino actuar según tus valores mientras le haces espacio al malestar. Construye tu jerarquía y avanza a tu ritmo, un escalón a la vez.
+        </p>
+
+        <button class="guide-btn" id="toggleExposureGuide" aria-expanded="false" type="button">
+          🧭 Guía clínica y metáforas
+        </button>
+        <div class="guide-panel" id="exposureGuidePanel" style="display: none;">
+          <div style="display: grid; gap: 0.6rem;">
+            <div>
+              <span class="guide-tag">⚡ La trampa de la evitación</span>
+              <p>Evitar lo que da miedo alivia por un momento, pero cada vez que evitas, el espacio en el que puedes moverte se hace un poco más chico. La exposición no busca "vencer" el miedo: busca que dejes de organizar tu vida alrededor de evitarlo.</p>
+            </div>
+            <div>
+              <span class="guide-tag">💬 El Forcejeo con el Monstruo</span>
+              <p style="font-style: italic;">"Imagina un monstruo enorme al otro lado de un abismo, sosteniendo el otro extremo de una cuerda atada a tu cintura. Cuanto más fuerte tiras para alejarte, más se acerca él y más se cansan tus brazos. Soltar la cuerda no lo hace desaparecer — sigue ahí, rugiendo — pero tus manos quedan libres para caminar hacia lo que te importa, con él todavía a la distancia."</p>
+            </div>
+            <div>
+              <span class="guide-tag">💬 Pasajeros en el Autobús</span>
+              <p style="font-style: italic;">"Eres quien conduce el autobús de tu vida. El miedo es un pasajero ruidoso que grita desde atrás que frenes, que des la vuelta, que no sigas. No puedes echarlo del autobús ni hacerlo callar. Pero el volante lo tienes tú: puedes seguir manejando hacia tu destino mientras él grita."</p>
+            </div>
+            <div>
+              <span class="guide-tag">❓ Antes de exponerte, recuerda</span>
+              <ul style="padding-left: 1.2rem; margin: 4px 0;">
+                <li>El éxito se mide por si actuaste según tus valores, no por cuánta ansiedad sentiste.</li>
+                <li>El malestar puede subir y no pasa nada grave: es incómodo, no peligroso.</li>
+                <li>Puedes ir más lento: la jerarquía existe para avanzar de a un escalón.</li>
+              </ul>
+            </div>
+            <div>
+              <span class="guide-tag guide-abort">🛑 Cuándo no usar este módulo solo</span>
+              <p>Si tu miedo está ligado a un trauma, a pensamientos de hacerte daño, o sientes pánico intenso y descontrolado, busca acompañamiento profesional antes de exponerte por tu cuenta. Este módulo es una herramienta de autoayuda, no un tratamiento supervisado.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-panel mt-16">
+        <div class="panel-title"><span>Tu jerarquía de exposición</span></div>
+        <p class="hint">Vincula cada situación temida con el valor que defiendes al enfrentarla. Ordénalas de menos a más intensa.</p>
+
+        <form id="exposureForm" class="form-grid" autocomplete="off">
+          <div class="field-group">
+            <label for="exposureValue">Valor que defiendes al enfrentarlo</label>
+            <select id="exposureValue"></select>
+          </div>
+          <div class="field-group">
+            <label for="exposureSituation">Situación temida</label>
+            <input id="exposureSituation" type="text" class="input-field" placeholder="Ej: Mirar fotos de aviones" maxlength="150" />
+          </div>
+          <div class="slider-row">
+            <label>Malestar anticipado <span id="exposureSudsExpectedNum">5</span>/10</label>
+            <input id="exposureSudsExpected" type="range" min="0" max="10" value="5" />
+          </div>
+          <div class="inline-actions justify-end">
+            <button class="btn primary" type="submit">Agregar a la jerarquía</button>
+          </div>
+        </form>
+
+        <div class="section-divider"></div>
+        <ul class="list-clean" id="exposureHierarchyList"></ul>
+      </section>
+
+      <section class="card-panel mt-16" id="exposurePracticePanel" hidden>
+        <div class="panel-title">
+          <span>Practicar exposición</span>
+          <span class="status-pill" id="exposureStageLabel">Preparación</span>
+        </div>
+
+        <div id="exposurePrepStage">
+          <p class="hint">Vas a exponerte a: <strong id="exposureItemSummary"></strong></p>
+          <div class="field-group">
+            <label for="exposureMetaphorSelect">Metáfora para acompañarte</label>
+            <select id="exposureMetaphorSelect">
+              <option value="monster">El Forcejeo con el Monstruo</option>
+              <option value="bus">Pasajeros en el Autobús</option>
+            </select>
+          </div>
+          <p class="metaphor-text" id="exposureMetaphorText"></p>
+          <p class="hint">Antes de empezar, respira un momento. Si quieres una guía, usa la <a href="#" id="exposureGoToBreathing">respiración de la pestaña SOS</a>.</p>
+          <div class="inline-actions">
+            <button class="btn primary" type="button" id="exposureStartBtn">Comenzar exposición</button>
+            <button class="btn" type="button" id="exposureCancelBtn1">Cancelar</button>
+          </div>
+        </div>
+
+        <div id="exposureDuringStage" hidden>
+          <p class="exposure-timer-display" id="exposureTimerDisplay">00:00</p>
+          <p class="hint" id="exposureDuringReminder"></p>
+          <div class="inline-actions">
+            <button class="btn primary" type="button" id="exposureFinishBtn">Terminar exposición</button>
+            <button class="btn" type="button" id="exposureCancelBtn2">Cancelar</button>
+          </div>
+        </div>
+
+        <div id="exposureAfterStage" hidden>
+          <div class="slider-row">
+            <label>Malestar al terminar <span id="exposureSudsAfterNum">5</span>/10</label>
+            <input id="exposureSudsAfter" type="range" min="0" max="10" value="5" />
+          </div>
+          <div class="field-group">
+            <label for="exposureReflection">¿Qué aprendiste sobre tu capacidad de actuar a pesar del miedo?</label>
+            <textarea id="exposureReflection" rows="3" placeholder="Ej: Pude quedarme ahí aunque el pecho se me apretaba, y avancé hacia..." maxlength="300"></textarea>
+          </div>
+          <div class="inline-actions justify-end">
+            <button class="btn primary" type="button" id="exposureSaveBtn">Guardar registro</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-panel mt-16">
+        <div class="panel-title"><span>Registro de exposiciones</span></div>
+        <ul class="list-clean" id="exposureLogList"></ul>
       </section>
     </div>
 
