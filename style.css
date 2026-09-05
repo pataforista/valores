@@ -1465,6 +1465,46 @@ body.dark-theme #galaxy-canvas {
   color: var(--text);
 }
 
+.slider-word {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.slider-anchors {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin: -4px 0 10px;
+}
+
+.next-step-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--ring);
+  border: 1px solid var(--primary);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.next-step-banner p {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+
+.action-item.mastered {
+  opacity: 0.7;
+}
+
+.mastered-tag {
+  color: var(--success, #10B981);
+  font-weight: 700;
+}
+
 .exposure-timer-display {
   font-size: 2.4rem;
   font-weight: 700;

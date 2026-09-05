@@ -18,7 +18,8 @@ export const LS = {
     leavesGrounding: "vv_hojas_grounding_v1",
     exposureItems: "vv_exposure_items_v1",
     exposureLog: "vv_exposure_log_v1",
-    exposureMetaphor: "vv_exposure_metaphor_v1"
+    exposureMetaphor: "vv_exposure_metaphor_v1",
+    exposureLastValue: "vv_exposure_last_value_v1"
 };
 
 export const AREA_LABELS = {

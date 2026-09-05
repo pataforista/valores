@@ -478,7 +478,7 @@
 
       <section class="card-panel mt-16">
         <div class="panel-title"><span>Tu jerarquía de exposición</span></div>
-        <p class="hint">Vincula cada situación evitada con el valor que defiendes al enfrentarla. Ordénalas de menor a mayor interferencia con ese valor.</p>
+        <p class="hint">Vincula cada situación evitada con el valor que defiendes al enfrentarla. La lista se ordena sola por cuánto te bloquea ahora mismo.</p>
 
         <form id="exposureForm" class="form-grid" autocomplete="off">
           <div class="field-group">
@@ -490,15 +490,23 @@
             <input id="exposureSituation" type="text" class="input-field" placeholder="Ej: Mirar fotos de aviones" maxlength="150" />
           </div>
           <div class="slider-row">
-            <label>¿Cuánto te aleja esto de tu valor? <span id="exposureInterferenceNum">50</span>/100</label>
+            <label>¿Cuánto te aleja esto de tu valor? <span id="exposureInterferenceNum">50</span>/100 · <span id="exposureInterferenceWord" class="slider-word"></span></label>
             <input id="exposureInterference" type="range" min="0" max="100" step="5" value="50" />
           </div>
+          <div class="slider-anchors"><span>0 = no me impide nada</span><span>100 = me bloquea por completo</span></div>
           <div class="inline-actions justify-end">
             <button class="btn primary" type="submit">Agregar a la jerarquía</button>
           </div>
         </form>
 
         <div class="section-divider"></div>
+        <div id="exposureNextStepBanner" class="next-step-banner" hidden>
+          <div>
+            <span class="guide-tag">🎯 Tu próximo paso sugerido</span>
+            <p id="exposureNextStepText"></p>
+          </div>
+          <button class="btn btn-sm primary" type="button" id="exposureNextStepBtn">Practicar este</button>
+        </div>
         <ul class="list-clean" id="exposureHierarchyList"></ul>
       </section>
 
@@ -539,26 +547,30 @@
         </div>
 
         <div id="exposureAfterStage" hidden>
+          <p class="hint">Cuatro preguntas rápidas. No hay respuesta correcta, solo registra lo que pasó.</p>
           <div class="slider-row">
-            <label>¿Hiciste espacio para el malestar sin pelear con él? <span id="exposureAcceptanceNum">50</span>/100</label>
+            <label>¿Hiciste espacio para el malestar sin pelear con él? <span id="exposureAcceptanceNum">50</span>/100 · <span id="exposureAcceptanceWord" class="slider-word"></span></label>
             <input id="exposureAcceptance" type="range" min="0" max="100" step="5" value="50" />
           </div>
+          <div class="slider-anchors"><span>0 = luché todo el rato</span><span>100 = le hice espacio del todo</span></div>
           <div class="slider-row">
-            <label>¿Tu atención estuvo en la tarea presente, no enganchada en la mente? <span id="exposurePresenceNum">50</span>/100</label>
+            <label>¿Tu atención estuvo en la tarea presente, no enganchada en la mente? <span id="exposurePresenceNum">50</span>/100 · <span id="exposurePresenceWord" class="slider-word"></span></label>
             <input id="exposurePresence" type="range" min="0" max="100" step="5" value="50" />
           </div>
+          <div class="slider-anchors"><span>0 = todo el rato en mi cabeza</span><span>100 = todo el rato en la tarea</span></div>
           <div class="field-group">
             <label for="exposureActionCompleted">¿Completaste la acción a pesar del malestar?</label>
             <select id="exposureActionCompleted">
-              <option value="yes">Sí, la hice completa</option>
-              <option value="partial">A medias</option>
-              <option value="no">No, me retiré</option>
+              <option value="yes">✅ Sí, la hice completa</option>
+              <option value="partial">🔄 A medias</option>
+              <option value="no">⛔ No, me retiré</option>
             </select>
           </div>
           <div class="slider-row">
-            <label>Ahora, ¿cuánto crees que esto te impediría vivir tu valor si lo enfrentaras de nuevo? <span id="exposureInterferenceAfterNum">50</span>/100</label>
+            <label>Ahora, ¿cuánto crees que esto te impediría vivir tu valor si lo enfrentaras de nuevo? <span id="exposureInterferenceAfterNum">50</span>/100 · <span id="exposureInterferenceAfterWord" class="slider-word"></span></label>
             <input id="exposureInterferenceAfter" type="range" min="0" max="100" step="5" value="50" />
           </div>
+          <div class="slider-anchors"><span>0 = ya no me impide nada</span><span>100 = me sigue bloqueando igual</span></div>
           <div class="field-group">
             <label for="exposureReflection">¿Qué aprendiste sobre tu capacidad de actuar aunque el malestar estuviera presente?</label>
             <textarea id="exposureReflection" rows="3" placeholder="Ej: Pude quedarme ahí aunque el pecho se me apretaba, y avancé hacia..." maxlength="300"></textarea>
