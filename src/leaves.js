@@ -4,12 +4,47 @@ import { escapeHTML, LS, safeJSONParse, toast } from "./utils.js";
 import { SoundFX, isSoundEnabled } from "./audio.js";
 import { CompassAvatar } from "./avatar.js";
 
+// Ramas fijas del arroyo, cada una con la franja vertical (% de alto) que
+// alcanza a tocar desde su borde. Sirven para el detalle clásico del
+// ejercicio: a veces un pensamiento se queda un momento enganchado en una
+// rama antes de soltarse solo y seguir flotando; no se fuerza a que avance.
+const STREAM_BRANCHES = [
+  { xPercent: 22, side: "top", reachMax: 34 },
+  { xPercent: 52, side: "bottom", reachMin: 66 },
+  { xPercent: 80, side: "top", reachMax: 30 }
+];
+
+// Tronquito con un par de ramitas, dibujado con dos trazos superpuestos
+// (uno oscuro debajo, uno claro encima) para sugerir el volumen de la
+// madera en vez de una forma sólida y redondeada.
+const BRANCH_SVG = `
+  <svg viewBox="0 0 90 26" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2 8 C 18 4, 34 14, 50 9 C 64 5, 76 10, 88 7" stroke="#5c3a21" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <path d="M2 8 C 18 4, 34 14, 50 9 C 64 5, 76 10, 88 7" stroke="#8b5e34" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+    <path d="M30 10 L 24 20" stroke="#5c3a21" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <path d="M58 8 L 64 1" stroke="#5c3a21" stroke-width="4" stroke-linecap="round" fill="none"/>
+  </svg>
+`;
+
+function renderStreamBranches(streamEl) {
+  if (!streamEl || streamEl.querySelector(".stream-branch")) return;
+  STREAM_BRANCHES.forEach(b => {
+    const branch = document.createElement("div");
+    branch.className = `stream-branch stream-branch-${b.side}`;
+    branch.style.left = `${b.xPercent}%`;
+    branch.innerHTML = BRANCH_SVG;
+    branch.setAttribute("aria-hidden", "true");
+    streamEl.appendChild(branch);
+  });
+}
+
 export function initLeavesModule() {
   const guideBtn = document.getElementById("toggleLeavesGuide");
   const guidePanel = document.getElementById("leavesGuidePanel");
   const leafInput = document.getElementById("leafInput");
   const addLeafBtn = document.getElementById("addLeafBtn");
 
+  renderStreamBranches(document.getElementById("streamCanvas"));
   initWaterCanvas();
 
   // Toggle Clinical Guide
@@ -62,36 +97,113 @@ export function launchLeaf(text) {
   if (isSoundEnabled()) SoundFX.click();
 
   const cWidth = container.offsetWidth || window.innerWidth || 600;
+  const startX = -220; // Coincide con el `left: -220px` fijo del CSS del `.leaf-item`
   const targetX = cWidth + 280;
-  const duration = 14 + Math.random() * 4;
+  const totalDuration = 14 + Math.random() * 4;
   const randomRot = -12 + Math.random() * 24;
 
+  // Convierte un punto visual del arroyo (0-100% del ancho) en la coordenada
+  // `x` que anima la hoja, que se mide como desplazamiento respecto al
+  // `left: -220px` fijo del CSS (por eso el +220).
+  const xForPercent = (percent) => (percent / 100) * cWidth + 220;
+
+  // Solo puede engancharse en una rama cuya franja vertical coincide con la
+  // altura en la que flota esta hoja en particular, para que el enganche se
+  // vea creíble. No siempre hay una rama a esa altura, así que no todas las
+  // hojas se detienen — igual que no todos los pensamientos se "atoran".
+  const candidateBranches = STREAM_BRANCHES.filter(b =>
+    b.side === "top" ? yPos <= b.reachMax : yPos >= b.reachMin
+  );
+  const branch = candidateBranches.length > 0 && Math.random() < 0.45
+    ? candidateBranches[Math.floor(Math.random() * candidateBranches.length)]
+    : null;
+
+  const bobAmplitude = 5 + Math.random() * 5;
+  const bobDuration = 1 + Math.random() * 0.8;
+
   if (window.gsap) {
-    gsap.fromTo(
-      leafEl,
-      { x: -220, rotation: randomRot * -0.5 },
-      {
+    gsap.set(leafEl, { x: startX, rotation: randomRot * -0.5 });
+
+    // Bamboleo vertical continuo e independiente del avance horizontal, para
+    // que el recorrido no se vea como una línea recta sobre la corriente.
+    gsap.to(leafEl, {
+      y: `+=${bobAmplitude}`,
+      duration: bobDuration,
+      ease: "sine.inOut",
+      repeat: -1,
+      yoyo: true
+    });
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        gsap.killTweensOf(leafEl);
+        leafEl.remove();
+      }
+    });
+
+    if (branch) {
+      const branchX = xForPercent(branch.xPercent);
+      const pauseDuration = 1.6 + Math.random() * 2.2;
+      const totalDist = targetX - startX;
+      const distBefore = branchX - startX;
+      const distAfter = targetX - branchX;
+
+      tl.to(leafEl, {
+        x: branchX,
+        rotation: randomRot * 0.35,
+        duration: totalDuration * (distBefore / totalDist),
+        ease: "sine.inOut"
+      });
+      // Forcejeo leve sin avanzar: la corriente empuja la hoja contra la
+      // rama un momento antes de que se suelte sola.
+      tl.to(leafEl, {
+        rotation: `+=${5 + Math.random() * 5}`,
+        duration: pauseDuration / 2,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: 1
+      });
+      tl.to(leafEl, {
         x: targetX,
         rotation: randomRot,
-        duration: duration,
-        ease: "none",
-        onComplete: () => {
-          leafEl.remove();
-        }
-      }
-    );
+        duration: totalDuration * (distAfter / totalDist),
+        ease: "sine.inOut"
+      });
+    } else {
+      // Sin enganche: igual se evita la línea recta variando la velocidad en
+      // tramos, como el empuje irregular de una corriente real.
+      tl.to(leafEl, { x: startX + (targetX - startX) * 0.32, rotation: randomRot * 0.25, duration: totalDuration * 0.3, ease: "sine.inOut" });
+      tl.to(leafEl, { x: startX + (targetX - startX) * 0.7, rotation: randomRot * 0.7, duration: totalDuration * 0.4, ease: "sine.inOut" });
+      tl.to(leafEl, { x: targetX, rotation: randomRot, duration: totalDuration * 0.3, ease: "sine.inOut" });
+    }
   } else {
-    // Web Animations API fallback
-    const anim = leafEl.animate(
-      [
-        { transform: `translateX(-220px) rotate(${randomRot * -0.5}deg)` },
+    // Web Animations API fallback: keyframes con offsets para reproducir el
+    // mismo recorrido no lineal (y el enganche en rama, si aplica).
+    let keyframes, offsets, waapiDuration;
+    if (branch) {
+      const branchX = xForPercent(branch.xPercent);
+      const catchOffset = (branchX - startX) / (targetX - startX);
+      keyframes = [
+        { transform: `translateX(${startX}px) rotate(${randomRot * -0.5}deg)` },
+        { transform: `translateX(${branchX}px) rotate(${randomRot * 0.35}deg)` },
+        { transform: `translateX(${branchX}px) rotate(${randomRot * 0.35 + 6}deg)` },
         { transform: `translateX(${targetX}px) rotate(${randomRot}deg)` }
-      ],
-      {
-        duration: duration * 1000,
-        easing: "linear",
-        fill: "forwards"
-      }
+      ];
+      offsets = [0, catchOffset, Math.min(catchOffset + 0.12, 0.95), 1];
+      waapiDuration = (totalDuration + 2.2) * 1000;
+    } else {
+      keyframes = [
+        { transform: `translateX(${startX}px) rotate(${randomRot * -0.5}deg)` },
+        { transform: `translateX(${startX + (targetX - startX) * 0.32}px) rotate(${randomRot * 0.25}deg)` },
+        { transform: `translateX(${startX + (targetX - startX) * 0.7}px) rotate(${randomRot * 0.7}deg)` },
+        { transform: `translateX(${targetX}px) rotate(${randomRot}deg)` }
+      ];
+      offsets = [0, 0.3, 0.7, 1];
+      waapiDuration = totalDuration * 1000;
+    }
+    const anim = leafEl.animate(
+      keyframes.map((k, i) => ({ ...k, offset: offsets[i] })),
+      { duration: waapiDuration, easing: "ease-in-out", fill: "forwards" }
     );
     anim.onfinish = () => leafEl.remove();
   }
