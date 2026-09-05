@@ -15,7 +15,10 @@ export const LS = {
     achievements: "vv_achievements_v1",
     totalActionsDone: "vv_total_actions_done_v1",
     seenOnboarding: "vv_seen_onboarding_v1",
-    leavesGrounding: "vv_hojas_grounding_v1"
+    leavesGrounding: "vv_hojas_grounding_v1",
+    exposureItems: "vv_exposure_items_v1",
+    exposureLog: "vv_exposure_log_v1",
+    exposureMetaphor: "vv_exposure_metaphor_v1"
 };
 
 export const AREA_LABELS = {

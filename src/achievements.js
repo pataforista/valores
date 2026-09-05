@@ -11,6 +11,8 @@ const ACHIEVEMENTS = [
     { id: "bullseye_first", label: "Primera diana", desc: "Guardaste tu primera evaluación de la diana.", icon: "🎯" },
     { id: "bullseye_week", label: "Constancia", desc: "Has actualizado la diana durante 2 semanas seguidas.", icon: "📅" },
     { id: "bullseye_100", label: "¡En el centro!", desc: "Alcanzaste el 100% de satisfacción en un área.", icon: "💯" },
+    { id: "first_exposure", label: "Primer paso al abismo", desc: "Completaste tu primera práctica de exposición.", icon: "🌉" },
+    { id: "five_exposures", label: "Caminante valiente", desc: "Completaste 5 prácticas de exposición.", icon: "🧗" },
 ];
 
 let achieved = safeJSONParse(localStorage.getItem(LS.achievements), []);
@@ -152,12 +154,24 @@ export function updateAchievements(actions) {
 }
 
 /**
+ * Actualiza los logros relacionados con el módulo de exposición.
+ */
+export function updateExposureAchievements(log) {
+    const count = log.length;
+    if (count >= 1) unlockAchievement("first_exposure");
+    if (count >= 5) unlockAchievement("five_exposures");
+}
+
+/**
  * Inicializa el módulo de logros.
  */
 export function initAchievements() {
     // Verificar logros al inicio
     const actions = safeJSONParse(localStorage.getItem(LS.actions), []);
     updateAchievements(actions);
+
+    const exposureLog = safeJSONParse(localStorage.getItem(LS.exposureLog), []);
+    updateExposureAchievements(exposureLog);
 }
 
 /**

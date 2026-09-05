@@ -165,6 +165,7 @@ header {
 .top-actions {
   display: flex;
   gap: 8px;
+  min-width: 0;
 }
 
 .icon-btn {
@@ -1429,6 +1430,36 @@ body.dark-theme #galaxy-canvas {
   box-shadow: 0 2px 8px rgba(129, 230, 217, 0.4);
 }
 
+.suds-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--ring);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.exposure-timer-display {
+  font-size: 2.4rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--primary);
+  margin: 8px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.metaphor-text {
+  font-style: italic;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--ring);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
 /* Utilities */
 .card-title {
   font-weight: 800;
@@ -2081,12 +2112,7 @@ textarea:focus-visible {
   word-break: break-word;
 }
 
-.card-title,
-
-
-.hint,
-label,
-button {
+.hint {
   overflow-wrap: anywhere;
 }
 
@@ -2434,22 +2460,35 @@ button {
   color: var(--primary);
 }
 
-/* En resoluciones de escritorio (>768px), el menú se expande horizontalmente en línea */
-@media (min-width: 769px) {
+/* El menú se expande horizontalmente en línea solo cuando el ancho real
+   alcanza para los ~9 botones sin recortarlos ni ocultar el scroll (medido
+   empíricamente: por debajo de esto, incluso portátiles comunes de 1366-1440px
+   necesitaban un scroll horizontal invisible dentro del header). Por debajo
+   de este umbral se mantiene el menú "⋯" desplegable, ya probado en todos
+   los anchos de móvil/tablet. */
+@media (min-width: 1500px) {
   .toggle-menu-btn {
     display: none;
+  }
+
+  .menu-container {
+    min-width: 0;
+    max-width: 100%;
   }
 
   .secondary-menu {
     display: flex !important;
     position: static;
     flex-direction: row;
+    flex-wrap: nowrap;
     background: transparent;
     border: none;
     box-shadow: none;
     padding: 0;
     margin: 0;
     min-width: auto;
+    max-width: 100%;
+    overflow-x: auto;
     gap: 8px;
   }
 
@@ -2835,6 +2874,35 @@ body.dark-theme .tabs {
   }
 }
 
+/* Con 6 pestañas (incluida la crítica SOS), hay que ajustar el espaciado para
+   que todas quepan sin depender de que el usuario descubra el scroll táctil.
+   480px cubre también teléfonos grandes como iPhone Pro Max (430px). */
+@media (max-width: 480px) {
+  .tabs {
+    gap: 4px;
+  }
+
+  .tab-btn {
+    padding: 8px 9px;
+    font-size: 0.7rem;
+  }
+
+  /* La burbuja de Brújula es pointer-events:none (nunca bloquea clics),
+     pero en pantallas angostas su ancho por defecto (180px) todavía tapa
+     visualmente botones y campos a ancho completo durante los ~4s que
+     está visible. Se reduce su huella para minimizar la superposición. */
+  .avatar-container {
+    width: 56px;
+    height: 56px;
+  }
+
+  .avatar-bubble {
+    max-width: 140px;
+    font-size: 0.75rem;
+    padding: 8px;
+  }
+}
+
 /* --- Hojas en el Agua (Defusión ACT) --- */
 .leaves-modal-card {
   max-width: 650px !important;
@@ -2901,16 +2969,13 @@ body.dark-theme .tabs {
   box-shadow: inset 0 2px 12px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.12);
 }
 
-.stream-flow {
+.stream-water-canvas {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,255,255,0.06) 40px, rgba(255,255,255,0.06) 80px);
-  animation: moveStream 16s linear infinite;
-}
-
-@keyframes moveStream {
-  from { background-position: 0 0; }
-  to { background-position: 113px 0; }
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
 }
 
 .leaves-container {

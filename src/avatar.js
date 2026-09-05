@@ -141,7 +141,7 @@ export const CompassAvatar = (function () {
             clearTimeout(speakTimer);
             speakTimer = setTimeout(() => {
                 gsap.to(bubble, { scale: reduced ? 1 : 0.8, opacity: 0, duration: reduced ? 0 : 0.2, onComplete: () => bubble.classList.remove("show") });
-            }, 5000);
+            }, 4000);
         }
 
         compass.classList.add("talking");
