@@ -97,15 +97,30 @@ export function launchLeaf(text) {
   }
 
   // Compass Avatar encouragement
-  const avatarQuotes = [
-    "Mira cómo la corriente se lleva el pensamiento sin luchar con él.",
-    "El pensamiento sigue de largo. Tú sigues en la orilla.",
-    "No es necesario retenerlo ni empujarlo; solo déjalo flotar."
-  ];
-  const randomQuote = avatarQuotes[Math.floor(Math.random() * avatarQuotes.length)];
+  const randomQuote = pickAvatarQuote();
   setTimeout(() => {
     CompassAvatar.speak(randomQuote, "neutral");
   }, 1000);
+}
+
+// Frases de aliento del avatar al lanzar una hoja. Se evita repetir la misma
+// frase dos veces seguidas para que no se sientan como un pensamiento que
+// vuelve en bucle, justo lo contrario de lo que busca este ejercicio.
+const avatarQuotes = [
+  "Mira cómo la corriente se lleva el pensamiento sin luchar con él.",
+  "El pensamiento sigue de largo. Tú sigues en la orilla.",
+  "No es necesario retenerlo ni empujarlo; solo déjalo flotar."
+];
+let lastAvatarQuoteIndex = -1;
+
+function pickAvatarQuote() {
+  if (avatarQuotes.length <= 1) return avatarQuotes[0];
+  let index;
+  do {
+    index = Math.floor(Math.random() * avatarQuotes.length);
+  } while (index === lastAvatarQuoteIndex);
+  lastAvatarQuoteIndex = index;
+  return avatarQuotes[index];
 }
 
 function initGroundingFields() {

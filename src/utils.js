@@ -67,7 +67,7 @@ export function formatDateText(d) {
     // Si es una fecha válida y parece ser un formato ISO o numérico, la localizamos
     if (!isNaN(parsed) && (d.includes("-") || d.includes("/"))) {
         try {
-            return parsed.toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
+            return parsed.toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" });
         } catch {
             return d;
         }

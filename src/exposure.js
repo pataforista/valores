@@ -301,7 +301,7 @@ function renderLogList() {
     [...logEntries].reverse().forEach(entry => {
         const li = document.createElement("li");
         li.className = "action-item";
-        const dateText = new Date(entry.date).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" });
+        const dateText = new Date(entry.date).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" });
         const actionText = actionLabels[entry.actionCompleted] || "";
         const actMeasures = (entry.acceptance !== null && entry.acceptance !== undefined)
             ? `<br>aceptación <span class="score-badge">${entry.acceptance}/100</span> · presencia <span class="score-badge">${entry.presence}/100</span>${actionText ? ` · ${actionText}` : ""}`
