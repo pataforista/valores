@@ -51,7 +51,11 @@ test.afterAll(() => {
 });
 
 test.describe('Valores del Valle - Smoke Tests', () => {
-  
+  // Todas las pruebas de este archivo comparten un único servidor HTTP en un puerto
+  // fijo (levantado en beforeAll/afterAll de módulo); con fullyParallel varios workers
+  // intentarían escuchar el mismo puerto a la vez y chocarían con EADDRINUSE.
+  test.describe.configure({ mode: 'serial' });
+
   test.beforeEach(async ({ page }) => {
     // Inyectar localStorage antes de cargar para evitar diálogos de bienvenida y onboarding
     await page.addInitScript(() => {

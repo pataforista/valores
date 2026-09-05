@@ -2081,12 +2081,7 @@ textarea:focus-visible {
   word-break: break-word;
 }
 
-.card-title,
-
-
-.hint,
-label,
-button {
+.hint {
   overflow-wrap: anywhere;
 }
 
@@ -2901,16 +2896,13 @@ body.dark-theme .tabs {
   box-shadow: inset 0 2px 12px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.12);
 }
 
-.stream-flow {
+.stream-water-canvas {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,255,255,0.06) 40px, rgba(255,255,255,0.06) 80px);
-  animation: moveStream 16s linear infinite;
-}
-
-@keyframes moveStream {
-  from { background-position: 0 0; }
-  to { background-position: 113px 0; }
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
 }
 
 .leaves-container {
