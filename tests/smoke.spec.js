@@ -290,20 +290,34 @@ test.describe('Valores del Valle - Smoke Tests', () => {
   test('debe abrir menú, glosario, cambiar tema y sonido sin errores', async ({ page }) => {
     await preparePage(page);
 
+    // Por debajo de 1500px el menú de acciones secundarias vive colapsado
+    // detrás del botón "⋯"; cada clic en un .menu-item lo vuelve a cerrar,
+    // así que hay que reabrirlo antes de cada acción.
+    const menuToggleBtn = page.locator('#menuToggleBtn');
+    const secondaryMenu = page.locator('#secondaryMenu');
+    const openMenuIfCollapsed = async () => {
+      if (await menuToggleBtn.isVisible() && !(await secondaryMenu.evaluate(el => el.classList.contains('active')))) {
+        await menuToggleBtn.click();
+      }
+    };
+
     // Alternar tema
     const initialDark = await page.evaluate(() => document.body.classList.contains('dark-theme'));
+    await openMenuIfCollapsed();
     const themeBtn = page.locator('#themeBtn');
     await themeBtn.click();
     const isDark = await page.evaluate(() => document.body.classList.contains('dark-theme'));
     expect(isDark).toBe(!initialDark);
 
     // Alternar sonido
+    await openMenuIfCollapsed();
     const soundBtn = page.locator('#soundBtn');
     await soundBtn.click();
     const isMuted = await page.evaluate(() => document.getElementById('soundBtn').classList.contains('muted'));
     expect(isMuted).toBe(true);
 
     // Abrir Glosario
+    await openMenuIfCollapsed();
     const glossaryBtn = page.locator('#glossaryMenuBtn');
     await glossaryBtn.click();
     const glossaryList = page.locator('#glossary-list');
