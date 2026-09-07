@@ -350,16 +350,29 @@ main {
   background: var(--primary);
   color: #fff;
   box-shadow: var(--shadow-sm);
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .btn.primary:hover {
-  background: var(--primary-hover, #3d5f66);
+  background: #3a5a63;
   box-shadow: var(--shadow-md), var(--shadow-glow);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+}
+
+.btn.primary:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 body.dark-theme .btn.primary {
-  color: var(--bg);
+  color: #0F172A;
+  font-weight: 700;
+}
+
+body.dark-theme .btn.primary:hover {
+  background: #6dd9ce;
+  color: #0F172A;
 }
 
 .btn.danger {
@@ -2264,7 +2277,23 @@ textarea:focus-visible {
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  padding: 10px 20px;
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-size: var(--text-base);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  border: 1px solid transparent;
+}
+
+.coffee-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+}
+
+.coffee-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 .footer-hr {
   border: 0;
@@ -2859,6 +2888,23 @@ body.dark-theme #themeBtn .svg-sun {
 }
 
 /* --- Dark Mode Refinados --- */
+body.dark-theme .coffee-btn {
+  background: var(--primary);
+  color: #0F172A;
+  border: 1px solid #5dd9ce;
+}
+
+body.dark-theme .coffee-btn:hover {
+  background: #6dd9ce;
+  color: #0F172A;
+  box-shadow: 0 8px 16px rgba(129, 230, 217, 0.3);
+}
+
+body.dark-theme .coffee-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 body.dark-theme .card-container {
   background: linear-gradient(135deg, var(--surface) 0%, rgba(30, 41, 59, 0.6) 100%);
 }
