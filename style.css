@@ -3,6 +3,7 @@
   --bg: #F0F2F5;
   --surface: #FFFFFF;
   --surface-elevated: #FFFFFF;
+  --card: #FFFFFF;
   --text: #0F172A;
   --text-secondary: #475569;
   --text-tertiary: #94A3B8;
@@ -67,6 +68,7 @@ body.dark-theme {
   --bg: #0F172A;
   --surface: #1E293B;
   --surface-elevated: #334155;
+  --card: #2D3E52;
   --text: #F8FAFC;
   --text-secondary: #CBD5E1;
   --text-tertiary: #64748B;
@@ -350,16 +352,29 @@ main {
   background: var(--primary);
   color: #fff;
   box-shadow: var(--shadow-sm);
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .btn.primary:hover {
-  background: var(--primary-hover, #3d5f66);
+  background: #3a5a63;
   box-shadow: var(--shadow-md), var(--shadow-glow);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+}
+
+.btn.primary:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 body.dark-theme .btn.primary {
-  color: var(--bg);
+  color: #0F172A;
+  font-weight: 700;
+}
+
+body.dark-theme .btn.primary:hover {
+  background: #6dd9ce;
+  color: #0F172A;
 }
 
 .btn.danger {
@@ -1133,6 +1148,8 @@ body.dark-theme #galaxy-canvas {
 .intro-slide h2 {
   color: var(--primary);
   margin-bottom: 1rem;
+  font-weight: 800;
+  font-size: 1.4rem;
 }
 
 .carousel-dots {
@@ -2264,7 +2281,23 @@ textarea:focus-visible {
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  padding: 10px 20px;
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-size: var(--text-base);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  border: 1px solid transparent;
+}
+
+.coffee-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+}
+
+.coffee-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 .footer-hr {
   border: 0;
@@ -2436,10 +2469,11 @@ textarea:focus-visible {
 /* --- Onboarding Modal --- */
 #onboardingModal .carousel-wrap {
   max-width: 500px;
-  background: var(--card);
-  border: 1px solid var(--ring);
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
   border-radius: 18px;
   padding: 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 #onboardingModal .intro-slide {
   min-height: 300px;
@@ -2452,12 +2486,31 @@ textarea:focus-visible {
 #onboardingModal .intro-slide h2 {
   color: var(--primary);
   margin: 12px 0;
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1.3;
 }
 #onboardingModal .intro-slide p {
   white-space: pre-wrap;
   font-size: 0.95rem;
   line-height: 1.6;
-  color: var(--muted);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Dark mode styles for onboarding modal */
+body.dark-theme #onboardingModal .carousel-wrap {
+  background: #334155;
+  border-color: #475569;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-theme #onboardingModal .intro-slide h2 {
+  color: #81E6D9;
+}
+
+body.dark-theme #onboardingModal .intro-slide p {
+  color: #E2E8F0;
 }
 
 
@@ -2859,6 +2912,23 @@ body.dark-theme #themeBtn .svg-sun {
 }
 
 /* --- Dark Mode Refinados --- */
+body.dark-theme .coffee-btn {
+  background: var(--primary);
+  color: #0F172A;
+  border: 1px solid #5dd9ce;
+}
+
+body.dark-theme .coffee-btn:hover {
+  background: #6dd9ce;
+  color: #0F172A;
+  box-shadow: 0 8px 16px rgba(129, 230, 217, 0.3);
+}
+
+body.dark-theme .coffee-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 body.dark-theme .card-container {
   background: linear-gradient(135deg, var(--surface) 0%, rgba(30, 41, 59, 0.6) 100%);
 }
