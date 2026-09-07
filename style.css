@@ -3,6 +3,7 @@
   --bg: #F0F2F5;
   --surface: #FFFFFF;
   --surface-elevated: #FFFFFF;
+  --card: #FFFFFF;
   --text: #0F172A;
   --text-secondary: #475569;
   --text-tertiary: #94A3B8;
@@ -67,6 +68,7 @@ body.dark-theme {
   --bg: #0F172A;
   --surface: #1E293B;
   --surface-elevated: #334155;
+  --card: #2D3E52;
   --text: #F8FAFC;
   --text-secondary: #CBD5E1;
   --text-tertiary: #64748B;
@@ -2494,6 +2496,21 @@ textarea:focus-visible {
   line-height: 1.6;
   color: var(--text-secondary);
   font-weight: 500;
+}
+
+/* Dark mode styles for onboarding modal */
+body.dark-theme #onboardingModal .carousel-wrap {
+  background: #334155;
+  border-color: #475569;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-theme #onboardingModal .intro-slide h2 {
+  color: #81E6D9;
+}
+
+body.dark-theme #onboardingModal .intro-slide p {
+  color: #E2E8F0;
 }
 
 
