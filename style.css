@@ -3172,6 +3172,26 @@ body.dark-theme .leaf-item {
   border-color: rgba(52, 211, 153, 0.7);
 }
 
+/* Pensamiento que regresa: el mismo texto, con una marca discreta en ámbar.
+   Volver es parte del ejercicio, así que la hoja no debe leerse como alarma
+   ni competir con las demás por la atención. */
+.leaf-item-return {
+  background: rgba(251, 191, 36, 0.28);
+  border-color: rgba(146, 64, 14, 0.75);
+  color: #7c2d12;
+}
+
+body.dark-theme .leaf-item-return {
+  color: #fcd34d;
+  background: rgba(120, 53, 15, 0.45);
+  border-color: rgba(252, 211, 77, 0.7);
+}
+
+.leaf-return-mark {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
 .watermark-text {
   position: absolute;
   bottom: 8px;

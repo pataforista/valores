@@ -82,157 +82,312 @@ function handleLaunchLeaf() {
   if (leafInput) leafInput.value = "";
 }
 
-export function launchLeaf(text) {
+// Un pensamiento que se va para siempre en su primera pasada no se parece al
+// ejercicio real. En la versión clínica el pensamiento pegajoso regresa, y el
+// trabajo consiste justo en volver a ponerlo sobre otra hoja sin discutir con
+// él. Estas cifras modelan ese regreso: la probabilidad cae con cada vuelta,
+// porque el pensamiento se va soltando, no porque lo hayamos expulsado.
+const RETURN_CHANCE = [0.7, 0.45, 0.25];
+const RETURN_DELAY_MS = [3500, 11000];
+const MAX_LEAVES_ON_STREAM = 12;
+
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const randBetween = (min, max) => min + Math.random() * (max - min);
+
+// Curvas de avance distintas para cada tramo: mezclarlas evita que el ojo
+// reconozca el mismo "empujón" repetido en todas las hojas.
+const DRIFT_EASES = ["sine.inOut", "sine.out", "power1.inOut", "power1.out", "none"];
+
+function scheduleReturn(text, returnCount) {
+  const chance = RETURN_CHANCE[returnCount];
+  if (chance === undefined || Math.random() >= chance) return;
+
+  setTimeout(() => {
+    const container = document.getElementById("leavesContainer");
+    // Si la pestaña Hojas no está a la vista, el regreso se descarta: animar
+    // sobre un contenedor de 0x0 produce trayectorias absurdas y hojas
+    // acumuladas que el usuario nunca llega a ver.
+    if (!container || !container.offsetParent) return;
+    if (container.childElementCount >= MAX_LEAVES_ON_STREAM) return;
+    launchLeaf(text, { returnCount: returnCount + 1 });
+  }, randBetween(RETURN_DELAY_MS[0], RETURN_DELAY_MS[1]));
+}
+
+// El recorrido se arma como una serie de puntos sueltos, no como una recta
+// con tres paradas fijas: cada tramo termina donde le toca al azar, la hoja
+// se desplaza de carril mientras avanza y arrastra con una resistencia
+// propia. Dos hojas nunca describen la misma línea sobre el agua.
+function buildDriftPath(yStart) {
+  const legs = 4 + Math.floor(Math.random() * 3); // 4 a 6 tramos
+  const cuts = [];
+  for (let i = 1; i < legs; i++) {
+    cuts.push(clamp(i / legs + randBetween(-0.45, 0.45) / legs, 0.06, 0.94));
+  }
+  cuts.sort((a, b) => a - b);
+  cuts.push(1);
+
+  let y = yStart;
+  return cuts.map(progress => {
+    y = clamp(y + randBetween(-9, 9), 8, 84);
+    return {
+      progress,
+      y,
+      rotation: randBetween(-16, 16),
+      drag: randBetween(0.55, 1.6),
+      ease: DRIFT_EASES[Math.floor(Math.random() * DRIFT_EASES.length)]
+    };
+  });
+}
+
+function yAtProgress(points, target, yStart) {
+  let prevProgress = 0;
+  let prevY = yStart;
+  for (const point of points) {
+    if (point.progress >= target) {
+      const span = point.progress - prevProgress;
+      const t = span > 0 ? (target - prevProgress) / span : 0;
+      return prevY + (point.y - prevY) * t;
+    }
+    prevProgress = point.progress;
+    prevY = point.y;
+  }
+  return prevY;
+}
+
+function insertCatchPoint(points, catchProgress, yStart) {
+  const point = {
+    progress: catchProgress,
+    y: yAtProgress(points, catchProgress, yStart),
+    rotation: randBetween(-8, 8),
+    drag: randBetween(0.8, 1.2),
+    ease: "sine.inOut",
+    catch: true
+  };
+  const idx = points.findIndex(p => p.progress > catchProgress);
+  if (idx === -1) points.push(point); else points.splice(idx, 0, point);
+  return points;
+}
+
+// Un remolino: la hoja retrocede un poco antes de que la corriente vuelva a
+// llevársela. No le pasa a todas, y ahí está la gracia.
+function addEddy(points) {
+  const spots = points
+    .map((p, i) => (i > 0 && i < points.length - 1 && !p.catch ? i : -1))
+    .filter(i => i !== -1);
+  if (spots.length === 0) return points;
+
+  const i = spots[Math.floor(Math.random() * spots.length)];
+  const anchor = points[i];
+  points.splice(i + 1, 0, {
+    progress: Math.max(0.04, anchor.progress - randBetween(0.03, 0.07)),
+    y: clamp(anchor.y + randBetween(-5, 5), 8, 84),
+    rotation: -anchor.rotation * 0.6,
+    drag: randBetween(1.4, 2.2),
+    ease: "sine.inOut"
+  });
+  return points;
+}
+
+export function launchLeaf(text, options = {}) {
   const container = document.getElementById("leavesContainer");
   if (!container) return;
 
+  const returnCount = options.returnCount || 0;
+  const isReturn = returnCount > 0;
+
   const safeText = escapeHTML(text);
-  const yPos = 15 + Math.random() * 60; // 15% to 75%
+  const yPos = randBetween(12, 76);
   const leafEl = document.createElement("div");
-  leafEl.className = "leaf-item";
+  leafEl.className = isReturn ? "leaf-item leaf-item-return" : "leaf-item";
   leafEl.style.top = `${yPos}%`;
-  leafEl.innerHTML = `<span class="leaf-icon">🍃</span> <span class="leaf-text">${safeText}</span>`;
+  leafEl.innerHTML = `<span class="leaf-icon">🍃</span> <span class="leaf-text">${safeText}</span>` +
+    (isReturn ? " <span class=\"leaf-return-mark\" aria-label=\"Este pensamiento volvió\" title=\"Este pensamiento volvió\">↺</span>" : "");
   container.appendChild(leafEl);
 
-  if (isSoundEnabled()) SoundFX.click();
+  // La hoja que regresa llega sola, sin que nadie pulse nada: un clic ahí
+  // sonaría a error del sistema y no a pensamiento que vuelve.
+  if (isSoundEnabled() && !isReturn) SoundFX.click();
 
   const cWidth = container.offsetWidth || window.innerWidth || 600;
+  const cHeight = container.offsetHeight || 250;
   const startX = -220; // Coincide con el `left: -220px` fijo del CSS del `.leaf-item`
   const targetX = cWidth + 280;
-  const totalDuration = 14 + Math.random() * 4;
-  const randomRot = -12 + Math.random() * 24;
+  const trackLength = targetX - startX;
+  const totalDuration = randBetween(11, 20);
+  const startRotation = randBetween(-14, 14);
+
+  const xAt = (progress) => startX + trackLength * progress;
+  // `top` ya fija el carril inicial en %, así que la deriva vertical se anima
+  // como desplazamiento en píxeles respecto de ese carril.
+  const yAt = (yPercent) => ((yPercent - yPos) / 100) * cHeight;
 
   // Convierte un punto visual del arroyo (0-100% del ancho) en la coordenada
   // `x` que anima la hoja, que se mide como desplazamiento respecto al
   // `left: -220px` fijo del CSS (por eso el +220).
   const xForPercent = (percent) => (percent / 100) * cWidth + 220;
 
+  let points = buildDriftPath(yPos);
+
   // Solo puede engancharse en una rama cuya franja vertical coincide con la
-  // altura en la que flota esta hoja en particular, para que el enganche se
-  // vea creíble. No siempre hay una rama a esa altura, así que no todas las
-  // hojas se detienen — igual que no todos los pensamientos se "atoran".
-  const candidateBranches = STREAM_BRANCHES.filter(b =>
-    b.side === "top" ? yPos <= b.reachMax : yPos >= b.reachMin
-  );
+  // altura a la que la hoja pasa por debajo de ella, no con la altura en la
+  // que empezó: ahora la hoja cambia de carril durante el recorrido. No
+  // siempre hay una rama a esa altura, así que no todas las hojas se
+  // detienen — igual que no todos los pensamientos se "atoran".
+  const candidateBranches = STREAM_BRANCHES.filter(b => {
+    const progress = (xForPercent(b.xPercent) - startX) / trackLength;
+    if (progress <= 0.05 || progress >= 0.95) return false;
+    const yThere = yAtProgress(points, progress, yPos);
+    return b.side === "top" ? yThere <= b.reachMax : yThere >= b.reachMin;
+  });
   const branch = candidateBranches.length > 0 && Math.random() < 0.45
     ? candidateBranches[Math.floor(Math.random() * candidateBranches.length)]
     : null;
 
-  const bobAmplitude = 5 + Math.random() * 5;
-  const bobDuration = 1 + Math.random() * 0.8;
+  if (branch) {
+    points = insertCatchPoint(points, (xForPercent(branch.xPercent) - startX) / trackLength, yPos);
+  }
+  if (Math.random() < 0.35) {
+    points = addEddy(points);
+  }
+
+  // Cada tramo dura según lo que recorre y la resistencia que le tocó; el
+  // total se normaliza para que la hoja cruce en el tiempo previsto aunque
+  // haya dado un rodeo.
+  let prevProgress = 0;
+  const weights = points.map(p => {
+    const w = Math.max(0.02, Math.abs(p.progress - prevProgress)) * p.drag;
+    prevProgress = p.progress;
+    return w;
+  });
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  const durations = weights.map(w => totalDuration * (w / totalWeight));
+  const pauseDuration = branch ? randBetween(1.6, 3.8) : 0;
+
+  const bobAmplitude = randBetween(18, 42); // % de la altura de la propia hoja
+  const bobDuration = randBetween(0.9, 2.1);
 
   if (window.gsap) {
-    gsap.set(leafEl, { x: startX, rotation: randomRot * -0.5 });
+    gsap.set(leafEl, {
+      x: startX,
+      y: 0,
+      yPercent: -bobAmplitude / 2,
+      rotation: startRotation,
+      scale: randBetween(0.92, 1.06)
+    });
 
-    // Bamboleo vertical continuo e independiente del avance horizontal, para
-    // que el recorrido no se vea como una línea recta sobre la corriente.
+    // Cabeceo vertical corto e independiente del avance: se anima en
+    // `yPercent` para no pelearse con la deriva de carril, que usa `y`.
     gsap.to(leafEl, {
-      y: `+=${bobAmplitude}`,
+      yPercent: bobAmplitude / 2,
       duration: bobDuration,
       ease: "sine.inOut",
       repeat: -1,
-      yoyo: true
+      yoyo: true,
+      delay: Math.random()
     });
 
     const tl = gsap.timeline({
       onComplete: () => {
         gsap.killTweensOf(leafEl);
         leafEl.remove();
+        scheduleReturn(text, returnCount);
       }
     });
 
-    if (branch) {
-      const branchX = xForPercent(branch.xPercent);
-      const pauseDuration = 1.6 + Math.random() * 2.2;
-      const totalDist = targetX - startX;
-      const distBefore = branchX - startX;
-      const distAfter = targetX - branchX;
-
+    points.forEach((point, i) => {
       tl.to(leafEl, {
-        x: branchX,
-        rotation: randomRot * 0.35,
-        duration: totalDuration * (distBefore / totalDist),
-        ease: "sine.inOut"
+        x: xAt(point.progress),
+        y: yAt(point.y),
+        rotation: point.rotation,
+        duration: durations[i],
+        ease: point.ease
       });
-      // Forcejeo leve sin avanzar: la corriente empuja la hoja contra la
-      // rama un momento antes de que se suelte sola.
-      tl.to(leafEl, {
-        rotation: `+=${5 + Math.random() * 5}`,
-        duration: pauseDuration / 2,
-        ease: "sine.inOut",
-        yoyo: true,
-        repeat: 1
-      });
-      tl.to(leafEl, {
-        x: targetX,
-        rotation: randomRot,
-        duration: totalDuration * (distAfter / totalDist),
-        ease: "sine.inOut"
-      });
-    } else {
-      // Sin enganche: igual se evita la línea recta variando la velocidad en
-      // tramos, como el empuje irregular de una corriente real.
-      tl.to(leafEl, { x: startX + (targetX - startX) * 0.32, rotation: randomRot * 0.25, duration: totalDuration * 0.3, ease: "sine.inOut" });
-      tl.to(leafEl, { x: startX + (targetX - startX) * 0.7, rotation: randomRot * 0.7, duration: totalDuration * 0.4, ease: "sine.inOut" });
-      tl.to(leafEl, { x: targetX, rotation: randomRot, duration: totalDuration * 0.3, ease: "sine.inOut" });
-    }
+      if (point.catch) {
+        // Forcejeo leve sin avanzar: la corriente empuja la hoja contra la
+        // rama un momento antes de que se suelte sola.
+        tl.to(leafEl, {
+          rotation: `+=${randBetween(5, 11)}`,
+          duration: pauseDuration / 2,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: 1
+        });
+      }
+    });
   } else {
-    // Web Animations API fallback: keyframes con offsets para reproducir el
-    // mismo recorrido no lineal (y el enganche en rama, si aplica).
-    let keyframes, offsets, waapiDuration;
-    if (branch) {
-      const branchX = xForPercent(branch.xPercent);
-      const catchOffset = (branchX - startX) / (targetX - startX);
-      keyframes = [
-        { transform: `translateX(${startX}px) rotate(${randomRot * -0.5}deg)` },
-        { transform: `translateX(${branchX}px) rotate(${randomRot * 0.35}deg)` },
-        { transform: `translateX(${branchX}px) rotate(${randomRot * 0.35 + 6}deg)` },
-        { transform: `translateX(${targetX}px) rotate(${randomRot}deg)` }
-      ];
-      offsets = [0, catchOffset, Math.min(catchOffset + 0.12, 0.95), 1];
-      waapiDuration = (totalDuration + 2.2) * 1000;
-    } else {
-      keyframes = [
-        { transform: `translateX(${startX}px) rotate(${randomRot * -0.5}deg)` },
-        { transform: `translateX(${startX + (targetX - startX) * 0.32}px) rotate(${randomRot * 0.25}deg)` },
-        { transform: `translateX(${startX + (targetX - startX) * 0.7}px) rotate(${randomRot * 0.7}deg)` },
-        { transform: `translateX(${targetX}px) rotate(${randomRot}deg)` }
-      ];
-      offsets = [0, 0.3, 0.7, 1];
-      waapiDuration = totalDuration * 1000;
-    }
-    const anim = leafEl.animate(
-      keyframes.map((k, i) => ({ ...k, offset: offsets[i] })),
-      { duration: waapiDuration, easing: "ease-in-out", fill: "forwards" }
-    );
-    anim.onfinish = () => leafEl.remove();
+    // Web Animations API fallback: los mismos puntos traducidos a keyframes
+    // con offsets, para conservar el recorrido irregular sin GSAP.
+    const totalSeconds = totalDuration + pauseDuration;
+    const keyframes = [{ transform: `translate(${startX}px, 0px) rotate(${startRotation}deg)`, offset: 0 }];
+    let elapsed = 0;
+
+    points.forEach((point, i) => {
+      elapsed += durations[i];
+      const transform = `translate(${xAt(point.progress)}px, ${yAt(point.y)}px)`;
+      keyframes.push({
+        transform: `${transform} rotate(${point.rotation}deg)`,
+        offset: clamp(elapsed / totalSeconds, 0, 1)
+      });
+      if (point.catch) {
+        elapsed += pauseDuration;
+        keyframes.push({
+          transform: `${transform} rotate(${point.rotation + 7}deg)`,
+          offset: clamp(elapsed / totalSeconds, 0, 1)
+        });
+      }
+    });
+
+    const anim = leafEl.animate(keyframes, {
+      duration: totalSeconds * 1000,
+      easing: "ease-in-out",
+      fill: "forwards"
+    });
+    anim.onfinish = () => {
+      leafEl.remove();
+      scheduleReturn(text, returnCount);
+    };
   }
 
-  // Compass Avatar encouragement
-  const randomQuote = pickAvatarQuote();
-  setTimeout(() => {
-    CompassAvatar.speak(randomQuote, "neutral");
-  }, 1000);
+  // El avatar no comenta cada regreso: si hablara siempre, la práctica se
+  // volvería una conversación y no una observación.
+  if (!isReturn || Math.random() < 0.5) {
+    const quote = pickQuote(isReturn ? returnQuotes : launchQuotes);
+    setTimeout(() => {
+      CompassAvatar.speak(quote, "neutral");
+    }, isReturn ? 600 : 1000);
+  }
 }
 
-// Frases de aliento del avatar al lanzar una hoja. Se evita repetir la misma
-// frase dos veces seguidas para que no se sientan como un pensamiento que
-// vuelve en bucle, justo lo contrario de lo que busca este ejercicio.
-const avatarQuotes = [
+// Frases de aliento del avatar al lanzar una hoja.
+const launchQuotes = [
   "Mira cómo la corriente se lleva el pensamiento sin luchar con él.",
   "El pensamiento sigue de largo. Tú sigues en la orilla.",
   "No es necesario retenerlo ni empujarlo; solo déjalo flotar."
 ];
-let lastAvatarQuoteIndex = -1;
 
-function pickAvatarQuote() {
-  if (avatarQuotes.length <= 1) return avatarQuotes[0];
+// Cuando el pensamiento vuelve no hay nada que reparar: en el ejercicio
+// original volver forma parte del guion, no es una falla de la práctica.
+const returnQuotes = [
+  "Volvió. Ponlo otra vez sobre una hoja; ese es todo el trabajo.",
+  "Los pensamientos pegajosos regresan. Notarlo ya es desengancharse.",
+  "Otra vez el mismo. No lo discutas: obsérvalo pasar de nuevo.",
+  "Que vuelva no significa que hayas fallado. Vuelve a soltarlo."
+];
+
+// Se evita repetir la misma frase dos veces seguidas dentro de un mismo grupo
+// para que el avatar no suene como un pensamiento en bucle, justo lo
+// contrario de lo que busca este ejercicio.
+const lastQuoteIndex = new Map();
+
+function pickQuote(pool) {
+  if (pool.length <= 1) return pool[0];
+  const last = lastQuoteIndex.get(pool);
   let index;
   do {
-    index = Math.floor(Math.random() * avatarQuotes.length);
-  } while (index === lastAvatarQuoteIndex);
-  lastAvatarQuoteIndex = index;
-  return avatarQuotes[index];
+    index = Math.floor(Math.random() * pool.length);
+  } while (index === last);
+  lastQuoteIndex.set(pool, index);
+  return pool[index];
 }
 
 function initGroundingFields() {
