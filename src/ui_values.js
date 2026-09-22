@@ -300,19 +300,23 @@ async function deleteCustomValue(id) {
   });
 }
 
+let lastRenderedIds = new Set();
+
 export function renderActiveList() {
   if (!el.list) return;
   el.list.innerHTML = "";
   const active = getActiveValues();
-  
+  const currentIds = new Set(active.map(v => v.id));
+
   const count = active.length;
-  el.counter.textContent = count === 0 
-      ? "Selecciona hasta 10 valores" 
+  el.counter.textContent = count === 0
+      ? "Selecciona hasta 10 valores"
       : `${count}/10 seleccionados`;
 
   active.forEach((v, i) => {
+    const isNew = !lastRenderedIds.has(v.id);
     const li = document.createElement("li");
-    li.className = "rank-item";
+    li.className = isNew ? "rank-item entering" : "rank-item";
     li.draggable = true;
     li.dataset.index = i;
     li.innerHTML = `
@@ -357,14 +361,9 @@ export function renderActiveList() {
 
     li.querySelector(".remove-btn").addEventListener("click", () => toggleValue(v.id));
     el.list.appendChild(li);
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    gsap.from(li, { 
-      x: reduced ? 0 : -20, 
-      opacity: 0, 
-      duration: reduced ? 0 : 0.3, 
-      delay: reduced ? 0 : i * 0.05 
-    });
   });
+
+  lastRenderedIds = currentIds;
 
   // Touch drag-to-reorder (mobile)
   addTouchReorder(el.list);
