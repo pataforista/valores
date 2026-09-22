@@ -525,6 +525,21 @@ body.dark-theme .btn.primary:hover {
   box-shadow: var(--shadow);
 }
 
+@keyframes rankItemIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.rank-item.entering {
+  animation: rankItemIn 0.3s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rank-item.entering {
+    animation: none;
+  }
+}
+
 .rank-num {
   width: 24px;
   height: 24px;
